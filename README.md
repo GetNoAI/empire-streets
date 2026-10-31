@@ -18,34 +18,6 @@ npm run dev        # http://localhost:5173
 `npm test` runs the unit tests (city, traffic, wanted, weapons, Streetmon data and models),
 `npm run creatures` rebuilds and validates the creature models.
 
-### Publishing on GitHub Pages
-
-The repo includes `.github/workflows/deploy.yml`. On every push to `main` it installs, runs
-the tests, builds, and publishes `dist/` to GitHub Pages. The build uses relative paths
-(`base: './'` in `vite.config.ts`), so it works under `https://<user>.github.io/<repo>/`.
-
-1. Create an empty repository on GitHub (no README or licence, so the first push is clean).
-2. From the project folder:
-   ```bash
-   git init
-   git add .
-   git commit -m "Empire Streets"
-   git branch -M main
-   git remote add origin https://github.com/<user>/<repo>.git
-   git push -u origin main
-   ```
-3. On GitHub, go to **Settings → Pages → Build and deployment → Source** and choose
-   **GitHub Actions**. Then open the **Actions** tab and re-run the workflow, or push again.
-4. The game is live at `https://<user>.github.io/<repo>/` once the run turns green (a couple of
-   minutes). The model turntable is at `.../preview.html`.
-
-`.gitignore` leaves out `node_modules`, `dist`, the Blender intermediates in `build/` (only the
-model tooling uses them) and local work archives. The repo is about 90 MB, mostly the music and
-the Streetmon models; no single file is near GitHub's 100 MB limit.
-
-To build locally instead: `npm run build`, then `npm run preview` serves `dist/` at
-http://localhost:4173. Any static host works: upload the contents of `dist/`.
-
 ### Creature model pipeline (textures, bloom)
 
 - **Shared texture atlas** (`src/creatures/models/Atlas.ts`, written to `public/creatures/atlas/`):
