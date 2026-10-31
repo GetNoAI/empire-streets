@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "_comment": "Legendary raids (raidManager.js rules, RaidWorld.ts in the world). A legendary turns up as a rare event (a chance each check while you're in the right district at the right time, with a strong enough team) or through a quest step (type raid). It is foreshadowed (omen), then rampages: stomping on a timer, knocking out wild Streetmon, throwing cars and people and wrecking street props. Trainers nearby come running and send their Streetmon at it. Press B near it to join the fight: your team and the trainers' Streetmon against it, and it acts twice as often (twice a turn in turn-based battles; each hit at foeDamage strength, so it's relentless rather than one-shotting). Its HP carries over between fights (the trainers chip at it too). Beat it and it's subdued for a short window: throw a capture item. If you lose, run, or leave it too long, it escapes and won't be back until its cooldown has passed. Times in seconds of play.",
+  "settings": {
+    "rareCheckSeconds": 60,
+    "minPartyLevel": 14,
+    "omenSeconds": 20,
+    "rampageSeconds": 420,
+    "subduedSeconds": 50,
+    "cooldownSeconds": 1500,
+    "questCooldownSeconds": 60,
+    "levelOverParty": 2,
+    "levelRange": [
+      16,
+      70
+    ],
+    "hpScale": 1.5,
+    "actionsPerTurn": 2,
+    "foeDamage": 0.6,
+    "escapeHeal": 0.35,
+    "stomp": {
+      "every": [
+        7,
+        11
+      ],
+      "radius": 10,
+      "playerDamage": 30,
+      "carDamage": 220,
+      "carPush": 7,
+      "pedKnock": 8,
+      "shake": 0.9
+    },
+    "roam": {
+      "radius": 26,
+      "pause": [
+        2,
+        5
+      ]
+    },
+    "allies": {
+      "count": [
+        2,
+        3
+      ],
+      "joinRadius": 90,
+      "levelUnderParty": 2,
+      "minLevel": 12,
+      "attackEvery": [
+        3,
+        5
+      ],
+      "range": 9,
+      "hpFloor": 0.35,
+      "cheerLines": [
+        "We've got your back!",
+        "Everybody on it!",
+        "Don't let it near the block!",
+        "Hit it together!"
+      ]
+    },
+    "catchMultiplier": 1.6
+  },
+  "legendaries": [
+    {
+      "id": "gridlock",
+      "species": "gridlock",
+      "trigger": {
+        "rare": {
+          "chance": 0.035,
+          "districts": [
+            "midtown",
+            "downtown"
+          ],
+          "times": [
+            "day",
+            "dusk"
+          ],
+          "biome": "street"
+        }
+      },
+      "omen": "Every car alarm on the block is going off at once...",
+      "arrive": "GRIDLOCK is rampaging through traffic!",
+      "escaped": "Gridlock shoulders through the jam and is gone. The alarms fall quiet.",
+      "subdued": "Gridlock sinks to one knee, engine-steam pouring off it. Throw something, now!",
+      "caught": "You caught Gridlock! The city's traffic seems to breathe out.",
+      "color": "#ffb000"
+    },
+    {
+      "id": "blackout",
+      "species": "blackout",
+      "trigger": {
+        "rare": {
+          "chance": 0.03,
+          "districts": [
+            "uptown",
+            "midtown"
+          ],
+          "times": [
+            "night"
+          ],
+          "biome": "street"
+        }
+      },
+      "omen": "The street lamps are flickering, one block after another...",
+      "arrive": "BLACKOUT is draining the grid!",
+      "escaped": "Blackout fades into the dark between two lamps. The lights come back on.",
+      "subdued": "Blackout's glow gutters out and it sinks to the pavement. Throw something, now!",
+      "caught": "You caught Blackout! Every light on the avenue flares at once.",
+      "color": "#ff4bd8"
+    },
+    {
+      "id": "undertow",
+      "species": "undertow",
+      "trigger": {
+        "quest": "the-deep-hum",
+        "rare": {
+          "chance": 0.04,
+          "districts": [
+            "uptown",
+            "midtown",
+            "downtown"
+          ],
+          "times": [
+            "day",
+            "dusk",
+            "night"
+          ],
+          "biome": "sewer",
+          "afterBeaten": true
+        }
+      },
+      "omen": "The pipes are humming. The water's rising...",
+      "arrive": "UNDERTOW is awake!",
+      "escaped": "Undertow slides back under the black water. The humming fades.",
+      "subdued": "Undertow's hum drops to nothing and it slumps in the shallows. Throw something, now!",
+      "caught": "You caught Undertow! The water in the tunnels goes still.",
+      "color": "#2f7bff"
+    }
+  ]
+}

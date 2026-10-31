@@ -1,0 +1,1670 @@
+{
+  "version": 1,
+  "_comment": "The campaign: the Underground Streetmon Racing League story in five acts. Quests are offered by people (npcs) when their prerequisites are met (quests done, story flags, Street Cred, league division), run their objectives in order, and pay out rewards (cash, Street Cred, items, tuning blueprints, legendary Streetmon, story flags). Objective types: REACH_MARKER, WIN_RACE, COMPLETE_HEIST, CATCH_STREETMON, DEFEAT_BOSS, REACH_STREET_CRED (the six core types) plus TALK_TO, ESCAPE_WANTED (raises the Wanted Level to `stars` when it starts; done when you've lost the police) and TUNE_VEHICLE (a car with `slots` Streetmon slotted). WIN_RACE can ask for a night race and put the police on you (`police` stars) when the race starts. Dialogue trees: nodes with numbered choices; a choice leads to another node, or 'accept', 'complete' or 'end'. Positions are world metres (x east, z south).",
+  "settings": {
+    "markerColor": "#ffd23f",
+    "bossColor": "#ff4b3a",
+    "talkRadius": 3,
+    "giverShowRadius": 160,
+    "markerRadius": 6,
+    "failRetrySeconds": 5
+  },
+  "acts": [
+    {
+      "id": "act1",
+      "number": 1,
+      "title": "The Chop Shop Rookie",
+      "region": "Industrial Waterfront",
+      "districts": [
+        "waterfront",
+        "midtown"
+      ],
+      "summary": "You're the new kid at Mama Rust's Underground Chop Shop. Catch your first Streetmon, learn to tune, run some jobs, and beat the Waterfront's District Boss for a League Pass.",
+      "quests": [
+        "a1-welcome",
+        "a1-grease-monkey",
+        "a1-courier",
+        "a1-small-time",
+        "a1-dutch"
+      ]
+    },
+    {
+      "id": "act2",
+      "number": 2,
+      "title": "High-Octane Turf",
+      "region": "Downtown & the Highway Grid",
+      "districts": [
+        "downtown"
+      ],
+      "summary": "Pass in hand, you're in the USRL. Two crews own the downtown grids: the Smoke Syndicate and the Bassline Cartel. Take them both.",
+      "quests": [
+        "a2-first-league-win",
+        "a2-smoke",
+        "a2-bassline",
+        "a2-harbor"
+      ]
+    },
+    {
+      "id": "act3",
+      "number": 3,
+      "title": "The Vault Hijack",
+      "region": "Commercial & Financial Hub",
+      "districts": [
+        "midtown",
+        "downtown"
+      ],
+      "summary": "Late-game tuning and Grand Prix buy-ins cost real money. The Accountant knows where it is.",
+      "quests": [
+        "a3-ice",
+        "a3-transport",
+        "a3-vault"
+      ]
+    },
+    {
+      "id": "act4",
+      "number": 4,
+      "title": "Police Lockdown & Underground War",
+      "region": "Citywide",
+      "districts": [
+        "uptown",
+        "midtown",
+        "downtown"
+      ],
+      "summary": "The Commissioner has the police on the League's payroll. Survive the crackdown, race the midnight sprints through the roadblocks, and break the tactical unit.",
+      "quests": [
+        "a4-crackdown",
+        "a4-midnight",
+        "a4-hale"
+      ]
+    },
+    {
+      "id": "act5",
+      "number": 5,
+      "title": "The Apex Grand Prix & Syndicate Showdown",
+      "region": "Citywide",
+      "districts": [
+        "uptown",
+        "midtown",
+        "downtown",
+        "waterfront"
+      ],
+      "summary": "Qualify, win the three-stage Apex Grand Prix with the police on your tail, and take down Commissioner Varga.",
+      "quests": [
+        "a5-qualify",
+        "a5-grand-prix",
+        "a5-commissioner"
+      ]
+    }
+  ],
+  "npcs": [
+    {
+      "id": "rust",
+      "name": "Mama Rust",
+      "role": "Chop Shop owner",
+      "look": {
+        "skin": "#8d5a3b",
+        "hair": "#c8c8c8",
+        "top": "#b5432c",
+        "legs": "#2b2f36",
+        "shoes": "#151515",
+        "build": "f",
+        "hairStyle": "bun",
+        "skirt": true,
+        "apron": "#5a4632"
+      },
+      "at": {
+        "x": 381,
+        "z": 40.8
+      },
+      "heading": 1.5708
+    },
+    {
+      "id": "pike",
+      "name": "Foreman Pike",
+      "role": "Dock foreman",
+      "look": {
+        "skin": "#e0b48a",
+        "hair": "#3a2a1a",
+        "top": "#f2a516",
+        "legs": "#3b4a5c",
+        "shoes": "#2a2015"
+      },
+      "at": {
+        "x": -468,
+        "z": -232
+      },
+      "heading": 0
+    },
+    {
+      "id": "vex",
+      "name": "Promoter Vex",
+      "role": "USRL promoter",
+      "look": {
+        "skin": "#c99a6e",
+        "hair": "#141414",
+        "top": "#7a2fd0",
+        "legs": "#151515",
+        "shoes": "#ffffff",
+        "build": "f",
+        "hairStyle": "long"
+      },
+      "at": {
+        "x": 163.7,
+        "z": 412.2
+      },
+      "heading": 3.1416
+    },
+    {
+      "id": "accountant",
+      "name": "The Accountant",
+      "role": "Heist financier",
+      "look": {
+        "skin": "#f0c9a0",
+        "hair": "#6b6b6b",
+        "top": "#2c3440",
+        "legs": "#2c3440",
+        "shoes": "#0d0d0d"
+      },
+      "at": {
+        "x": 163.7,
+        "z": 331.8
+      },
+      "heading": 3.1416
+    },
+    {
+      "id": "jinx",
+      "name": "Jinx",
+      "role": "Police scanner hacker",
+      "look": {
+        "skin": "#6e4a32",
+        "hair": "#2fd0c4",
+        "top": "#1d1d24",
+        "legs": "#4b2d6b",
+        "shoes": "#d0d0d0",
+        "build": "f",
+        "hairStyle": "ponytail"
+      },
+      "at": {
+        "x": -163.7,
+        "z": -21.8
+      },
+      "heading": 0
+    }
+  ],
+  "bosses": [
+    {
+      "id": "dockside-dutch",
+      "name": "Dockside Dutch",
+      "title": "District Boss of the Waterfront",
+      "crew": "dockside",
+      "at": {
+        "x": -468,
+        "z": 200
+      },
+      "heading": 0,
+      "look": {
+        "skin": "#d9a679",
+        "hair": "#8a5a2b",
+        "top": "#5a6470",
+        "legs": "#2b2f36",
+        "shoes": "#3a2a1a"
+      },
+      "team": [
+        [
+          "cinderblock",
+          12
+        ],
+        [
+          "doubleshift",
+          12
+        ],
+        [
+          "rebarb",
+          14
+        ]
+      ],
+      "intro": "You're Rust's new grease monkey? The docks are mine, kid. Beat me and maybe the League gives you a pass.",
+      "win": "...Fine. Take your League Pass. The docks will remember this.",
+      "lose": "Back to the garage, rookie."
+    },
+    {
+      "id": "haze",
+      "name": "Haze",
+      "title": "Boss of the Smoke Syndicate",
+      "crew": "smoke-syndicate",
+      "at": {
+        "x": 136.3,
+        "z": 455.8
+      },
+      "heading": 3.1416,
+      "look": {
+        "skin": "#b07a52",
+        "hair": "#d8d8d8",
+        "top": "#4b3b6b",
+        "legs": "#1e1e24",
+        "shoes": "#a58bd8",
+        "build": "f",
+        "hairStyle": "long",
+        "skirt": true
+      },
+      "team": [
+        [
+          "exhaustfume",
+          18
+        ],
+        [
+          "hazeling",
+          19
+        ],
+        [
+          "flue",
+          20
+        ],
+        [
+          "backfire",
+          22
+        ]
+      ],
+      "intro": "You can't win what you can't see. My crew runs the smoke on every grid downtown.",
+      "win": "The smoke clears... you're the real thing. Downtown's grids are open to you.",
+      "lose": "Lost in the haze. Come back when you can see straight."
+    },
+    {
+      "id": "sal",
+      "name": "Subwoofer Sal",
+      "title": "Boss of the Bassline Cartel",
+      "crew": "bassline-cartel",
+      "at": {
+        "x": -136.3,
+        "z": 579.8
+      },
+      "heading": 0,
+      "look": {
+        "skin": "#5a3a26",
+        "hair": "#141414",
+        "top": "#2f7bff",
+        "legs": "#111111",
+        "shoes": "#ffd23f"
+      },
+      "team": [
+        [
+          "subsonic",
+          19
+        ],
+        [
+          "streetlamp",
+          20
+        ],
+        [
+          "woofer",
+          22
+        ],
+        [
+          "wirewhip",
+          23
+        ]
+      ],
+      "intro": "Feel that? That's the Cartel. Every race downtown pays us a cut. You want to change that?",
+      "win": "Bass dropped. Respect. The Cartel steps aside... for now.",
+      "lose": "Turn it down, kid. You can't handle the volume."
+    },
+    {
+      "id": "captain-hale",
+      "name": "Captain Hale",
+      "title": "Police Tactical Commander",
+      "crew": "tactical",
+      "at": {
+        "x": -286.3,
+        "z": -350.2
+      },
+      "heading": 1.5708,
+      "look": {
+        "skin": "#e6c3a0",
+        "hair": "#2a2a2a",
+        "top": "#1f3a6b",
+        "legs": "#16233d",
+        "shoes": "#0d0d0d"
+      },
+      "team": [
+        [
+          "strapback",
+          28
+        ],
+        [
+          "holster",
+          30
+        ],
+        [
+          "hardcase",
+          31
+        ],
+        [
+          "overwatch",
+          32
+        ]
+      ],
+      "intro": "You've been running my roadblocks all month. Tonight it ends. Tactical unit: deploy.",
+      "win": "Stand down, everyone. ...The Commissioner's going to be furious.",
+      "lose": "Cuff 'em. Kidding. Get out of my city."
+    },
+    {
+      "id": "commissioner-varga",
+      "name": "Commissioner Varga",
+      "title": "League Commissioner",
+      "crew": "commission",
+      "at": {
+        "x": 313.7,
+        "z": -412.2
+      },
+      "heading": 3.1416,
+      "look": {
+        "skin": "#f0d0b0",
+        "hair": "#e0e0e0",
+        "top": "#ffd23f",
+        "legs": "#1a1a1a",
+        "shoes": "#1a1a1a"
+      },
+      "team": [
+        [
+          "moldmother",
+          40
+        ],
+        [
+          "overtime",
+          41
+        ],
+        [
+          "overpass",
+          42
+        ],
+        [
+          "ratking",
+          43
+        ],
+        [
+          "holster",
+          45
+        ]
+      ],
+      "intro": "Do you know how much money this League makes me? Every buy-in, every bribe, every cop on the payroll. And you think you can take that away?",
+      "win": "It's over. The League... belongs to the streets again.",
+      "lose": "The house always wins."
+    }
+  ],
+  "blueprints": [
+    {
+      "id": "cold-air-intake",
+      "name": "Cold Air Intake",
+      "description": "Breathes harder: +4% top speed, +6% acceleration on every car you drive.",
+      "modifiers": {
+        "topSpeed": 1.04,
+        "acceleration": 1.06
+      }
+    },
+    {
+      "id": "drift-diff",
+      "name": "Drift Differential",
+      "description": "Tuned for the downtown grids: +6% grip, +8% steering.",
+      "modifiers": {
+        "grip": 1.06,
+        "steering": 1.08
+      }
+    },
+    {
+      "id": "vault-turbo",
+      "name": "Vault-Grade Turbo",
+      "description": "Bought with bank money: +10% acceleration, +5% top speed.",
+      "modifiers": {
+        "acceleration": 1.1,
+        "topSpeed": 1.05
+      }
+    },
+    {
+      "id": "roll-cage",
+      "name": "Tactical Roll Cage",
+      "description": "Lifted off a SWAT van: +25% durability.",
+      "modifiers": {
+        "durability": 1.25
+      }
+    },
+    {
+      "id": "apex-aero",
+      "name": "Apex Aero Kit",
+      "description": "The Grand Prix champion's kit: +5% speed and acceleration, +8% grip, +10% durability.",
+      "modifiers": {
+        "topSpeed": 1.05,
+        "acceleration": 1.05,
+        "grip": 1.08,
+        "durability": 1.1
+      }
+    }
+  ],
+  "legendaries": [
+    {
+      "id": "vault-queen",
+      "species": "marqueen",
+      "level": 32,
+      "shiny": true,
+      "nickname": "Vault Queen",
+      "description": "Lived in the First Empire vault's wiring for years. Now she's yours."
+    },
+    {
+      "id": "apex",
+      "species": "broadcastle",
+      "level": 50,
+      "shiny": true,
+      "nickname": "Apex",
+      "description": "The League's crown Streetmon, kept by the Commissioner. It answers to the champion."
+    }
+  ],
+  "quests": [
+    {
+      "id": "a1-welcome",
+      "act": "act1",
+      "title": "Mama's Welcome",
+      "giver": "rust",
+      "summary": "Mama Rust shows you how to catch Streetmon, hands you some cuffs and lets you pick your first partner. Catch a wild one and bring it back.",
+      "prerequisites": {},
+      "onAccept": {
+        "items": [
+          [
+            "cuffs",
+            5
+          ]
+        ],
+        "chooseStarter": true
+      },
+      "objectives": [
+        {
+          "id": "catch",
+          "type": "CATCH_STREETMON",
+          "count": 1,
+          "text": "Use your Streetmon to catch a wild one, then go back to Mama Rust",
+          "tutorial": "catching"
+        }
+      ],
+      "rewards": {
+        "cash": 150,
+        "streetCred": 1,
+        "items": [
+          [
+            "cuffs",
+            3
+          ]
+        ],
+        "flags": [
+          "mama-welcome"
+        ]
+      },
+      "turnIn": true,
+      "dialogue": {
+        "offer": "w1",
+        "active": "wa",
+        "turnIn": "wt",
+        "nodes": {
+          "w1": {
+            "text": "Fresh off the night bus and you walk straight into my garage? You've got your father's nerve. Nobody gets far in this city without Streetmon, and you, kid, have none. Let's fix that.",
+            "choices": [
+              [
+                "I'm listening.",
+                "w2"
+              ],
+              [
+                "Later.",
+                "end"
+              ]
+            ]
+          },
+          "w2": {
+            "text": "Wild ones live all over: alleys, rooftops, the sewers, the park. Knock one about with your own Streetmon till it's weak, then throw cuffs. Weaker means likelier. Out of a battle, face one and press C.",
+            "choices": [
+              [
+                "And if it runs?",
+                "w3"
+              ],
+              [
+                "Got it.",
+                "w4"
+              ]
+            ]
+          },
+          "w3": {
+            "text": "Then you chase it, or you find another. Every miss on the same one makes the next throw likelier. Ground-level Streetmon outside the park won't start a fight. Park ones bite.",
+            "choices": [
+              [
+                "Got it.",
+                "w4"
+              ]
+            ]
+          },
+          "w4": {
+            "text": "Here: five pairs of cuffs, on the house. Now pick a partner from my back room. Whichever you take, use it to catch me one more and come back.",
+            "choices": [
+              [
+                "Let's see them.",
+                "accept"
+              ]
+            ]
+          },
+          "wa": {
+            "text": "One wild Streetmon. Weaken it, cuff it, come back. The alley behind the docks always has something skulking about.",
+            "choices": [
+              [
+                "On it.",
+                "end"
+              ]
+            ]
+          },
+          "wt": {
+            "text": "Two Streetmon already. You might just make it here. Take a few more cuffs, then let's talk engines.",
+            "choices": [
+              [
+                "What engines?",
+                "complete"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "a1-grease-monkey",
+      "act": "act1",
+      "title": "Grease Monkey",
+      "giver": "rust",
+      "summary": "Mama's given you a car: the grey Rustbucket at the kerb. Lower it into the Chop Shop and slot a Streetmon into it.",
+      "prerequisites": {
+        "quests": [
+          "a1-welcome"
+        ]
+      },
+      "objectives": [
+        {
+          "id": "tune",
+          "type": "TUNE_VEHICLE",
+          "slots": 1,
+          "text": "Drive the Rustbucket onto the lift out front, press E, and slot a Streetmon into it",
+          "tutorial": "chop-shop"
+        }
+      ],
+      "rewards": {
+        "cash": 300,
+        "streetCred": 3,
+        "flags": [
+          "act1-started"
+        ]
+      },
+      "turnIn": true,
+      "dialogue": {
+        "offer": "o1",
+        "active": "a1",
+        "turnIn": "t1",
+        "nodes": {
+          "o1": {
+            "text": "Now the real work. Around here cars don't run on gas, they run on Streetmon. Slot the right one in the engine bay and a junker becomes a rocket.",
+            "choices": [
+              [
+                "Show me how.",
+                "o2"
+              ],
+              [
+                "Later.",
+                "end"
+              ]
+            ]
+          },
+          "o2": {
+            "text": "See the grey Rustbucket at the kerb? It's yours. Drive it onto the lift out front, slow, and press E. Down below, put one of your Streetmon in a slot. Smoke and Gun types go in the engine bay.",
+            "choices": [
+              [
+                "On it.",
+                "accept"
+              ]
+            ]
+          },
+          "a1": {
+            "text": "Rustbucket on the lift, E, slot a Streetmon. It's not rocket science. Well. It is a bit.",
+            "choices": [
+              [
+                "Right.",
+                "end"
+              ]
+            ]
+          },
+          "t1": {
+            "text": "Look at that. You've got the hands for this.",
+            "choices": [
+              [
+                "Thanks, Rust.",
+                "complete"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "a1-courier",
+      "act": "act1",
+      "title": "Courier Run",
+      "giver": "rust",
+      "summary": "Pick up a crate of parts from Foreman Pike's dock on West Ave and deliver it to the East Ave docks before the buyer leaves.",
+      "prerequisites": {
+        "quests": [
+          "a1-grease-monkey"
+        ]
+      },
+      "objectives": [
+        {
+          "id": "talk",
+          "type": "TALK_TO",
+          "npc": "pike",
+          "text": "Meet Foreman Pike at the West Ave docks",
+          "line": "Rust sent you? Good. The crate's on the loading bay by West Ave. Back a car up to it and don't scratch my paint."
+        },
+        {
+          "id": "pickup",
+          "type": "REACH_MARKER",
+          "marker": {
+            "x": -452,
+            "z": -240,
+            "radius": 9
+          },
+          "inVehicle": true,
+          "text": "Drive to the loading bay on West Ave",
+          "tutorial": "deliveries"
+        },
+        {
+          "id": "drop",
+          "type": "REACH_MARKER",
+          "marker": {
+            "x": 452,
+            "z": 80,
+            "radius": 9
+          },
+          "inVehicle": true,
+          "timeLimitSeconds": 180,
+          "text": "Deliver the crate to the East Ave docks"
+        }
+      ],
+      "rewards": {
+        "cash": 600,
+        "streetCred": 5,
+        "blueprints": [
+          "cold-air-intake"
+        ]
+      },
+      "turnIn": false,
+      "dialogue": {
+        "offer": "o1",
+        "active": "a1",
+        "nodes": {
+          "o1": {
+            "text": "Foreman Pike's got a crate of parts for us at the West Ave docks. The buyer's on the East Ave docks and he doesn't wait. Three minutes, door to door.",
+            "choices": [
+              [
+                "I'll drive.",
+                "accept"
+              ],
+              [
+                "Not now.",
+                "end"
+              ]
+            ]
+          },
+          "a1": {
+            "text": "Pike, West Ave docks. Then floor it across town.",
+            "choices": [
+              [
+                "Going.",
+                "end"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "a1-small-time",
+      "act": "act1",
+      "title": "Small Time",
+      "giver": "rust",
+      "summary": "Rust needs cash for the League Pass entry. Hit Quik Cash Check Cashing uptown.",
+      "prerequisites": {
+        "quests": [
+          "a1-courier"
+        ]
+      },
+      "objectives": [
+        {
+          "id": "heist",
+          "type": "COMPLETE_HEIST",
+          "target": "quik-cash",
+          "text": "Pull off the Quik Cash job (plan it at the gold ring nearby)",
+          "tutorial": "heists"
+        }
+      ],
+      "rewards": {
+        "cash": 500,
+        "streetCred": 8
+      },
+      "turnIn": false,
+      "dialogue": {
+        "offer": "o1",
+        "active": "a1",
+        "nodes": {
+          "o1": {
+            "text": "A League Pass isn't cheap and the docks boss won't fight a nobody. Quik Cash uptown keeps its float in a back room. Bring a Breacher.",
+            "choices": [
+              [
+                "Consider it done.",
+                "accept"
+              ],
+              [
+                "Maybe later.",
+                "end"
+              ]
+            ]
+          },
+          "a1": {
+            "text": "Quik Cash. In, out, no heroics.",
+            "choices": [
+              [
+                "Got it.",
+                "end"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "a1-dutch",
+      "act": "act1",
+      "title": "The Docks Boss",
+      "giver": "rust",
+      "summary": "Beat Dockside Dutch, the Waterfront's District Boss, to earn a USRL League Pass.",
+      "prerequisites": {
+        "quests": [
+          "a1-small-time"
+        ]
+      },
+      "objectives": [
+        {
+          "id": "boss",
+          "type": "DEFEAT_BOSS",
+          "boss": "dockside-dutch",
+          "text": "Defeat Dockside Dutch on the West Ave waterfront",
+          "tutorial": "bosses"
+        }
+      ],
+      "rewards": {
+        "cash": 1000,
+        "streetCred": 10,
+        "items": [
+          [
+            "capturePod",
+            2
+          ]
+        ],
+        "flags": [
+          "league-pass"
+        ]
+      },
+      "turnIn": false,
+      "dialogue": {
+        "offer": "o1",
+        "active": "a1",
+        "nodes": {
+          "o1": {
+            "text": "The League only takes racers a District Boss vouches for. Ours is Dockside Dutch. He won't vouch. So beat him.",
+            "choices": [
+              [
+                "Where is he?",
+                "o2"
+              ],
+              [
+                "Not yet.",
+                "end"
+              ]
+            ]
+          },
+          "o2": {
+            "text": "West Ave waterfront, by the old cranes. Concrete and Grind types. Bring something that bites through them.",
+            "choices": [
+              [
+                "Let's go.",
+                "accept"
+              ]
+            ]
+          },
+          "a1": {
+            "text": "Dutch. West Ave waterfront. Bring Grind or Bass.",
+            "choices": [
+              [
+                "Right.",
+                "end"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "a2-first-league-win",
+      "act": "act2",
+      "title": "Welcome to the League",
+      "giver": "vex",
+      "summary": "Win your first USRL race.",
+      "prerequisites": {
+        "flags": [
+          "league-pass"
+        ]
+      },
+      "objectives": [
+        {
+          "id": "win",
+          "type": "WIN_RACE",
+          "place": 1,
+          "text": "Win any league race (find an organizer on the map)",
+          "tutorial": "league"
+        }
+      ],
+      "rewards": {
+        "cash": 800,
+        "streetCred": 5,
+        "blueprints": [
+          "drift-diff"
+        ]
+      },
+      "turnIn": false,
+      "dialogue": {
+        "offer": "o1",
+        "active": "a1",
+        "nodes": {
+          "o1": {
+            "text": "A League Pass with Dutch's name on it? Ha. I'm Vex, I promote the downtown grids. Win one race and I'll start returning your calls.",
+            "choices": [
+              [
+                "Easy.",
+                "accept"
+              ],
+              [
+                "Later.",
+                "end"
+              ]
+            ]
+          },
+          "a1": {
+            "text": "One win. Any track. The organizers are on your map.",
+            "choices": [
+              [
+                "On it.",
+                "end"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "a2-smoke",
+      "act": "act2",
+      "title": "Up in Smoke",
+      "giver": "vex",
+      "summary": "Catch a Bass-type Streetmon, then beat Haze of the Smoke Syndicate.",
+      "prerequisites": {
+        "quests": [
+          "a2-first-league-win"
+        ]
+      },
+      "objectives": [
+        {
+          "id": "bass",
+          "type": "CATCH_STREETMON",
+          "types": [
+            "bass"
+          ],
+          "count": 1,
+          "text": "Catch a Bass-type Streetmon (Bass blows smoke away)",
+          "tutorial": "catch-by-type"
+        },
+        {
+          "id": "boss",
+          "type": "DEFEAT_BOSS",
+          "boss": "haze",
+          "text": "Defeat Haze on 5th Ave downtown"
+        }
+      ],
+      "rewards": {
+        "cash": 1500,
+        "streetCred": 12
+      },
+      "turnIn": false,
+      "dialogue": {
+        "offer": "o1",
+        "active": "a1",
+        "nodes": {
+          "o1": {
+            "text": "The Smoke Syndicate fixes every race downtown. You can't overtake what you can't see. Their boss, Haze, takes challengers on 5th Ave.",
+            "choices": [
+              [
+                "What do I need?",
+                "o2"
+              ],
+              [
+                "Later.",
+                "end"
+              ]
+            ]
+          },
+          "o2": {
+            "text": "Bass types. Sound waves clear smoke. Catch one, then go knock on Haze's door.",
+            "choices": [
+              [
+                "Deal.",
+                "accept"
+              ]
+            ]
+          },
+          "a1": {
+            "text": "Bass beats Smoke. Catch one, then Haze, 5th Ave.",
+            "choices": [
+              [
+                "Got it.",
+                "end"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "a2-bassline",
+      "act": "act2",
+      "title": "Drop the Bass",
+      "giver": "vex",
+      "summary": "Catch a Concrete-type Streetmon, then beat Subwoofer Sal of the Bassline Cartel.",
+      "prerequisites": {
+        "quests": [
+          "a2-smoke"
+        ]
+      },
+      "objectives": [
+        {
+          "id": "concrete",
+          "type": "CATCH_STREETMON",
+          "types": [
+            "concrete"
+          ],
+          "count": 1,
+          "text": "Catch a Concrete-type Streetmon (Concrete beats Bass)"
+        },
+        {
+          "id": "boss",
+          "type": "DEFEAT_BOSS",
+          "boss": "sal",
+          "text": "Defeat Subwoofer Sal on 8th Ave downtown"
+        }
+      ],
+      "rewards": {
+        "cash": 1500,
+        "streetCred": 12
+      },
+      "turnIn": false,
+      "dialogue": {
+        "offer": "o1",
+        "active": "a1",
+        "nodes": {
+          "o1": {
+            "text": "Haze is out. Now the Cartel's taking a cut of every purse. Sal plays loud. Concrete doesn't care how loud.",
+            "choices": [
+              [
+                "I'll shut him up.",
+                "accept"
+              ],
+              [
+                "Later.",
+                "end"
+              ]
+            ]
+          },
+          "a1": {
+            "text": "Concrete type, then Sal, 8th Ave at the bottom of town.",
+            "choices": [
+              [
+                "Right.",
+                "end"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "a2-harbor",
+      "act": "act2",
+      "title": "The Harbor Run",
+      "giver": "vex",
+      "summary": "With both crews beaten, win the Harbor Run.",
+      "prerequisites": {
+        "quests": [
+          "a2-bassline"
+        ],
+        "streetCred": 20
+      },
+      "objectives": [
+        {
+          "id": "win",
+          "type": "WIN_RACE",
+          "track": "harbor-run",
+          "place": 1,
+          "text": "Win the Harbor Run"
+        }
+      ],
+      "rewards": {
+        "cash": 2500,
+        "streetCred": 15,
+        "flags": [
+          "act2-done"
+        ]
+      },
+      "turnIn": true,
+      "dialogue": {
+        "offer": "o1",
+        "active": "a1",
+        "turnIn": "t1",
+        "nodes": {
+          "o1": {
+            "text": "Both crews down. The Harbor Run is the downtown crown. Win it and you're Pro. The Commissioner will notice. That's good. Mostly.",
+            "choices": [
+              [
+                "Let's race.",
+                "accept"
+              ],
+              [
+                "Later.",
+                "end"
+              ]
+            ]
+          },
+          "a1": {
+            "text": "The Harbor Run organizer is on the east side. Go win.",
+            "choices": [
+              [
+                "Going.",
+                "end"
+              ]
+            ]
+          },
+          "t1": {
+            "text": "Pro Division. And the Commissioner's people are asking about you. Be careful what you buy next.",
+            "choices": [
+              [
+                "Thanks, Vex.",
+                "complete"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "a3-ice",
+      "act": "act3",
+      "title": "Ice",
+      "giver": "accountant",
+      "summary": "Fund your late-game tuning: rob Diamond Row Jewelers.",
+      "prerequisites": {
+        "flags": [
+          "act2-done"
+        ]
+      },
+      "objectives": [
+        {
+          "id": "heist",
+          "type": "COMPLETE_HEIST",
+          "target": "diamond-row",
+          "text": "Pull off the Diamond Row job (you'll need a Smoke type)"
+        }
+      ],
+      "rewards": {
+        "cash": 1000,
+        "streetCred": 10,
+        "blueprints": [
+          "vault-turbo"
+        ]
+      },
+      "turnIn": false,
+      "dialogue": {
+        "offer": "o1",
+        "active": "a1",
+        "nodes": {
+          "o1": {
+            "text": "Grand Prix buy-ins, turbos, a squad that can stand up to the Commission... that's money. I know where it is. Start with Diamond Row.",
+            "choices": [
+              [
+                "I'm listening.",
+                "accept"
+              ],
+              [
+                "Not today.",
+                "end"
+              ]
+            ]
+          },
+          "a1": {
+            "text": "Diamond Row. Smoke the guards before you touch a case.",
+            "choices": [
+              [
+                "Understood.",
+                "end"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "a3-transport",
+      "act": "act3",
+      "title": "Rolling Bank",
+      "giver": "accountant",
+      "summary": "Hit the armored transport pickup downtown.",
+      "prerequisites": {
+        "quests": [
+          "a3-ice"
+        ]
+      },
+      "objectives": [
+        {
+          "id": "heist",
+          "type": "COMPLETE_HEIST",
+          "target": "armored-transport",
+          "text": "Pull off the Armored Transport job (4-minute window)"
+        }
+      ],
+      "rewards": {
+        "cash": 1500,
+        "streetCred": 12
+      },
+      "turnIn": false,
+      "dialogue": {
+        "offer": "o1",
+        "active": "a1",
+        "nodes": {
+          "o1": {
+            "text": "The banks move the Commission's money in armored trucks. One sits at a pickup downtown for four minutes. Four.",
+            "choices": [
+              [
+                "Enough.",
+                "accept"
+              ],
+              [
+                "Later.",
+                "end"
+              ]
+            ]
+          },
+          "a1": {
+            "text": "Armored transport, downtown. Four minutes.",
+            "choices": [
+              [
+                "Right.",
+                "end"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "a3-vault",
+      "act": "act3",
+      "title": "The Vault Hijack",
+      "giver": "accountant",
+      "summary": "Crack the First Empire Savings & Trust vault.",
+      "prerequisites": {
+        "quests": [
+          "a3-transport"
+        ]
+      },
+      "objectives": [
+        {
+          "id": "heist",
+          "type": "COMPLETE_HEIST",
+          "target": "first-empire-vault",
+          "text": "Pull off the First Empire vault job (Breacher and Hacker)"
+        }
+      ],
+      "rewards": {
+        "cash": 3000,
+        "streetCred": 20,
+        "streetmon": "vault-queen",
+        "flags": [
+          "act3-done"
+        ]
+      },
+      "turnIn": true,
+      "dialogue": {
+        "offer": "o1",
+        "active": "a1",
+        "turnIn": "t1",
+        "nodes": {
+          "o1": {
+            "text": "The big one. First Empire's vault holds the Commission's slush fund. They say something lives in the vault's wiring, too.",
+            "choices": [
+              [
+                "Let's do it.",
+                "accept"
+              ],
+              [
+                "Not yet.",
+                "end"
+              ]
+            ]
+          },
+          "a1": {
+            "text": "First Empire. Jam the alarm line before you breach.",
+            "choices": [
+              [
+                "Got it.",
+                "end"
+              ]
+            ]
+          },
+          "t1": {
+            "text": "You actually did it. And you brought something back from the wiring. The Vault Queen. Keep her close.",
+            "choices": [
+              [
+                "She's mine now.",
+                "complete"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "a4-crackdown",
+      "act": "act4",
+      "title": "Crackdown",
+      "giver": "jinx",
+      "summary": "The Commissioner put a 5-star bounty on you. Lose the police.",
+      "prerequisites": {
+        "flags": [
+          "act3-done"
+        ]
+      },
+      "objectives": [
+        {
+          "id": "escape",
+          "type": "ESCAPE_WANTED",
+          "stars": 5,
+          "text": "Survive the 5-star crackdown: lose the police",
+          "tutorial": "escape-wanted"
+        }
+      ],
+      "rewards": {
+        "cash": 2000,
+        "streetCred": 15,
+        "blueprints": [
+          "roll-cage"
+        ]
+      },
+      "turnIn": false,
+      "dialogue": {
+        "offer": "o1",
+        "active": "a1",
+        "nodes": {
+          "o1": {
+            "text": "Hey. I'm Jinx, I live on the police scanner. Bad news: the Commissioner just called in a five-star crackdown with your name on it. Military, tanks, the lot. Want me to tell them where you are? Kidding. Run.",
+            "choices": [
+              [
+                "Do it. I'm ready.",
+                "accept"
+              ],
+              [
+                "Give me a minute.",
+                "end"
+              ]
+            ]
+          },
+          "a1": {
+            "text": "Lose them! Break line of sight, change cars, go underground!",
+            "choices": [
+              [
+                "Working on it!",
+                "end"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "a4-midnight",
+      "act": "act4",
+      "title": "Midnight Sprint",
+      "giver": "jinx",
+      "summary": "Win the Harbor Run at night, straight through the police roadblocks.",
+      "prerequisites": {
+        "quests": [
+          "a4-crackdown"
+        ]
+      },
+      "objectives": [
+        {
+          "id": "win",
+          "type": "WIN_RACE",
+          "track": "harbor-run",
+          "place": 1,
+          "night": true,
+          "police": 3,
+          "text": "Win the Harbor Run at night (the police will be waiting)"
+        }
+      ],
+      "rewards": {
+        "cash": 3000,
+        "streetCred": 15
+      },
+      "turnIn": false,
+      "dialogue": {
+        "offer": "o1",
+        "active": "a1",
+        "nodes": {
+          "o1": {
+            "text": "The illegal midnight sprints are back. The cops know the route and they're setting roadblocks on the Harbor Run. Win it anyway, after dark.",
+            "choices": [
+              [
+                "After dark it is.",
+                "accept"
+              ],
+              [
+                "Later.",
+                "end"
+              ]
+            ]
+          },
+          "a1": {
+            "text": "Harbor Run, at night. Expect three stars and roadblocks.",
+            "choices": [
+              [
+                "Got it.",
+                "end"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "a4-hale",
+      "act": "act4",
+      "title": "Break the Unit",
+      "giver": "jinx",
+      "summary": "Defeat Captain Hale and the police tactical unit.",
+      "prerequisites": {
+        "quests": [
+          "a4-midnight"
+        ]
+      },
+      "objectives": [
+        {
+          "id": "boss",
+          "type": "DEFEAT_BOSS",
+          "boss": "captain-hale",
+          "text": "Defeat Captain Hale on 10th Ave uptown"
+        }
+      ],
+      "rewards": {
+        "cash": 2500,
+        "streetCred": 20,
+        "flags": [
+          "act4-done"
+        ]
+      },
+      "turnIn": false,
+      "dialogue": {
+        "offer": "o1",
+        "active": "a1",
+        "nodes": {
+          "o1": {
+            "text": "Captain Hale runs the tactical unit. His Streetmon are all Gun types, and he's waiting for you on 10th Ave. Beat him and the Commissioner's out of cops.",
+            "choices": [
+              [
+                "Gun types. Concrete, then.",
+                "accept"
+              ],
+              [
+                "Later.",
+                "end"
+              ]
+            ]
+          },
+          "a1": {
+            "text": "Hale. 10th Ave uptown. Concrete beats Gun.",
+            "choices": [
+              [
+                "Right.",
+                "end"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "a5-qualify",
+      "act": "act5",
+      "title": "Qualifying",
+      "giver": "vex",
+      "summary": "Reach 120 Street Cred and bring a weaponized ride: two Streetmon slotted in one car.",
+      "prerequisites": {
+        "flags": [
+          "act4-done"
+        ]
+      },
+      "objectives": [
+        {
+          "id": "cred",
+          "type": "REACH_STREET_CRED",
+          "value": 120,
+          "text": "Reach 120 Street Cred",
+          "tutorial": "street-cred"
+        },
+        {
+          "id": "tune",
+          "type": "TUNE_VEHICLE",
+          "slots": 2,
+          "text": "Slot two Streetmon into one car at the Chop Shop"
+        }
+      ],
+      "rewards": {
+        "cash": 1000,
+        "streetCred": 5,
+        "flags": [
+          "grand-prix-qualified"
+        ]
+      },
+      "turnIn": false,
+      "dialogue": {
+        "offer": "o1",
+        "active": "a1",
+        "nodes": {
+          "o1": {
+            "text": "The Apex Grand Prix. Three stages across the city, and the Commissioner's cops chasing the leaders. Qualifying means 120 Street Cred and a car carrying two Streetmon.",
+            "choices": [
+              [
+                "I'll qualify.",
+                "accept"
+              ],
+              [
+                "Later.",
+                "end"
+              ]
+            ]
+          },
+          "a1": {
+            "text": "120 Street Cred, two Streetmon in one ride.",
+            "choices": [
+              [
+                "On it.",
+                "end"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "a5-grand-prix",
+      "act": "act5",
+      "title": "The Apex Grand Prix",
+      "giver": "vex",
+      "summary": "Pay the $2,500 buy-in and win all three stages, then lose the police.",
+      "prerequisites": {
+        "quests": [
+          "a5-qualify"
+        ]
+      },
+      "objectives": [
+        {
+          "id": "s1",
+          "type": "WIN_RACE",
+          "track": "west-side-sprint",
+          "place": 1,
+          "text": "Stage 1: win the West Side Sprint"
+        },
+        {
+          "id": "s2",
+          "type": "WIN_RACE",
+          "track": "uptown-switchback",
+          "place": 1,
+          "text": "Stage 2: win the Uptown Switchback"
+        },
+        {
+          "id": "s3",
+          "type": "WIN_RACE",
+          "track": "central-green-circuit",
+          "place": 1,
+          "police": 2,
+          "text": "Stage 3: win the Central Green Circuit with the police on you"
+        },
+        {
+          "id": "evade",
+          "type": "ESCAPE_WANTED",
+          "stars": 4,
+          "text": "Final stage: lose the Commissioner's pursuit"
+        }
+      ],
+      "rewards": {
+        "cash": 6000,
+        "streetCred": 25,
+        "blueprints": [
+          "apex-aero"
+        ],
+        "flags": [
+          "grand-prix-won"
+        ]
+      },
+      "turnIn": false,
+      "dialogue": {
+        "offer": "o1",
+        "active": "a1",
+        "nodes": {
+          "o1": {
+            "text": "Buy-in's $2,500. Three stages: the West Side Sprint, the Uptown Switchback, then the Central Green Circuit with the police in it. Then you've got to get away.",
+            "choices": [
+              [
+                "Pay the buy-in.",
+                "accept"
+              ],
+              [
+                "Not yet.",
+                "end"
+              ]
+            ]
+          },
+          "a1": {
+            "text": "Win the stages in order. Then shake the cops.",
+            "choices": [
+              [
+                "Going.",
+                "end"
+              ]
+            ]
+          }
+        }
+      },
+      "cost": 2500
+    },
+    {
+      "id": "a5-commissioner",
+      "act": "act5",
+      "title": "Syndicate Showdown",
+      "giver": "vex",
+      "summary": "Take down Commissioner Varga.",
+      "prerequisites": {
+        "quests": [
+          "a5-grand-prix"
+        ]
+      },
+      "objectives": [
+        {
+          "id": "boss",
+          "type": "DEFEAT_BOSS",
+          "boss": "commissioner-varga",
+          "text": "Defeat Commissioner Varga on 3rd Ave uptown"
+        }
+      ],
+      "rewards": {
+        "cash": 10000,
+        "streetCred": 50,
+        "streetmon": "apex",
+        "flags": [
+          "campaign-complete"
+        ]
+      },
+      "turnIn": true,
+      "dialogue": {
+        "offer": "o1",
+        "active": "a1",
+        "turnIn": "t1",
+        "nodes": {
+          "o1": {
+            "text": "You won the Grand Prix and the Commissioner didn't hand you the trophy. He wants to see you on 3rd Ave. Alone. His team is the best money can buy.",
+            "choices": [
+              [
+                "Then let's spend it.",
+                "accept"
+              ],
+              [
+                "I need to prepare.",
+                "end"
+              ]
+            ]
+          },
+          "a1": {
+            "text": "Varga. 3rd Ave uptown. Bring everything.",
+            "choices": [
+              [
+                "Right.",
+                "end"
+              ]
+            ]
+          },
+          "t1": {
+            "text": "The League belongs to the streets again. And this... this was the Commissioner's. The Apex. It's yours, champ.",
+            "choices": [
+              [
+                "Let's ride.",
+                "complete"
+              ]
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

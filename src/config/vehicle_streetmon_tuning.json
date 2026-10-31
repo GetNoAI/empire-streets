@@ -1,0 +1,119 @@
+{
+  "_comment": "Streetmon vehicle tuning (Underground Chop Shop). Slots accept Streetmon by type (any of its types; the first match in the Streetmon's own type order decides the mod) or by species id. Modifiers are multipliers applied to the vehicle's base stats (1.2 = +20%), except radarRange (metres added). Each mod may carry one ability. statBonus adds a little extra from one of the Streetmon's stats; cooldownStat shortens cooldowns for high stats; power scales ability strength with level.",
+  "version": 1,
+  "stats": ["topSpeed", "acceleration", "durability", "mass", "grip", "steering", "radarRange"],
+  "scaling": {
+    "statBonus": { "statFor100": 0.05, "max": 0.08 },
+    "cooldown": { "stat": "speed", "statForMax": 150, "maxReduction": 0.2 },
+    "power": { "base": 0.85, "perLevel": 0.006, "max": 1.15 }
+  },
+  "slots": {
+    "engineBay": {
+      "label": "Engine Bay",
+      "accepts": { "types": ["smoke", "gun"] },
+      "mods": {
+        "smoke": {
+          "modifiers": { "topSpeed": 1.2 },
+          "statBonus": { "stat": "speed", "modifier": "topSpeed" },
+          "ability": "nitrousSmokescreen"
+        },
+        "gun": {
+          "modifiers": { "acceleration": 1.15 },
+          "statBonus": { "stat": "attack", "modifier": "acceleration" },
+          "ability": "exhaustBackfire"
+        }
+      }
+    },
+    "trunk": {
+      "label": "Trunk",
+      "accepts": { "types": ["bass", "grind"] },
+      "mods": {
+        "bass": {
+          "modifiers": { "durability": 1.3, "mass": 1.04 },
+          "statBonus": { "stat": "defense", "modifier": "durability" },
+          "ability": "sonicBassHorn"
+        },
+        "grind": {
+          "modifiers": { "durability": 1.3, "mass": 1.06 },
+          "statBonus": { "stat": "defense", "modifier": "durability" },
+          "ability": "spikeStripDispenser"
+        }
+      }
+    },
+    "roofRack": {
+      "label": "Roof Rack",
+      "accepts": { "types": ["bass", "concrete"], "species": ["longshot", "streetlamp", "rooftail", "antennaroc", "neonmoth", "marqueen"] },
+      "speciesTag": "aerial",
+      "mods": {
+        "bass": {
+          "modifiers": { "radarRange": 100 },
+          "ability": "earlyWarningRadar"
+        },
+        "concrete": {
+          "modifiers": { "radarRange": 100, "mass": 1.03, "steering": 0.97 },
+          "ability": "earlyWarningRadar"
+        },
+        "aerial": {
+          "modifiers": { "radarRange": 100 },
+          "ability": "earlyWarningRadar"
+        }
+      }
+    }
+  },
+  "abilities": {
+    "nitrousSmokescreen": {
+      "name": "Nitrous Smokescreen",
+      "description": "Nitrous kick and a thick smoke trail for 5 s. Police can't see or target you through it; chasing cars that drive into it are blinded.",
+      "trigger": "active",
+      "input": { "keys": ["ShiftLeft", "ShiftRight"], "gamepadButton": 5, "label": "Shift" },
+      "duration": 5,
+      "cooldown": 15,
+      "whileActive": { "topSpeed": 1.15, "acceleration": 1.35 },
+      "params": { "puffEvery": 0.1, "puffRadius": 2.8, "puffLife": 7, "blindSeconds": 3.5, "blindRadius": 3.5 },
+      "fx": { "trail": "fx_smoke_trail_dense", "burst": "fx_nitrous_flame" },
+      "sfx": "sfx_nitrous_hiss"
+    },
+    "exhaustBackfire": {
+      "name": "Exhaust Backfire",
+      "description": "When you crash, the exhaust fires a shockwave that shoves and staggers the cars next to you.",
+      "trigger": "collision",
+      "minImpact": 4,
+      "cooldown": 6,
+      "params": { "radius": 10, "impulse": 12, "damage": 60, "staggerSeconds": 1.8, "coneDeg": 360 },
+      "fx": { "burst": "fx_backfire_flash", "ring": "fx_shockwave_small" },
+      "sfx": "sfx_backfire_bang"
+    },
+    "sonicBassHorn": {
+      "name": "Sonic Bass Horn",
+      "description": "Replaces the horn: a 12 m shockwave all around the car. Flips light police cruisers, shoves roadblocks and knocks people off their feet.",
+      "trigger": "active",
+      "replacesHorn": true,
+      "input": { "keys": ["KeyH"], "gamepadButton": 3, "label": "H" },
+      "cooldown": 20,
+      "params": { "radius": 12, "impulse": 9, "lift": 4, "flipMaxMass": 2000, "flipTorque": 3.2, "pedKnock": 7, "staggerSeconds": 2.5 },
+      "fx": { "ring": "fx_bass_ring_large" },
+      "sfx": "sfx_bass_drop"
+    },
+    "spikeStripDispenser": {
+      "name": "Spike Strip Dispenser",
+      "description": "Drops a spike strip behind the car. Cars that cross it get flat tyres: no grip, half speed.",
+      "trigger": "active",
+      "input": { "keys": ["KeyX"], "gamepadButton": 1, "label": "X" },
+      "cooldown": 12,
+      "params": { "hazard": "spikeStrip", "length": 7, "width": 1.6, "behind": 4, "life": 25, "maxActive": 3, "poppedGrip": 0.45, "poppedSpeed": 0.5, "staggerSeconds": 1.2 },
+      "fx": { "prop": "fx_spike_strip" },
+      "sfx": "sfx_spikes_drop"
+    },
+    "earlyWarningRadar": {
+      "name": "Early Warning Radar",
+      "description": "Radar reaches 100 m further and marks roadblocks, tanks, spike strips and hidden entry points (manholes, fire escapes, elevators, garages, hidden jump spots) before you can see them.",
+      "trigger": "passive",
+      "params": { "warnAheadDeg": 70 },
+      "fx": { "hud": "fx_radar_sweep" }
+    }
+  },
+  "hazards": {
+    "spikeStrip": { "effect": "popTyres" },
+    "oilSlick": { "effect": "slip", "gripMult": 0.35, "seconds": 3 }
+  }
+}

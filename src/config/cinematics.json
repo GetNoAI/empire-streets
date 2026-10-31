@@ -1,0 +1,945 @@
+{
+  "version": 1,
+  "_comment": "Cinematics (src/systems/cinematics.js rules, src/cinematics/CinematicView.ts world side). Shots are offsets from an anchor: a fixed [x, z] below, or one the game supplies when it plays (player, mama, chop, bank, boss, raid). cam/look go from the first offset to the second (eased), or the camera orbits (degrees, 0 = +X; with orient, 0 = in front of the anchor). Actors are props for the shot: Streetmon (species, clip) and cars (spec, color, siren), moving from `from` to `to`. trigger: newGame, actStarted, questStarted, questCompleted, bossIntro, raidArrive. Captions may use {name} and {title}. music: 'intro' (Glass and Steel) or 'action' (Apex of the Chain); without it the game's own music carries on. Space, Enter or Esc skips.",
+  "settings": {
+    "letterbox": 0.11,
+    "captionFade": 0.7,
+    "fadeSeconds": 1.2
+  },
+  "anchors": {
+    "skyline": [
+      75,
+      30
+    ],
+    "park": [
+      -60,
+      -100
+    ],
+    "west-ave": [
+      -450,
+      -471
+    ],
+    "midtown-ave": [
+      -300,
+      150
+    ],
+    "downtown-st": [
+      75,
+      403
+    ],
+    "uptown-run": [
+      300,
+      -533
+    ],
+    "harbor-run": [
+      450,
+      211
+    ],
+    "police-ave": [
+      -150,
+      -300
+    ]
+  },
+  "cinematics": [
+    {
+      "id": "intro",
+      "title": "Empire Streets",
+      "music": "intro",
+      "trigger": {
+        "newGame": true
+      },
+      "shots": [
+        {
+          "anchor": "skyline",
+          "seconds": 8,
+          "fade": 1.6,
+          "cam": [
+            [
+              -380,
+              210,
+              560
+            ],
+            [
+              -250,
+              150,
+              420
+            ]
+          ],
+          "look": [
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              10,
+              -40
+            ]
+          ],
+          "caption": "EMPIRE STREETS",
+          "sub": "Seven avenues, twenty streets, one island, and nobody here plays by the rules.",
+          "captionAt": 1.2
+        },
+        {
+          "anchor": "park",
+          "seconds": 7,
+          "fade": 0.8,
+          "cam": [
+            [
+              -6.5,
+              1.5,
+              5.5
+            ],
+            [
+              -3.6,
+              1.0,
+              2.6
+            ]
+          ],
+          "look": [
+            [
+              0.5,
+              0.5,
+              0
+            ],
+            [
+              0.8,
+              0.6,
+              -0.2
+            ]
+          ],
+          "caption": "STREETMON",
+          "sub": "Wild creatures live in every alley, rooftop and sewer. Weaken one, cuff it, and it's yours.",
+          "actors": [
+            {
+              "kind": "creature",
+              "species": "hustlepup",
+              "from": [
+                -2.2,
+                2.0
+              ],
+              "to": [
+                1.0,
+                -1.2
+              ],
+              "delay": 0.5
+            },
+            {
+              "kind": "creature",
+              "species": "cashew",
+              "from": [
+                1.6,
+                0.6
+              ],
+              "headingDeg": 200
+            },
+            {
+              "kind": "creature",
+              "species": "streetlamp",
+              "from": [
+                -0.6,
+                -2.4
+              ],
+              "headingDeg": 120
+            },
+            {
+              "kind": "creature",
+              "species": "hazeling",
+              "from": [
+                2.6,
+                -2.0
+              ],
+              "to": [
+                2.2,
+                -0.6
+              ],
+              "delay": 1.5
+            },
+            {
+              "kind": "creature",
+              "species": "jackpot",
+              "from": [
+                3.6,
+                1.6
+              ],
+              "headingDeg": 180
+            }
+          ]
+        },
+        {
+          "anchor": "west-ave",
+          "seconds": 6,
+          "fade": 0.6,
+          "cam": [
+            [
+              7,
+              1.1,
+              70
+            ],
+            [
+              7,
+              1.3,
+              80
+            ]
+          ],
+          "look": [
+            [
+              -4,
+              0.8,
+              -10
+            ],
+            [
+              -4,
+              0.8,
+              150
+            ]
+          ],
+          "ease": "linear",
+          "caption": "RACING",
+          "sub": "Slot a Streetmon into the engine bay and a junker becomes a rocket. The street league is waiting.",
+          "actors": [
+            {
+              "kind": "car",
+              "spec": "sports",
+              "color": "#d32f2f",
+              "from": [
+                -3.2,
+                -40
+              ],
+              "to": [
+                -3.2,
+                175
+              ]
+            },
+            {
+              "kind": "car",
+              "spec": "sports",
+              "color": "#ffd23f",
+              "from": [
+                -7.4,
+                -55
+              ],
+              "to": [
+                -7.4,
+                160
+              ],
+              "delay": 0.2
+            },
+            {
+              "kind": "car",
+              "spec": "sedan",
+              "color": "#2f6fd3",
+              "from": [
+                -3.2,
+                -75
+              ],
+              "to": [
+                -3.2,
+                140
+              ],
+              "delay": 0.4
+            }
+          ]
+        },
+        {
+          "anchor": "midtown-ave",
+          "seconds": 6,
+          "fade": 0.6,
+          "cam": [
+            [
+              12,
+              7,
+              -105
+            ],
+            [
+              12,
+              7,
+              70
+            ]
+          ],
+          "look": [
+            [
+              -4,
+              0.5,
+              -80
+            ],
+            [
+              -4,
+              0.5,
+              95
+            ]
+          ],
+          "ease": "linear",
+          "caption": "CRIME",
+          "sub": "Banks, diamonds, armored trucks. Every job brings heat, and the cops bring Streetmon of their own.",
+          "actors": [
+            {
+              "kind": "car",
+              "spec": "sedan",
+              "color": "#1b1b1f",
+              "from": [
+                -3.6,
+                -80
+              ],
+              "to": [
+                -3.6,
+                95
+              ]
+            },
+            {
+              "kind": "car",
+              "spec": "police",
+              "color": "#f2f2f2",
+              "from": [
+                -3.6,
+                -104
+              ],
+              "to": [
+                -3.6,
+                70
+              ],
+              "siren": true
+            },
+            {
+              "kind": "car",
+              "spec": "police",
+              "color": "#f2f2f2",
+              "from": [
+                -7.6,
+                -122
+              ],
+              "to": [
+                -7.6,
+                52
+              ],
+              "siren": true,
+              "delay": 0.3
+            }
+          ]
+        },
+        {
+          "anchor": "downtown-st",
+          "seconds": 6,
+          "fade": 0.6,
+          "orbit": {
+            "radius": 15,
+            "height": 1.8,
+            "fromDeg": 200,
+            "toDeg": 245
+          },
+          "look": [
+            [
+              0,
+              4,
+              0
+            ],
+            [
+              0,
+              5.5,
+              0
+            ]
+          ],
+          "shake": 0.5,
+          "caption": "LEGENDS",
+          "sub": "And now and then something huge climbs out from under the streets.",
+          "actors": [
+            {
+              "kind": "creature",
+              "species": "gridlock",
+              "from": [
+                0,
+                0
+              ],
+              "headingDeg": 225,
+              "clip": "idle",
+              "scale": 2.1
+            }
+          ]
+        },
+        {
+          "anchor": "mama",
+          "seconds": 6.5,
+          "fade": 0.8,
+          "orient": true,
+          "cam": [
+            [
+              18,
+              7,
+              -6
+            ],
+            [
+              7.6,
+              1.9,
+              1.6
+            ]
+          ],
+          "look": [
+            [
+              0,
+              1.2,
+              -1
+            ],
+            [
+              -0.2,
+              1.5,
+              -1.7
+            ]
+          ],
+          "caption": "MAMA RUST'S CHOP SHOP",
+          "sub": "Every legend in this city started with nothing. Yours starts here."
+        }
+      ]
+    },
+    {
+      "id": "chop-shop",
+      "title": "The Underground Chop Shop",
+      "trigger": {
+        "questCompleted": "a1-welcome"
+      },
+      "anchor": "chop",
+      "shots": [
+        {
+          "seconds": 7,
+          "fade": 0.8,
+          "cam": [
+            [
+              -6,
+              3.2,
+              -13
+            ],
+            [
+              1,
+              2.4,
+              -9
+            ]
+          ],
+          "look": [
+            [
+              0,
+              1,
+              3
+            ],
+            [
+              0,
+              0.8,
+              4
+            ]
+          ],
+          "caption": "THE UNDERGROUND CHOP SHOP",
+          "sub": "Your first ride is waiting at the kerb. Drive onto the lift, stop and press E. Down below, slot a Streetmon into it.",
+          "actors": [
+            {
+              "kind": "car",
+              "spec": "beater",
+              "color": "#7d817a",
+              "from": [
+                -34,
+                0
+              ],
+              "to": [
+                0,
+                0
+              ],
+              "stopEarly": 1.6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "act2",
+      "title": "High-Octane Turf",
+      "music": "action",
+      "trigger": {
+        "actStarted": "act2"
+      },
+      "shots": [
+        {
+          "anchor": "uptown-run",
+          "seconds": 6,
+          "fade": 1,
+          "cam": [
+            [
+              7,
+              1.1,
+              70
+            ],
+            [
+              7,
+              1.3,
+              80
+            ]
+          ],
+          "look": [
+            [
+              -4,
+              0.8,
+              -10
+            ],
+            [
+              -4,
+              0.8,
+              150
+            ]
+          ],
+          "ease": "linear",
+          "caption": "ACT II",
+          "sub": "High-Octane Turf",
+          "actors": [
+            {
+              "kind": "car",
+              "spec": "sports",
+              "color": "#ff7a00",
+              "from": [
+                -3.2,
+                -40
+              ],
+              "to": [
+                -3.2,
+                175
+              ]
+            },
+            {
+              "kind": "car",
+              "spec": "sports",
+              "color": "#7a2fd3",
+              "from": [
+                -7.4,
+                -60
+              ],
+              "to": [
+                -7.4,
+                160
+              ],
+              "delay": 0.2
+            }
+          ]
+        },
+        {
+          "anchor": "skyline",
+          "seconds": 6,
+          "fade": 0.6,
+          "cam": [
+            [
+              120,
+              120,
+              620
+            ],
+            [
+              60,
+              90,
+              520
+            ]
+          ],
+          "look": [
+            [
+              0,
+              20,
+              300
+            ],
+            [
+              0,
+              25,
+              380
+            ]
+          ],
+          "caption": "Downtown and the highway grid",
+          "sub": "League races, smoke-belching rivals, and Haze on 5th Ave."
+        }
+      ]
+    },
+    {
+      "id": "act3",
+      "title": "The Vault Hijack",
+      "music": "action",
+      "trigger": {
+        "actStarted": "act3"
+      },
+      "shots": [
+        {
+          "anchor": "bank",
+          "seconds": 7,
+          "fade": 1,
+          "orbit": {
+            "radius": 110,
+            "height": 250,
+            "fromDeg": 20,
+            "toDeg": 70
+          },
+          "look": [
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ]
+          ],
+          "caption": "ACT III",
+          "sub": "The Vault Hijack"
+        },
+        {
+          "anchor": "midtown-ave",
+          "seconds": 5,
+          "fade": 0.6,
+          "cam": [
+            [
+              12,
+              3,
+              -30
+            ],
+            [
+              9,
+              2.2,
+              30
+            ]
+          ],
+          "look": [
+            [
+              -4,
+              0.6,
+              -10
+            ],
+            [
+              -4,
+              0.6,
+              60
+            ]
+          ],
+          "ease": "linear",
+          "caption": "The First Empire Vault",
+          "sub": "The biggest score on the island. You'll need a crew.",
+          "actors": [
+            {
+              "kind": "car",
+              "spec": "van",
+              "color": "#3a3f47",
+              "from": [
+                -3.6,
+                -70
+              ],
+              "to": [
+                -3.6,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "act4",
+      "title": "Police Lockdown",
+      "music": "action",
+      "trigger": {
+        "actStarted": "act4"
+      },
+      "shots": [
+        {
+          "anchor": "police-ave",
+          "seconds": 6,
+          "fade": 1,
+          "cam": [
+            [
+              12,
+              10,
+              -50
+            ],
+            [
+              9,
+              4,
+              20
+            ]
+          ],
+          "look": [
+            [
+              -4,
+              0.5,
+              -20
+            ],
+            [
+              -4,
+              0.5,
+              50
+            ]
+          ],
+          "ease": "linear",
+          "caption": "ACT IV",
+          "sub": "Police Lockdown",
+          "actors": [
+            {
+              "kind": "car",
+              "spec": "police",
+              "color": "#f2f2f2",
+              "from": [
+                -3.6,
+                -90
+              ],
+              "to": [
+                -3.6,
+                80
+              ],
+              "siren": true
+            },
+            {
+              "kind": "car",
+              "spec": "police",
+              "color": "#f2f2f2",
+              "from": [
+                -7.6,
+                -110
+              ],
+              "to": [
+                -7.6,
+                60
+              ],
+              "siren": true
+            },
+            {
+              "kind": "car",
+              "spec": "police",
+              "color": "#f2f2f2",
+              "from": [
+                -3.6,
+                -130
+              ],
+              "to": [
+                -3.6,
+                45
+              ],
+              "siren": true,
+              "delay": 0.3
+            }
+          ]
+        },
+        {
+          "anchor": "skyline",
+          "seconds": 5,
+          "fade": 0.6,
+          "cam": [
+            [
+              -500,
+              260,
+              -200
+            ],
+            [
+              -420,
+              220,
+              -120
+            ]
+          ],
+          "look": [
+            [
+              0,
+              0,
+              -120
+            ],
+            [
+              0,
+              0,
+              -80
+            ]
+          ],
+          "caption": "Citywide",
+          "sub": "Captain Hale's task force owns the streets now. Take them back."
+        }
+      ]
+    },
+    {
+      "id": "act5",
+      "title": "The Apex Grand Prix",
+      "music": "action",
+      "trigger": {
+        "actStarted": "act5"
+      },
+      "shots": [
+        {
+          "anchor": "harbor-run",
+          "seconds": 6,
+          "fade": 1,
+          "cam": [
+            [
+              7,
+              1.1,
+              70
+            ],
+            [
+              7,
+              1.3,
+              80
+            ]
+          ],
+          "look": [
+            [
+              -4,
+              0.8,
+              -10
+            ],
+            [
+              -4,
+              0.8,
+              150
+            ]
+          ],
+          "ease": "linear",
+          "caption": "ACT V",
+          "sub": "The Apex Grand Prix",
+          "actors": [
+            {
+              "kind": "car",
+              "spec": "sports",
+              "color": "#d32f2f",
+              "from": [
+                -3.2,
+                -40
+              ],
+              "to": [
+                -3.2,
+                180
+              ]
+            },
+            {
+              "kind": "car",
+              "spec": "sports",
+              "color": "#f2f2f2",
+              "from": [
+                -7.4,
+                -50
+              ],
+              "to": [
+                -7.4,
+                170
+              ],
+              "delay": 0.1
+            },
+            {
+              "kind": "car",
+              "spec": "sports",
+              "color": "#ffd23f",
+              "from": [
+                -3.2,
+                -70
+              ],
+              "to": [
+                -3.2,
+                150
+              ],
+              "delay": 0.3
+            }
+          ]
+        },
+        {
+          "anchor": "skyline",
+          "seconds": 6,
+          "fade": 0.6,
+          "cam": [
+            [
+              300,
+              200,
+              -560
+            ],
+            [
+              200,
+              160,
+              -460
+            ]
+          ],
+          "look": [
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              10,
+              40
+            ]
+          ],
+          "caption": "The Syndicate",
+          "sub": "One last race. One last boss. The whole city is watching."
+        }
+      ]
+    },
+    {
+      "id": "boss-intro",
+      "title": "District Boss",
+      "music": "action",
+      "trigger": {
+        "bossIntro": true
+      },
+      "once": false,
+      "anchor": "boss",
+      "shots": [
+        {
+          "seconds": 4.5,
+          "fade": 0.5,
+          "orient": true,
+          "orbit": {
+            "radius": 6,
+            "height": 2.2,
+            "fromDeg": -55,
+            "toDeg": 12
+          },
+          "look": [
+            [
+              0,
+              1.5,
+              0
+            ],
+            [
+              0,
+              1.7,
+              0
+            ]
+          ],
+          "caption": "{name}",
+          "sub": "{title}",
+          "captionAt": 0.6
+        }
+      ]
+    },
+    {
+      "id": "raid-arrive",
+      "title": "Legendary",
+      "music": "action",
+      "trigger": {
+        "raidArrive": true
+      },
+      "once": false,
+      "anchor": "raid",
+      "shots": [
+        {
+          "seconds": 5,
+          "fade": 0.4,
+          "orbit": {
+            "radius": 17,
+            "height": 2.2,
+            "fromDeg": 0,
+            "toDeg": 60
+          },
+          "look": [
+            [
+              0,
+              4.5,
+              0
+            ],
+            [
+              0,
+              5.5,
+              0
+            ]
+          ],
+          "shake": 0.7,
+          "caption": "{name}",
+          "sub": "LEGENDARY STREETMON",
+          "captionAt": 0.8
+        }
+      ]
+    }
+  ]
+}

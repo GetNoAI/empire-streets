@@ -1,0 +1,44 @@
+{
+  "_comment": "Streetmon types. chart[attacker][defender] is the damage multiplier; anything not listed is 1. Dual-typed defenders multiply both entries (2 x 2 = 4, 2 x 0.5 = 1). Wire and Sludge are the rooftop and sewer types; the original five-type cells are unchanged.",
+  "types": [
+    {"id": "gun", "name": "Gun", "color": "#ff8a1f", "blurb": "Ammo-fed. Reloading takes a full turn, the first shot after a reload hits twice as hard, and the noise gives them away."},
+    {"id": "concrete", "name": "Concrete", "color": "#9aa0a6", "blurb": "Tanks. They scatter broken glass that cuts anything switching in, and partly block projectiles."},
+    {"id": "grind", "name": "Grind", "color": "#2ec4a6", "blurb": "Get stronger every turn they survive."},
+    {"id": "smoke", "name": "Smoke", "color": "#a58bd8", "blurb": "Clouds that cut accuracy, evasion, choking and chip damage."},
+    {"id": "bass", "name": "Bass", "color": "#2f7bff", "blurb": "Fast. Sound waves hit every foe and can make them flinch."},
+    {"id": "wire", "name": "Wire", "color": "#ffd23f", "blurb": "Rooftop current: antennas, power lines and neon. Strong against Grind, Bass and Sludge; cut by Gun, grounded by Concrete, ground down by Grind."},
+    {"id": "sludge", "name": "Sludge", "color": "#7fae3a", "blurb": "Sewer muck that corrodes and clogs. Strong against Gun and Concrete, shaken apart by Bass and shocked by Wire."}
+  ],
+  "chart": {
+    "gun":     { "gun": 1, "concrete": 0.5, "grind": 2, "smoke": 0.5, "bass": 2, "wire": 2, "sludge": 0.5 },
+    "concrete":{ "gun": 2, "concrete": 0.5, "grind": 1, "smoke": 0.5, "bass": 2, "wire": 2, "sludge": 1 },
+    "grind":   { "gun": 0.5, "concrete": 2, "grind": 1, "smoke": 2, "bass": 1, "wire": 2, "sludge": 1 },
+    "smoke":   { "gun": 2, "concrete": 1, "grind": 2, "smoke": 0.5, "bass": 0.5, "wire": 1, "sludge": 1 },
+    "bass":    { "gun": 1, "concrete": 2, "grind": 0.5, "smoke": 2, "bass": 0.5, "wire": 0.5, "sludge": 2 },
+    "wire":    { "gun": 1, "concrete": 0.5, "grind": 2, "smoke": 1, "bass": 2, "wire": 0.5, "sludge": 2 },
+    "sludge":  { "gun": 2, "concrete": 2, "grind": 1, "smoke": 1, "bass": 1, "wire": 0.5, "sludge": 0.5 }
+  },
+  "mechanics": {
+    "gun": {
+      "firstShotMultiplier": 2,
+      "reloadTakesTurn": true,
+      "loudRevealBonus": 1.5
+    },
+    "concrete": {
+      "projectileBlock": 0.25,
+      "brokenGlassDamage": 0.125
+    },
+    "grind": {
+      "attackStagePerSurvivedTurn": 1,
+      "maxStages": 4
+    },
+    "smoke": {
+      "cloudAccuracy": 0.7,
+      "cloudTurns": 3,
+      "chokeDamage": 0.0625
+    },
+    "bass": {
+      "spreadMultiplier": 0.75
+    }
+  }
+}

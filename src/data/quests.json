@@ -1,0 +1,261 @@
+{
+  "_comment": "Quests. district: whose maze the places are in. place: hub | chamber:N | deadEnd:N (N wraps around). step types: reach {place}, collect {place, item}, battle {place, name, team: [[species, level]]} (you can't catch them), escort {place, species, to}, catch {species}, talk {npc}. requiresReputation: only offered once you have that much. rewards: cash, items [[id, n]], reputation.",
+  "quests": [
+    {
+      "id": "lost-gutterat",
+      "name": "Lost Gutterat",
+      "giver": "old-ray",
+      "district": "midtown",
+      "steps": [
+        {
+          "type": "escort",
+          "place": "chamber:0",
+          "species": "gutterat",
+          "to": "hub",
+          "text": "Find Pepper the Gutterat in a chamber and lead her back to the Under-Station"
+        }
+      ],
+      "rewards": {
+        "cash": 600,
+        "items": [
+          [
+            "net",
+            3
+          ]
+        ],
+        "reputation": 10
+      }
+    },
+    {
+      "id": "valve-job",
+      "name": "Valve Job",
+      "giver": "dot",
+      "district": "midtown",
+      "steps": [
+        {
+          "type": "collect",
+          "place": "deadEnd:3",
+          "item": "valve wheel",
+          "text": "Find the valve wheel in a dead end"
+        },
+        {
+          "type": "talk",
+          "npc": "dot",
+          "text": "Bring the valve wheel back to Dot"
+        }
+      ],
+      "rewards": {
+        "cash": 300,
+        "items": [
+          [
+            "cuffs",
+            3
+          ]
+        ],
+        "reputation": 5
+      }
+    },
+    {
+      "id": "clear-the-nest",
+      "name": "Clear the Nest",
+      "giver": "marco",
+      "district": "midtown",
+      "steps": [
+        {
+          "type": "battle",
+          "place": "chamber:2",
+          "name": "Feral nest",
+          "team": [
+            [
+              "drainling",
+              11
+            ],
+            [
+              "drainling",
+              12
+            ],
+            [
+              "drainling",
+              13
+            ]
+          ],
+          "text": "Clear the Drainling nest from the chamber"
+        }
+      ],
+      "rewards": {
+        "cash": 500,
+        "items": [
+          [
+            "crate",
+            2
+          ]
+        ],
+        "reputation": 10
+      }
+    },
+    {
+      "id": "spore-samples",
+      "name": "Spore Samples",
+      "giver": "sal",
+      "district": "midtown",
+      "start": {
+        "items": [
+          [
+            "lure",
+            3
+          ]
+        ]
+      },
+      "steps": [
+        {
+          "type": "catch",
+          "species": "mildew",
+          "text": "Catch a Mildew"
+        },
+        {
+          "type": "talk",
+          "npc": "sal",
+          "text": "Show Sal your Mildew"
+        }
+      ],
+      "rewards": {
+        "cash": 400,
+        "items": [
+          [
+            "lure",
+            3
+          ]
+        ],
+        "reputation": 10
+      }
+    },
+    {
+      "id": "signal-down-here",
+      "name": "Signal Down Here",
+      "giver": "hollis",
+      "district": "uptown",
+      "steps": [
+        {
+          "type": "collect",
+          "place": "deadEnd:2",
+          "item": "antenna",
+          "text": "Find the antenna in a dead end"
+        },
+        {
+          "type": "collect",
+          "place": "deadEnd:9",
+          "item": "coil",
+          "text": "Find the coil in a dead end"
+        },
+        {
+          "type": "collect",
+          "place": "deadEnd:16",
+          "item": "speaker",
+          "text": "Find the speaker in a dead end"
+        },
+        {
+          "type": "talk",
+          "npc": "hollis",
+          "text": "Bring the radio parts to Hollis"
+        }
+      ],
+      "rewards": {
+        "cash": 700,
+        "items": [
+          [
+            "sparkPlug",
+            1
+          ]
+        ],
+        "reputation": 15
+      }
+    },
+    {
+      "id": "the-king-below",
+      "name": "The King Below",
+      "giver": "queenie",
+      "district": "downtown",
+      "requiresReputation": 30,
+      "steps": [
+        {
+          "type": "reach",
+          "place": "deadEnd:5",
+          "text": "Find the old pump room Queenie marked, where the court's scouts gather"
+        },
+        {
+          "type": "battle",
+          "place": "chamber:4",
+          "name": "The Rat Court",
+          "team": [
+            [
+              "gutterat",
+              24
+            ],
+            [
+              "gutterat",
+              25
+            ],
+            [
+              "ratking",
+              30
+            ]
+          ],
+          "text": "Defeat the Ratking's court in the far chamber"
+        }
+      ],
+      "rewards": {
+        "cash": 1500,
+        "items": [
+          [
+            "steelCase",
+            1
+          ],
+          [
+            "cage",
+            1
+          ]
+        ],
+        "reputation": 20
+      }
+    },
+    {
+      "id": "the-deep-hum",
+      "name": "The Deep Hum",
+      "giver": "gus",
+      "district": "midtown",
+      "requiresReputation": 10,
+      "steps": [
+        {
+          "type": "reach",
+          "place": "deadEnd:6",
+          "text": "Follow the humming in the pipes to the old cistern Gus marked"
+        },
+        {
+          "type": "raid",
+          "place": "chamber:3",
+          "legendary": "undertow",
+          "text": "Something huge is waking in the flooded chamber. Fight it before the Under-Station floods (the tunnel folk will help)"
+        },
+        {
+          "type": "talk",
+          "npc": "gus",
+          "text": "Tell Gus what you found down there"
+        }
+      ],
+      "rewards": {
+        "cash": 2500,
+        "items": [
+          [
+            "steelCase",
+            1
+          ],
+          [
+            "cage",
+            1
+          ]
+        ],
+        "reputation": 25
+      }
+    }
+  ]
+}

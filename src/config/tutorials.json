@@ -1,0 +1,1405 @@
+{
+  "version": 1,
+  "_comment": "Tutorial cards (src/systems/tutorialManager.js). Each one comes up the first time its trigger fires (the game's situations and events, listed in `events`; the ones in `situations` are re-checked a few times a second and their tips only show while still true), or when a campaign objective asks for it by id (`tutorial` on an objective in campaign_quests.json). `after` chains them (the onboarding: on foot -> cars -> driving -> map and jobs). Steps with `do` are practice: they tick off when you do the action (listed in `actions`). {Key} renders as a key cap. where: play (on the street), battle, menu, any.",
+  "settings": {
+    "gapSeconds": 3,
+    "readSecondsBase": 7,
+    "readSecondsPerWord": 0.3,
+    "readSecondsMax": 28,
+    "practiceTimeout": 75,
+    "doneDelay": 1.4,
+    "queueExpiry": 40,
+    "cutInPriority": 40,
+    "freshSeconds": 1
+  },
+  "categories": [
+    {
+      "id": "basics",
+      "name": "Getting around"
+    },
+    {
+      "id": "streetmon",
+      "name": "Streetmon"
+    },
+    {
+      "id": "battles",
+      "name": "Battles"
+    },
+    {
+      "id": "combat",
+      "name": "Weapons"
+    },
+    {
+      "id": "police",
+      "name": "The law"
+    },
+    {
+      "id": "city",
+      "name": "The city"
+    },
+    {
+      "id": "story",
+      "name": "The story"
+    },
+    {
+      "id": "street",
+      "name": "Street life"
+    }
+  ],
+  "events": [
+    "newGame",
+    "nearCar",
+    "inCar",
+    "inPoliceCar",
+    "carFlipped",
+    "mapOpened",
+    "nearWild",
+    "nearPerson",
+    "battleStart",
+    "foeWeak",
+    "caught",
+    "stashed",
+    "evolution",
+    "blackout",
+    "partyHurt",
+    "nearClinic",
+    "nearShop",
+    "weaponOwned",
+    "night",
+    "wanted",
+    "arrestBattle",
+    "busted",
+    "wasted",
+    "impound",
+    "bitten",
+    "trainerChallenge",
+    "nearHunter",
+    "nearDuel",
+    "nearManhole",
+    "inSewer",
+    "nearRoofAccess",
+    "onRoof",
+    "nearChopLift",
+    "chopShopOpen",
+    "inTunedCar",
+    "raceOffer",
+    "raceGo",
+    "raceLocked",
+    "heistNear",
+    "heistPlanning",
+    "heistInfiltration",
+    "heistLoot",
+    "eventNear",
+    "questOffer",
+    "questStarted",
+    "nearGiver",
+    "nearBoss",
+    "playTime",
+    "raidOmen",
+    "raidArrive",
+    "raidBattle",
+    "raidSubdued"
+  ],
+  "situations": [
+    "nearCar",
+    "inCar",
+    "inPoliceCar",
+    "carFlipped",
+    "nearWild",
+    "nearPerson",
+    "partyHurt",
+    "nearClinic",
+    "nearShop",
+    "weaponOwned",
+    "night",
+    "wanted",
+    "nearManhole",
+    "inSewer",
+    "nearRoofAccess",
+    "onRoof",
+    "nearChopLift",
+    "inTunedCar",
+    "heistNear",
+    "eventNear",
+    "nearGiver",
+    "nearBoss",
+    "nearHunter",
+    "nearDuel",
+    "foeWeak",
+    "playTime"
+  ],
+  "actions": [
+    "move",
+    "look",
+    "sprint",
+    "walk",
+    "jump",
+    "enterCar",
+    "exitCar",
+    "throttle",
+    "brake",
+    "steer",
+    "handbrake",
+    "horn",
+    "flip",
+    "siren",
+    "map",
+    "waypoint",
+    "track",
+    "talk",
+    "battle",
+    "throw",
+    "switchItem",
+    "team",
+    "dex",
+    "summon",
+    "aim",
+    "fire",
+    "reload",
+    "weaponSwitch",
+    "weaponWheel",
+    "toggleKeys"
+  ],
+  "tutorials": [
+    {
+      "id": "basics",
+      "category": "basics",
+      "title": "On foot",
+      "intro": "Welcome to the city. Try these out:",
+      "trigger": {
+        "on": "newGame"
+      },
+      "priority": 100,
+      "keep": true,
+      "steps": [
+        {
+          "text": "Walk with {W} {A} {S} {D}",
+          "do": "move"
+        },
+        {
+          "text": "Look around with the {Mouse} (click the game first to capture it)",
+          "do": "look"
+        },
+        {
+          "text": "Hold {Shift} to sprint",
+          "do": "sprint"
+        },
+        {
+          "text": "Press {Space} to jump",
+          "do": "jump"
+        },
+        {
+          "text": "Hold {Alt} to walk quietly: wild Streetmon notice you less",
+          "do": "walk"
+        }
+      ]
+    },
+    {
+      "id": "cars",
+      "category": "basics",
+      "title": "Taking a car",
+      "trigger": {
+        "on": "nearCar"
+      },
+      "after": [
+        "basics"
+      ],
+      "priority": 90,
+      "keep": true,
+      "steps": [
+        {
+          "text": "Walk up to any car and press {E} (or {F}) to get in",
+          "do": "enterCar"
+        },
+        {
+          "text": "Someone at the wheel? You'll pull them out: that's carjacking, a crime if anyone sees it"
+        },
+        {
+          "text": "Parked cars are free to take"
+        }
+      ]
+    },
+    {
+      "id": "driving",
+      "category": "basics",
+      "title": "Driving",
+      "trigger": {
+        "on": "inCar"
+      },
+      "after": [
+        "basics"
+      ],
+      "priority": 90,
+      "keep": true,
+      "steps": [
+        {
+          "text": "{W} to accelerate, {S} to brake and reverse",
+          "do": "throttle"
+        },
+        {
+          "text": "{A} {D} to steer",
+          "do": "steer"
+        },
+        {
+          "text": "{Space} for the handbrake: slide round corners",
+          "do": "handbrake"
+        },
+        {
+          "text": "{H} for the horn",
+          "do": "horn"
+        },
+        {
+          "text": "{E} or {F} to get out",
+          "do": "exitCar"
+        }
+      ]
+    },
+    {
+      "id": "map",
+      "category": "basics",
+      "title": "The map and your first job",
+      "intro": "There's work in this city. The yellow M on the minimap (on its edge when it's far) is someone with a job for you.",
+      "trigger": [
+        {
+          "on": "questOffer"
+        },
+        {
+          "on": "mapOpened"
+        }
+      ],
+      "after": [
+        "driving"
+      ],
+      "priority": 80,
+      "keep": true,
+      "steps": [
+        {
+          "text": "Press {M} for the city map",
+          "do": "map"
+        },
+        {
+          "text": "Click the M to set a waypoint: a route shows on the road and the minimap",
+          "do": "waypoint"
+        },
+        {
+          "text": "Drag to pan, scroll to zoom, right-click clears the waypoint, {M} or {Esc} closes"
+        },
+        {
+          "text": "Drive there and press {E} next to them to talk"
+        }
+      ]
+    },
+    {
+      "id": "talking",
+      "category": "story",
+      "title": "Talking and taking jobs",
+      "trigger": {
+        "on": "nearGiver"
+      },
+      "skipOn": [
+        "questStarted"
+      ],
+      "priority": 70,
+      "keep": true,
+      "steps": [
+        {
+          "text": "Press {E} next to someone with an M over their head",
+          "do": "talk"
+        },
+        {
+          "text": "Answer with {1} to {4} (or click). Accepting starts the job"
+        },
+        {
+          "text": "A tick over their head means a job's ready to hand in: talk to them again"
+        }
+      ]
+    },
+    {
+      "id": "jobs",
+      "category": "story",
+      "title": "Jobs",
+      "trigger": {
+        "on": "questStarted"
+      },
+      "priority": 65,
+      "keep": true,
+      "steps": [
+        {
+          "text": "Your job and its next step show in the panel at the top right"
+        },
+        {
+          "text": "The yellow beacon and the ring on the ground mark where to go"
+        },
+        {
+          "text": "Got several jobs? {J} switches which one you're tracking"
+        },
+        {
+          "text": "A failed job (out of time, busted, wasted) can be taken again from whoever gave it"
+        }
+      ]
+    },
+    {
+      "id": "deliveries",
+      "category": "story",
+      "title": "Against the clock",
+      "steps": [
+        {
+          "text": "Some jobs need a car: drive into the ring to pick up or drop off"
+        },
+        {
+          "text": "The timer starts at the pickup. Run out and the job fails"
+        },
+        {
+          "text": "Getting busted or wasted on the way loses the cargo: the job fails"
+        },
+        {
+          "text": "Set a waypoint on the drop-off ({M}, click) for a route"
+        }
+      ]
+    },
+    {
+      "id": "wild-streetmon",
+      "category": "streetmon",
+      "title": "Wild Streetmon",
+      "intro": "The coloured dots on the minimap are wild Streetmon (the colour is their type).",
+      "trigger": {
+        "on": "nearWild"
+      },
+      "after": [
+        "basics"
+      ],
+      "priority": 75,
+      "steps": [
+        {
+          "text": "Walk up to one and press {B} to battle it with your lead Streetmon",
+          "do": "battle"
+        },
+        {
+          "text": "Point at a Streetmon to see its health bar and level"
+        },
+        {
+          "text": "Sneak up walking ({Alt}): shy ones run if they hear you, aggressive ones attack"
+        }
+      ]
+    },
+    {
+      "id": "battle-turn",
+      "category": "battles",
+      "title": "Battles",
+      "intro": "Turn-based: you pick, then the moves play out.",
+      "trigger": {
+        "on": "battleStart",
+        "if": {
+          "mode": "turn"
+        }
+      },
+      "where": "battle",
+      "priority": 95,
+      "steps": [
+        {
+          "text": "{1} Fight: pick a move ({1} to {4}). Coloured badges are the move's type"
+        },
+        {
+          "text": "{2} Team: switch in another Streetmon"
+        },
+        {
+          "text": "{3} Bag: throw a capture item (wild Streetmon only)"
+        },
+        {
+          "text": "{4} Run (not from trainers, bosses or the police). {Space} speeds up the text"
+        },
+        {
+          "text": "Prefer action? Pause ({Esc}) and switch Battles to Real-time"
+        }
+      ]
+    },
+    {
+      "id": "battle-realtime",
+      "category": "battles",
+      "title": "Real-time battles",
+      "trigger": {
+        "on": "battleStart",
+        "if": {
+          "mode": "realtime"
+        }
+      },
+      "where": "battle",
+      "priority": 95,
+      "steps": [
+        {
+          "text": "{1} to {4}: use a move (your Streetmon acts when its bar fills)"
+        },
+        {
+          "text": "Keep moving: you're free to walk around and dodge"
+        },
+        {
+          "text": "{5} swaps your Streetmon, {X} flees, {C} throws a capture item"
+        },
+        {
+          "text": "{LMB} shoots or hits the foe with your weapon too"
+        },
+        {
+          "text": "{T} switches the number keys to your weapons (and back to commands)",
+          "do": "toggleKeys"
+        }
+      ]
+    },
+    {
+      "id": "types",
+      "category": "battles",
+      "title": "Types",
+      "intro": "Every Streetmon and every move has a type. Hitting the right type does double damage.",
+      "trigger": {
+        "on": "battleStart"
+      },
+      "after": [
+        "battle-turn"
+      ],
+      "where": "battle",
+      "priority": 40,
+      "steps": [
+        {
+          "text": "Concrete beats Gun, Gun beats Bass, Bass beats Concrete"
+        },
+        {
+          "text": "Grind beats Concrete and Smoke; Smoke beats Gun and Grind"
+        },
+        {
+          "text": "Rooftop Wire beats Grind, Bass and Sludge; sewer Sludge beats Gun and Concrete"
+        },
+        {
+          "text": "{N} opens your Dex: it lists every species you've seen and caught",
+          "do": "dex"
+        }
+      ]
+    },
+    {
+      "id": "catching",
+      "category": "streetmon",
+      "title": "Catching",
+      "intro": "It's weak: now's the time to catch it.",
+      "trigger": {
+        "on": "foeWeak"
+      },
+      "where": "battle",
+      "priority": 90,
+      "steps": [
+        {
+          "text": "In a battle: {3} Bag, then pick an item. The lower its health, the better the chance"
+        },
+        {
+          "text": "Outside battles: face a wild Streetmon and press {C} to throw. {V} switches item"
+        },
+        {
+          "text": "Cuffs, Crates and Nets are sold at the Corner Clinic (green on the minimap)"
+        },
+        {
+          "text": "Missed? Every miss on the same Streetmon makes the next throw likelier, and a long losing streak gives items back"
+        }
+      ],
+      "interrupt": true
+    },
+    {
+      "id": "team",
+      "category": "streetmon",
+      "title": "Your team",
+      "trigger": {
+        "on": "caught"
+      },
+      "priority": 70,
+      "steps": [
+        {
+          "text": "{I} opens your team: up to 6 travel with you, the rest go to the stash",
+          "do": "team"
+        },
+        {
+          "text": "The first one is your lead: it fights first and follows you around"
+        },
+        {
+          "text": "{G} summons or recalls your lead on foot",
+          "do": "summon"
+        },
+        {
+          "text": "Streetmon level up from battles, learn moves and can evolve"
+        }
+      ]
+    },
+    {
+      "id": "stash",
+      "category": "streetmon",
+      "title": "The stash",
+      "trigger": {
+        "on": "stashed"
+      },
+      "priority": 50,
+      "steps": [
+        {
+          "text": "Your team is full (6), so new catches go to the stash"
+        },
+        {
+          "text": "Swap them in and out from the team screen ({I})"
+        }
+      ]
+    },
+    {
+      "id": "evolution",
+      "category": "streetmon",
+      "title": "Evolution",
+      "trigger": {
+        "on": "evolution"
+      },
+      "where": "any",
+      "priority": 95,
+      "seconds": 12,
+      "steps": [
+        {
+          "text": "Your Streetmon is evolving: bigger, stronger, sometimes a new type"
+        },
+        {
+          "text": "Press {B} to stop it if you'd rather it stayed as it is"
+        },
+        {
+          "text": "Some only evolve with an item: the Skyline Trader on the rooftops sells them"
+        }
+      ],
+      "interrupt": true
+    },
+    {
+      "id": "clinic",
+      "category": "streetmon",
+      "title": "Healing up",
+      "trigger": [
+        {
+          "on": "partyHurt"
+        },
+        {
+          "on": "blackout"
+        },
+        {
+          "on": "nearClinic"
+        }
+      ],
+      "priority": 60,
+      "steps": [
+        {
+          "text": "Hurt Streetmon stay hurt. Corner Clinics (green squares on the minimap) heal the whole team for a fee"
+        },
+        {
+          "text": "Press {E} at the clinic. It sells capture items too"
+        },
+        {
+          "text": "If all your Streetmon faint you black out and wake up at a clinic, a bit poorer"
+        }
+      ]
+    },
+    {
+      "id": "trainers",
+      "category": "battles",
+      "title": "Gang trainers",
+      "trigger": {
+        "on": "trainerChallenge"
+      },
+      "where": "any",
+      "priority": 85,
+      "steps": [
+        {
+          "text": "A gang trainer has spotted you (the ! over their head). You can't run from this one"
+        },
+        {
+          "text": "Beat them for cash. They won't challenge you again"
+        },
+        {
+          "text": "Trainers are the red-pink dots on the minimap: steer clear if your team is hurt"
+        }
+      ],
+      "interrupt": true
+    },
+    {
+      "id": "street-crime",
+      "category": "police",
+      "title": "Setting your Streetmon on people",
+      "trigger": {
+        "on": "nearPerson"
+      },
+      "after": [
+        "team"
+      ],
+      "priority": 30,
+      "steps": [
+        {
+          "text": "{B} next to a person sets your lead on them. It's a crime: witnesses call the police"
+        },
+        {
+          "text": "Get busted after that and animal control takes the Streetmon to the impound"
+        }
+      ]
+    },
+    {
+      "id": "weapons",
+      "category": "combat",
+      "title": "Weapons",
+      "trigger": {
+        "on": "weaponOwned"
+      },
+      "priority": 75,
+      "steps": [
+        {
+          "text": "Hold {RMB} to aim",
+          "do": "aim"
+        },
+        {
+          "text": "{LMB} to fire (or swing, or throw)",
+          "do": "fire"
+        },
+        {
+          "text": "{R} to reload",
+          "do": "reload"
+        },
+        {
+          "text": "{1} to {8}, the mouse wheel or {Q} switch weapons",
+          "do": "weaponSwitch"
+        },
+        {
+          "text": "Hold {Tab} for the weapon wheel",
+          "do": "weaponWheel"
+        }
+      ]
+    },
+    {
+      "id": "shop",
+      "category": "city",
+      "title": "Hardline Arms",
+      "trigger": {
+        "on": "nearShop"
+      },
+      "priority": 40,
+      "steps": [
+        {
+          "text": "Press {E} to browse weapons and ammo"
+        },
+        {
+          "text": "Gun shops are the amber squares on the minimap. Weapons and cash also lie around the streets (small yellow and green dots)"
+        },
+        {
+          "text": "Firing a gun where people can see is a crime"
+        }
+      ]
+    },
+    {
+      "id": "wanted",
+      "category": "police",
+      "title": "Wanted",
+      "intro": "The stars at the top right are your Wanted Level.",
+      "trigger": {
+        "on": "wanted",
+        "if": {
+          "stars": {
+            "gte": 1
+          }
+        }
+      },
+      "priority": 92,
+      "steps": [
+        {
+          "text": "Crimes someone sees earn stars: hitting people, carjacking, gunfire, speeding past a patrol car"
+        },
+        {
+          "text": "Get out of sight. When the stars blink, they're searching the circle on the minimap"
+        },
+        {
+          "text": "Stay hidden until the stars run out. The sewers are a good place to lie low"
+        },
+        {
+          "text": "Stop or slow down near an officer and you get arrested: busted"
+        }
+      ]
+    },
+    {
+      "id": "heat",
+      "category": "police",
+      "title": "Turning up the heat",
+      "trigger": {
+        "on": "wanted",
+        "if": {
+          "stars": {
+            "gte": 3
+          }
+        }
+      },
+      "after": [
+        "wanted"
+      ],
+      "priority": 85,
+      "steps": [
+        {
+          "text": "Three stars: the police ram you and bring tranquilliser darts"
+        },
+        {
+          "text": "Four: roadblocks ahead of you. Five: tanks"
+        },
+        {
+          "text": "The Chop Shop won't open while the cops are on you"
+        }
+      ]
+    },
+    {
+      "id": "arrest-battle",
+      "category": "police",
+      "title": "Fighting free",
+      "trigger": {
+        "on": "arrestBattle"
+      },
+      "where": "battle",
+      "priority": 96,
+      "steps": [
+        {
+          "text": "The police set a K-9 Streetmon on you. Win and you can run for it"
+        },
+        {
+          "text": "Lose and you're busted"
+        }
+      ],
+      "interrupt": true
+    },
+    {
+      "id": "busted",
+      "category": "police",
+      "title": "Busted",
+      "trigger": {
+        "on": "busted"
+      },
+      "where": "any",
+      "priority": 90,
+      "steps": [
+        {
+          "text": "You lose your weapons and a tenth of your cash, and you're let out at the precinct"
+        },
+        {
+          "text": "Any job, race or heist you were on is off"
+        }
+      ]
+    },
+    {
+      "id": "impound",
+      "category": "police",
+      "title": "The impound",
+      "trigger": {
+        "on": "impound"
+      },
+      "where": "any",
+      "priority": 89,
+      "steps": [
+        {
+          "text": "Streetmon used in crimes were confiscated"
+        },
+        {
+          "text": "Get them back at the precinct impound (purple on the minimap): $150 each, {E} there"
+        }
+      ]
+    },
+    {
+      "id": "wasted",
+      "category": "basics",
+      "title": "Wasted",
+      "trigger": {
+        "on": "wasted"
+      },
+      "where": "any",
+      "priority": 90,
+      "steps": [
+        {
+          "text": "You wake up back on the street with a hospital bill (up to $100)"
+        },
+        {
+          "text": "Any job, race or heist you were on is off. The police forget about you"
+        }
+      ]
+    },
+    {
+      "id": "flip",
+      "category": "basics",
+      "title": "Upside down",
+      "trigger": {
+        "on": "carFlipped"
+      },
+      "priority": 70,
+      "steps": [
+        {
+          "text": "Press {R} to flip the car back onto its wheels",
+          "do": "flip"
+        }
+      ]
+    },
+    {
+      "id": "police-car",
+      "category": "basics",
+      "title": "A police car",
+      "trigger": {
+        "on": "inPoliceCar"
+      },
+      "priority": 50,
+      "steps": [
+        {
+          "text": "{G} turns the siren on and off",
+          "do": "siren"
+        },
+        {
+          "text": "Stealing one is a crime, and every cop knows the car"
+        }
+      ]
+    },
+    {
+      "id": "aggressive",
+      "category": "streetmon",
+      "title": "Bitten!",
+      "intro": "An aggressive Streetmon is on you, and it hurts.",
+      "trigger": {
+        "on": "bitten"
+      },
+      "priority": 97,
+      "steps": [
+        {
+          "text": "Press {B} to battle it",
+          "do": "battle"
+        },
+        {
+          "text": "Or run far enough that it gives up"
+        },
+        {
+          "text": "Or get out of its sight: round a corner, behind a building"
+        }
+      ],
+      "interrupt": true
+    },
+    {
+      "id": "living-city",
+      "category": "street",
+      "title": "The city's other trainers",
+      "trigger": [
+        {
+          "on": "nearHunter"
+        },
+        {
+          "on": "nearDuel"
+        }
+      ],
+      "priority": 20,
+      "steps": [
+        {
+          "text": "People hunt Streetmon too, and wild ones fight over turf"
+        },
+        {
+          "text": "{B} on a Streetmon someone else is battling takes it over. They won't be pleased"
+        },
+        {
+          "text": "Explosions and speeding cars scatter everything nearby"
+        }
+      ]
+    },
+    {
+      "id": "night",
+      "category": "city",
+      "title": "Night",
+      "trigger": {
+        "on": "night"
+      },
+      "after": [
+        "wild-streetmon"
+      ],
+      "priority": 20,
+      "steps": [
+        {
+          "text": "More wild Streetmon are out at night, and some species only come out after dark"
+        },
+        {
+          "text": "Some races are night-only"
+        }
+      ]
+    },
+    {
+      "id": "sewers",
+      "category": "city",
+      "title": "Manholes",
+      "trigger": {
+        "on": "nearManhole"
+      },
+      "skipOn": [
+        "inSewer"
+      ],
+      "after": [
+        "basics"
+      ],
+      "priority": 35,
+      "steps": [
+        {
+          "text": "Stand on the cover and press {E} to climb down into the sewers"
+        },
+        {
+          "text": "Manholes you've used stay on the minimap"
+        }
+      ]
+    },
+    {
+      "id": "sewer-life",
+      "category": "city",
+      "title": "The sewers",
+      "trigger": {
+        "on": "inSewer"
+      },
+      "priority": 78,
+      "steps": [
+        {
+          "text": "No police down here, and the trail goes cold twice as fast"
+        },
+        {
+          "text": "Keep out of the toxic sludge and the steam vents; the channels push you along"
+        },
+        {
+          "text": "People live down here: press {E} to talk, some have work. Sludge-type Streetmon too"
+        },
+        {
+          "text": "Ladders ({E}) take you back up to the street"
+        }
+      ]
+    },
+    {
+      "id": "rooftops",
+      "category": "city",
+      "title": "Up to the roofs",
+      "trigger": {
+        "on": "nearRoofAccess"
+      },
+      "skipOn": [
+        "onRoof"
+      ],
+      "after": [
+        "basics"
+      ],
+      "priority": 35,
+      "steps": [
+        {
+          "text": "Press {E} at a fire escape or a lobby elevator to go up to the rooftops"
+        }
+      ]
+    },
+    {
+      "id": "roof-life",
+      "category": "city",
+      "title": "The rooftops",
+      "trigger": {
+        "on": "onRoof"
+      },
+      "priority": 78,
+      "steps": [
+        {
+          "text": "Jump pads launch you across the gaps. Mind the edge: a fall can kill you"
+        },
+        {
+          "text": "Stashes hide on the roofs ({E} to open). Some are well hidden"
+        },
+        {
+          "text": "The Skyline Trader sells evolution items. Wire-type Streetmon and gang trainers live up here too"
+        }
+      ]
+    },
+    {
+      "id": "chop-shop",
+      "category": "street",
+      "title": "The Underground Chop Shop",
+      "intro": "Streetmon can ride in your car and power it up.",
+      "steps": [
+        {
+          "text": "The Chop Shop is the pink marker. Drive onto the lift and press {E}"
+        },
+        {
+          "text": "It won't open while you're wanted"
+        },
+        {
+          "text": "Inside, slot Streetmon into the engine bay, trunk and roof rack: each type gives different mods and abilities"
+        }
+      ],
+      "trigger": {
+        "on": "nearChopLift"
+      },
+      "skipOn": [
+        "chopShopOpen"
+      ],
+      "keep": true,
+      "priority": 60
+    },
+    {
+      "id": "chop-shop-menu",
+      "category": "street",
+      "title": "Tuning",
+      "trigger": {
+        "on": "chopShopOpen"
+      },
+      "where": "menu",
+      "priority": 90,
+      "steps": [
+        {
+          "text": "{1} to {3} pick a slot (engine bay, trunk, roof rack), then a Streetmon from your team or stash"
+        },
+        {
+          "text": "The stats bar shows the change: top speed, acceleration, grip, durability..."
+        },
+        {
+          "text": "Some mods add an ability with a key, shown when you drive. Slotted Streetmon stay with the car"
+        }
+      ]
+    },
+    {
+      "id": "car-abilities",
+      "category": "street",
+      "title": "A tuned car",
+      "trigger": {
+        "on": "inTunedCar"
+      },
+      "priority": 60,
+      "steps": [
+        {
+          "text": "Abilities from your mods: {Shift} Nitrous Smokescreen, {H} Sonic Bass Horn, {X} Spike Strip"
+        },
+        {
+          "text": "Some work on their own: Exhaust Backfire when you crash, the radar's extra range"
+        },
+        {
+          "text": "Tuned cars are pale pink on the minimap when you leave them parked"
+        }
+      ]
+    },
+    {
+      "id": "races",
+      "category": "street",
+      "title": "Street races",
+      "trigger": {
+        "on": "raceOffer"
+      },
+      "skipOn": [
+        "raceGo"
+      ],
+      "priority": 80,
+      "steps": [
+        {
+          "text": "{Y} takes the race (and pays the entry fee), {Backspace} turns it down"
+        },
+        {
+          "text": "Drive to the start line and stop on it to start"
+        },
+        {
+          "text": "Organisers wait at the orange markers. Dim ones need more Street Cred"
+        }
+      ]
+    },
+    {
+      "id": "racing",
+      "category": "street",
+      "title": "Racing",
+      "trigger": {
+        "on": "raceGo"
+      },
+      "priority": 90,
+      "seconds": 10,
+      "steps": [
+        {
+          "text": "Follow the yellow line and hit every checkpoint"
+        },
+        {
+          "text": "{R} flips you back over; {Backspace} quits the race"
+        },
+        {
+          "text": "Winning pays out and earns Street Cred"
+        }
+      ]
+    },
+    {
+      "id": "league",
+      "category": "story",
+      "title": "The USRL",
+      "intro": "The Underground Street Racing League ranks you in divisions.",
+      "trigger": {
+        "on": "raceLocked"
+      },
+      "priority": 60,
+      "steps": [
+        {
+          "text": "Street Cred (from races, events and jobs) and the bosses you beat move you up a division"
+        },
+        {
+          "text": "Higher divisions open more tracks: bigger prizes, bigger entry fees"
+        },
+        {
+          "text": "Some story races put the police on you the moment they start"
+        }
+      ]
+    },
+    {
+      "id": "heists",
+      "category": "street",
+      "title": "Heists",
+      "trigger": {
+        "on": "heistNear"
+      },
+      "skipOn": [
+        "heistPlanning"
+      ],
+      "priority": 70,
+      "steps": [
+        {
+          "text": "Purple markers are jobs. Press {E} at the spot to plan one"
+        },
+        {
+          "text": "Pick a crew of up to 3 Streetmon for the job's roles (each job needs some, others are optional)"
+        },
+        {
+          "text": "Get in, breach ({E}), grab the bags ({E}), then lose the cops and deliver to the green lock-up"
+        },
+        {
+          "text": "{Backspace} walks away from a job"
+        }
+      ]
+    },
+    {
+      "id": "heist-planning",
+      "category": "street",
+      "title": "Planning the job",
+      "trigger": {
+        "on": "heistPlanning"
+      },
+      "where": "menu",
+      "priority": 90,
+      "steps": [
+        {
+          "text": "Each role takes certain types (shown on the role). Strong stats make them better at it"
+        },
+        {
+          "text": "Breacher: opens the vault or doors (no Breacher is slow)"
+        },
+        {
+          "text": "Hacker: {Z} jams the cameras and alarm. Smoke: {X} knocks out nearby guards. Hauler: carries loot bags for you"
+        }
+      ]
+    },
+    {
+      "id": "heist-job",
+      "category": "street",
+      "title": "On the job",
+      "trigger": {
+        "on": "heistInfiltration"
+      },
+      "priority": 90,
+      "steps": [
+        {
+          "text": "Stay out of sight of guards and cameras: they raise the alarm"
+        },
+        {
+          "text": "Breach points are yellow on the minimap, loot bags green"
+        }
+      ]
+    },
+    {
+      "id": "heist-loot",
+      "category": "street",
+      "title": "Heavy bags",
+      "trigger": {
+        "on": "heistLoot"
+      },
+      "priority": 85,
+      "steps": [
+        {
+          "text": "Loot is heavy: the more you carry, the slower you go, and above 28 kg you can't sprint. A Hauler in the crew takes some"
+        },
+        {
+          "text": "The lock-up only opens with no stars on you"
+        }
+      ]
+    },
+    {
+      "id": "street-events",
+      "category": "street",
+      "title": "Street events",
+      "trigger": {
+        "on": "eventNear"
+      },
+      "priority": 55,
+      "steps": [
+        {
+          "text": "Red and orange markers are events: armoured trucks, Streetmon outbreaks, supply drops"
+        },
+        {
+          "text": "Stop the truck, clear the outbreak, or get to the crate first and press {E} to pry it open"
+        },
+        {
+          "text": "Rewards: cash, Street Cred, items and upgrade chips. Many bring the police"
+        }
+      ]
+    },
+    {
+      "id": "bosses",
+      "category": "story",
+      "title": "Bosses",
+      "trigger": {
+        "on": "nearBoss"
+      },
+      "priority": 75,
+      "steps": [
+        {
+          "text": "A red skull marks a crew boss. Press {E} next to them to start the fight"
+        },
+        {
+          "text": "Bosses bring a full team. Heal at a clinic first and bring types that beat theirs"
+        },
+        {
+          "text": "Lose and you black out, but the job stays on: come back and try again"
+        }
+      ]
+    },
+    {
+      "id": "catch-by-type",
+      "category": "story",
+      "title": "Hunting a type",
+      "steps": [
+        {
+          "text": "Wild Streetmon dots on the minimap are coloured by their type"
+        },
+        {
+          "text": "Some types live in certain districts, the sewers or on the roofs; others only come out at night"
+        },
+        {
+          "text": "Your Dex ({N}) shows where you first saw each species"
+        }
+      ]
+    },
+    {
+      "id": "escape-wanted",
+      "category": "story",
+      "title": "Shaking a crackdown",
+      "steps": [
+        {
+          "text": "Break line of sight: side streets, tunnels, round corners"
+        },
+        {
+          "text": "Drop down a manhole: no police in the sewers"
+        },
+        {
+          "text": "A tuned car helps: smokescreens and spike strips"
+        },
+        {
+          "text": "Getting busted fails the job"
+        }
+      ]
+    },
+    {
+      "id": "street-cred",
+      "category": "story",
+      "title": "Street Cred",
+      "steps": [
+        {
+          "text": "Street Cred comes from winning races, street events and jobs"
+        },
+        {
+          "text": "Districts remember what you did there"
+        }
+      ]
+    },
+    {
+      "id": "saving",
+      "category": "basics",
+      "title": "Saving",
+      "trigger": {
+        "on": "playTime",
+        "if": {
+          "minutes": {
+            "gte": 4
+          }
+        }
+      },
+      "priority": 10,
+      "steps": [
+        {
+          "text": "The game saves itself as you play"
+        },
+        {
+          "text": "{Esc} pauses: save, export a save file, turn sound, shadows and these tips on or off, or replay any tip"
+        },
+        {
+          "text": "{K} mutes the sound"
+        }
+      ]
+    },
+    {
+      "id": "raids",
+      "category": "streetmon",
+      "title": "Legendary raids",
+      "trigger": [
+        {
+          "on": "raidArrive"
+        },
+        {
+          "on": "raidOmen"
+        }
+      ],
+      "priority": 90,
+      "keep": true,
+      "steps": [
+        {
+          "text": "A legendary Streetmon is rampaging! Its stomps knock out wild Streetmon, throw cars and people, and flatten the street"
+        },
+        {
+          "text": "Stay out of the shock ring when it stomps, or it will flatten you too"
+        },
+        {
+          "text": "Trainers nearby come running to help. Their Streetmon wear it down while you get close"
+        },
+        {
+          "text": "Walk up to it and press {B} to fight it with them. It's tough and attacks twice as often as anything else, so bring your best team"
+        },
+        {
+          "text": "Leave it too long and it moves on. The bar at the top shows its HP and how long you have"
+        }
+      ]
+    },
+    {
+      "id": "raid-battle",
+      "category": "battles",
+      "title": "Raid battles",
+      "trigger": {
+        "on": "raidBattle"
+      },
+      "priority": 80,
+      "keep": true,
+      "steps": [
+        {
+          "text": "The trainers' Streetmon fight beside yours. They pick their own moves"
+        },
+        {
+          "text": "It can't be caught mid-fight. Beat it first"
+        },
+        {
+          "text": "Lose or run and it keeps the damage you did, so you can go again"
+        }
+      ]
+    },
+    {
+      "id": "raid-catch",
+      "category": "streetmon",
+      "title": "Catching a legendary",
+      "trigger": {
+        "on": "raidSubdued"
+      },
+      "priority": 95,
+      "keep": true,
+      "steps": [
+        {
+          "text": "It's subdued, but only for a moment!"
+        },
+        {
+          "text": "Face it and throw a capture item with {C}. Your odds are better than usual right now"
+        },
+        {
+          "text": "Keep throwing until the timer at the top runs out"
+        }
+      ]
+    }
+  ]
+}

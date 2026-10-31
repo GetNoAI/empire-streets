@@ -1,0 +1,239 @@
+{
+  "_comment": "People who can end up in a Streetmon fight (not catchable, not in the dex). Same fields as creatures.json; 'human': true. Their bodies are the people in the street, so the model palette is unused.",
+  "species": [
+    {
+      "id": "civilian",
+      "dex": 901,
+      "name": "Passer-by",
+      "human": true,
+      "types": [
+        "grind"
+      ],
+      "stage": 1,
+      "line": "civilian",
+      "base": {
+        "hp": 45,
+        "attack": 40,
+        "defense": 40,
+        "speed": 45,
+        "loud": 40
+      },
+      "growth": "medium",
+      "tier": 1,
+      "catchRate": 1,
+      "learnset": [
+        [
+          1,
+          "shoulderCheck"
+        ],
+        [
+          1,
+          "hustle"
+        ]
+      ],
+      "evolution": [],
+      "spawn": {
+        "districts": [],
+        "times": [],
+        "rarity": "rare",
+        "levels": [
+          5,
+          5
+        ],
+        "temperament": "flee"
+      },
+      "model": {
+        "height": 1.8,
+        "palette": {
+          "primary": "#3a3a3a",
+          "secondary": "#3a3a3a",
+          "accent": "#3a3a3a",
+          "eye": "#3a3a3a"
+        }
+      },
+      "description": "Someone who didn't want any trouble."
+    },
+    {
+      "id": "tough",
+      "dex": 902,
+      "name": "Tough Guy",
+      "human": true,
+      "types": [
+        "grind"
+      ],
+      "stage": 1,
+      "line": "tough",
+      "base": {
+        "hp": 70,
+        "attack": 70,
+        "defense": 55,
+        "speed": 50,
+        "loud": 60
+      },
+      "growth": "medium",
+      "tier": 2,
+      "catchRate": 1,
+      "learnset": [
+        [
+          1,
+          "shoulderCheck"
+        ],
+        [
+          1,
+          "shakedown"
+        ],
+        [
+          1,
+          "burnout"
+        ],
+        [
+          1,
+          "hustle"
+        ]
+      ],
+      "evolution": [],
+      "spawn": {
+        "districts": [],
+        "times": [],
+        "rarity": "rare",
+        "levels": [
+          5,
+          5
+        ],
+        "temperament": "aggro"
+      },
+      "model": {
+        "height": 1.8,
+        "palette": {
+          "primary": "#3a3a3a",
+          "secondary": "#3a3a3a",
+          "accent": "#3a3a3a",
+          "eye": "#3a3a3a"
+        }
+      },
+      "description": "Fights back."
+    },
+    {
+      "id": "officer",
+      "dex": 903,
+      "name": "Officer",
+      "human": true,
+      "types": [
+        "gun"
+      ],
+      "stage": 1,
+      "line": "officer",
+      "base": {
+        "hp": 80,
+        "attack": 70,
+        "defense": 70,
+        "speed": 60,
+        "loud": 70
+      },
+      "ammo": 12,
+      "growth": "medium",
+      "tier": 2,
+      "catchRate": 1,
+      "learnset": [
+        [
+          1,
+          "pistolWhip"
+        ],
+        [
+          1,
+          "snapShot"
+        ],
+        [
+          1,
+          "doubleTap"
+        ],
+        [
+          1,
+          "reload"
+        ]
+      ],
+      "evolution": [],
+      "spawn": {
+        "districts": [],
+        "times": [],
+        "rarity": "rare",
+        "levels": [
+          5,
+          5
+        ],
+        "temperament": "aggro"
+      },
+      "model": {
+        "height": 1.8,
+        "palette": {
+          "primary": "#1c2a4a",
+          "secondary": "#18223a",
+          "accent": "#1c2a4a",
+          "eye": "#1c2a4a"
+        }
+      },
+      "description": "NYPD. Tries to end the fight fast."
+    },
+    {
+      "id": "tranqofficer",
+      "dex": 904,
+      "name": "Animal Control",
+      "human": true,
+      "types": [
+        "gun"
+      ],
+      "stage": 1,
+      "line": "tranqofficer",
+      "base": {
+        "hp": 85,
+        "attack": 65,
+        "defense": 75,
+        "speed": 65,
+        "loud": 40
+      },
+      "ammo": 6,
+      "growth": "medium",
+      "tier": 3,
+      "catchRate": 1,
+      "learnset": [
+        [
+          1,
+          "tranqDart"
+        ],
+        [
+          1,
+          "beanbag"
+        ],
+        [
+          1,
+          "reload"
+        ],
+        [
+          1,
+          "pistolWhip"
+        ]
+      ],
+      "evolution": [],
+      "spawn": {
+        "districts": [],
+        "times": [],
+        "rarity": "rare",
+        "levels": [
+          5,
+          5
+        ],
+        "temperament": "aggro"
+      },
+      "model": {
+        "height": 1.8,
+        "palette": {
+          "primary": "#2e4a2a",
+          "secondary": "#2e4a2a",
+          "accent": "#2e4a2a",
+          "eye": "#2e4a2a"
+        }
+      },
+      "description": "Police animal control. Tranquilliser darts and beanbag rounds; they confiscate creatures."
+    }
+  ]
+}

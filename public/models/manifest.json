@@ -1,0 +1,11 @@
+{
+  "vehicles": {
+    "taxi": null,
+    "sedan": null,
+    "suv": null,
+    "sports": null,
+    "police": null,
+    "van": null
+  },
+  "player": null
+}

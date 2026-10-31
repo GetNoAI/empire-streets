@@ -1,0 +1,469 @@
+{
+  "_comment": "City map icons. layers: what the filter panel can show or hide (toggle false = always shown). sprites: the icon atlas, drawn at start-up into one texture, cell px square, in this order. icons: an icon id -> sprite, colour ('type' = the Streetmon's type colour), size in screen px, layer, and whether it rotates with a heading. sets: where each icon's coordinates come from: a game source (filled live each frame) or fixed points.",
+  "version": 1,
+  "map": {
+    "minZoom": 0.35,
+    "maxZoom": 6,
+    "startZoom": 0.9,
+    "panSpeed": 700,
+    "waypointArrive": 8,
+    "routeRefresh": 0.5,
+    "pauseWhileOpen": false
+  },
+  "layers": [
+    {
+      "id": "player",
+      "label": "You",
+      "toggle": false
+    },
+    {
+      "id": "waypoint",
+      "label": "Waypoint",
+      "toggle": false
+    },
+    {
+      "id": "cops",
+      "label": "Cops",
+      "default": true
+    },
+    {
+      "id": "wanted",
+      "label": "Wanted area",
+      "default": true
+    },
+    {
+      "id": "streetmon",
+      "label": "Streetmon spawns",
+      "default": true
+    },
+    {
+      "id": "heists",
+      "label": "Heists",
+      "default": true
+    },
+    {
+      "id": "races",
+      "label": "Races",
+      "default": true
+    },
+    {
+      "id": "events",
+      "label": "Street events",
+      "default": true
+    },
+    {
+      "id": "missions",
+      "label": "Missions",
+      "default": true
+    },
+    {
+      "id": "chopShop",
+      "label": "Chop Shop",
+      "default": true
+    },
+    {
+      "id": "sewers",
+      "label": "Sewer grates",
+      "default": true
+    },
+    {
+      "id": "rooftops",
+      "label": "Rooftop access",
+      "default": false
+    },
+    {
+      "id": "services",
+      "label": "Clinics & shops",
+      "default": true
+    }
+  ],
+  "sprites": {
+    "cell": 48,
+    "order": [
+      "arrow",
+      "dot",
+      "ring",
+      "paw",
+      "vault",
+      "truck",
+      "gem",
+      "cash",
+      "lock",
+      "grate",
+      "ladder",
+      "lift",
+      "garage",
+      "wrench",
+      "flag",
+      "cross",
+      "cart",
+      "pin",
+      "tank",
+      "bar",
+      "star",
+      "badge",
+      "mission",
+      "skull"
+    ]
+  },
+  "icons": {
+    "player": {
+      "sprite": "arrow",
+      "color": "#ffffff",
+      "size": 22,
+      "layer": "player",
+      "rotates": true
+    },
+    "waypoint": {
+      "sprite": "pin",
+      "color": "#ffd23f",
+      "size": 26,
+      "layer": "waypoint"
+    },
+    "cop": {
+      "sprite": "badge",
+      "color": "#2a5cff",
+      "size": 14,
+      "layer": "cops"
+    },
+    "tank": {
+      "sprite": "tank",
+      "color": "#ff3b3b",
+      "size": 18,
+      "layer": "cops"
+    },
+    "roadblock": {
+      "sprite": "bar",
+      "color": "#ff3b3b",
+      "size": 16,
+      "layer": "cops"
+    },
+    "wanted": {
+      "sprite": "ring",
+      "color": "#5a8cff",
+      "size": 0,
+      "layer": "wanted"
+    },
+    "streetmon": {
+      "sprite": "paw",
+      "color": "type",
+      "size": 13,
+      "layer": "streetmon"
+    },
+    "streetmonShiny": {
+      "sprite": "star",
+      "color": "#fff27a",
+      "size": 15,
+      "layer": "streetmon"
+    },
+    "heistBankVault": {
+      "sprite": "vault",
+      "color": "#b07cff",
+      "size": 22,
+      "layer": "heists"
+    },
+    "heistArmoredTruck": {
+      "sprite": "truck",
+      "color": "#b07cff",
+      "size": 22,
+      "layer": "heists"
+    },
+    "heistJewelryStore": {
+      "sprite": "gem",
+      "color": "#b07cff",
+      "size": 22,
+      "layer": "heists"
+    },
+    "heistCheckCashing": {
+      "sprite": "cash",
+      "color": "#b07cff",
+      "size": 22,
+      "layer": "heists"
+    },
+    "lockup": {
+      "sprite": "lock",
+      "color": "#4be37a",
+      "size": 18,
+      "layer": "heists"
+    },
+    "manhole": {
+      "sprite": "grate",
+      "color": "#c9d3d8",
+      "size": 12,
+      "layer": "sewers"
+    },
+    "fireEscape": {
+      "sprite": "ladder",
+      "color": "#ffb02e",
+      "size": 13,
+      "layer": "rooftops"
+    },
+    "elevator": {
+      "sprite": "lift",
+      "color": "#ffb02e",
+      "size": 13,
+      "layer": "rooftops"
+    },
+    "garage": {
+      "sprite": "garage",
+      "color": "#ffb02e",
+      "size": 15,
+      "layer": "rooftops"
+    },
+    "chopShop": {
+      "sprite": "wrench",
+      "color": "#ff3fa4",
+      "size": 20,
+      "layer": "chopShop"
+    },
+    "raceOrganizer": {
+      "sprite": "flag",
+      "color": "#ff7a1a",
+      "size": 20,
+      "layer": "races"
+    },
+    "raceLocked": {
+      "sprite": "flag",
+      "color": "#7a5a44",
+      "size": 16,
+      "layer": "races"
+    },
+    "clinic": {
+      "sprite": "cross",
+      "color": "#4be37a",
+      "size": 16,
+      "layer": "services"
+    },
+    "shop": {
+      "sprite": "cart",
+      "color": "#ffb02e",
+      "size": 16,
+      "layer": "services"
+    },
+    "eventTruck": {
+      "sprite": "truck",
+      "color": "#ff4b3a",
+      "size": 24,
+      "layer": "events"
+    },
+    "eventOutbreak": {
+      "sprite": "paw",
+      "color": "#ff4b3a",
+      "size": 24,
+      "layer": "events"
+    },
+    "eventDrop": {
+      "sprite": "pin",
+      "color": "#ff9a1a",
+      "size": 24,
+      "layer": "events"
+    },
+    "missionGiver": {
+      "sprite": "mission",
+      "color": "#ffd23f",
+      "size": 28,
+      "layer": "missions"
+    },
+    "missionObjective": {
+      "sprite": "pin",
+      "color": "#ffd23f",
+      "size": 28,
+      "layer": "missions"
+    },
+    "missionBoss": {
+      "sprite": "skull",
+      "color": "#ff4b3a",
+      "size": 28,
+      "layer": "missions"
+    }
+  },
+  "sets": [
+    {
+      "icon": "player",
+      "source": "player"
+    },
+    {
+      "icon": "waypoint",
+      "source": "waypoint"
+    },
+    {
+      "icon": "cop",
+      "source": "police.units"
+    },
+    {
+      "icon": "tank",
+      "source": "police.tanks"
+    },
+    {
+      "icon": "roadblock",
+      "source": "police.roadblocks"
+    },
+    {
+      "icon": "wanted",
+      "source": "police.search"
+    },
+    {
+      "icon": "streetmon",
+      "source": "spawns.wild"
+    },
+    {
+      "icon": "heistBankVault",
+      "source": "heists.targets",
+      "match": {
+        "kind": "bankVault"
+      }
+    },
+    {
+      "icon": "heistArmoredTruck",
+      "source": "heists.targets",
+      "match": {
+        "kind": "armoredTruck"
+      }
+    },
+    {
+      "icon": "heistJewelryStore",
+      "source": "heists.targets",
+      "match": {
+        "kind": "jewelryStore"
+      }
+    },
+    {
+      "icon": "heistCheckCashing",
+      "source": "heists.targets",
+      "match": {
+        "kind": "checkCashing"
+      }
+    },
+    {
+      "icon": "lockup",
+      "source": "heists.dropOffs"
+    },
+    {
+      "icon": "manhole",
+      "source": "sewers.manholes"
+    },
+    {
+      "icon": "fireEscape",
+      "source": "rooftops.access",
+      "match": {
+        "kind": "fireEscape"
+      }
+    },
+    {
+      "icon": "elevator",
+      "source": "rooftops.access",
+      "match": {
+        "kind": "elevator"
+      }
+    },
+    {
+      "icon": "garage",
+      "source": "rooftops.garages"
+    },
+    {
+      "icon": "chopShop",
+      "source": "chopShop"
+    },
+    {
+      "icon": "raceOrganizer",
+      "source": "races.organizers"
+    },
+    {
+      "icon": "clinic",
+      "source": "clinics"
+    },
+    {
+      "icon": "shop",
+      "source": "shops"
+    },
+    {
+      "icon": "eventTruck",
+      "source": "streetEvents.markers",
+      "match": {
+        "type": "armoredTruck"
+      }
+    },
+    {
+      "icon": "eventOutbreak",
+      "source": "streetEvents.markers",
+      "match": {
+        "type": "turfOutbreak"
+      }
+    },
+    {
+      "icon": "eventDrop",
+      "source": "streetEvents.markers",
+      "match": {
+        "type": "airdrop"
+      }
+    },
+    {
+      "icon": "missionGiver",
+      "source": "campaign.markers",
+      "match": {
+        "kind": "giver"
+      }
+    },
+    {
+      "icon": "missionObjective",
+      "source": "campaign.markers",
+      "match": {
+        "kind": "objective"
+      }
+    },
+    {
+      "icon": "missionObjective",
+      "source": "campaign.markers",
+      "match": {
+        "kind": "boundary"
+      }
+    },
+    {
+      "icon": "missionBoss",
+      "source": "campaign.markers",
+      "match": {
+        "kind": "boss"
+      }
+    }
+  ],
+  "labels": [
+    {
+      "text": "UPTOWN",
+      "x": 0,
+      "z": -420,
+      "size": 30
+    },
+    {
+      "text": "MIDTOWN",
+      "x": 0,
+      "z": 60,
+      "size": 30
+    },
+    {
+      "text": "DOWNTOWN",
+      "x": 0,
+      "z": 470,
+      "size": 30
+    },
+    {
+      "text": "Central Green",
+      "x": 0,
+      "z": 30,
+      "size": 16
+    },
+    {
+      "text": "Hudson River",
+      "x": -560,
+      "z": 0,
+      "size": 16,
+      "vertical": true
+    },
+    {
+      "text": "East River",
+      "x": 560,
+      "z": 0,
+      "size": 16,
+      "vertical": true
+    }
+  ]
+}

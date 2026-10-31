@@ -1,0 +1,298 @@
+{
+  "version": 1,
+  "_comment": "Living world: NPC Streetmon hunters, street chatter and speech bubbles, wild territory fights, packs, threats, aggressive Streetmon attacking the player, and the AI activity radius. Distances are metres, times seconds. Chatter lines take {placeholders}: species, level, district, street, strong / weak (a type and one it beats), track, racer, crew, item, name.",
+  "lod": {
+    "activeRadius": 80,
+    "cellSize": 16,
+    "wildLiteEvery": 4,
+    "pedLiteEvery": 3,
+    "fxRadius": 45
+  },
+  "hunters": {
+    "max": 3,
+    "recruitEverySeconds": [
+      12,
+      30
+    ],
+    "recruitRadius": [
+      10,
+      60
+    ],
+    "searchRadius": 22,
+    "searchSeconds": 50,
+    "engageDistance": 6,
+    "walkSpeed": 2.2,
+    "levelOffset": [
+      -1,
+      3
+    ],
+    "turnEvery": [
+      1.1,
+      1.7
+    ],
+    "damageScale": 0.55,
+    "catchBelowHp": 0.35,
+    "throwsMax": 3,
+    "throwSeconds": 0.75,
+    "shakeSeconds": 0.55,
+    "pods": [
+      {
+        "id": "net",
+        "weight": 5
+      },
+      {
+        "id": "crate",
+        "weight": 3
+      },
+      {
+        "id": "cage",
+        "weight": 1
+      }
+    ],
+    "celebrateSeconds": 3,
+    "fleeSeconds": 7,
+    "cooldownSeconds": 120,
+    "maxCatchesRemembered": 6
+  },
+  "chatter": {
+    "radius": 3,
+    "maxDistanceFromCamera": 45,
+    "chancePerPair": 0.35,
+    "checkEverySeconds": 0.5,
+    "cooldownSeconds": 75,
+    "maxConversations": 3,
+    "lineSeconds": [
+      2.4,
+      3.4
+    ]
+  },
+  "bubbles": {
+    "height": 2.2,
+    "fadeNear": 16,
+    "fadeFar": 34,
+    "maxVisible": 10,
+    "fadeSeconds": 0.25,
+    "maxChars": 30
+  },
+  "territory": {
+    "sightRange": 13,
+    "engageDistance": 3.4,
+    "maxFights": 2,
+    "checkEverySeconds": 0.6,
+    "turnEvery": [
+      1.0,
+      1.6
+    ],
+    "damageScale": 0.55,
+    "loserFleesBelowHp": 0.3,
+    "calmSeconds": 45,
+    "playerBreaksUpWithin": 5,
+    "rivalries": [
+      [
+        "gun",
+        "concrete"
+      ],
+      [
+        "smoke",
+        "bass"
+      ],
+      [
+        "concrete",
+        "bass"
+      ],
+      [
+        "gun",
+        "grind"
+      ],
+      [
+        "grind",
+        "smoke"
+      ],
+      [
+        "wire",
+        "sludge"
+      ]
+    ]
+  },
+  "packs": {
+    "chance": 0.35,
+    "followers": [
+      1,
+      2
+    ],
+    "temperaments": [
+      "wander",
+      "aggro"
+    ],
+    "rarities": [
+      "common",
+      "uncommon"
+    ],
+    "spacing": 2.4,
+    "wanderRadius": 4,
+    "regroupDistance": 9
+  },
+  "threats": {
+    "carMinKmh": 25,
+    "carRadiusPerKmh": 0.2,
+    "carMaxRadius": 20,
+    "explosionRadius": 40,
+    "fleeSeconds": [
+      6,
+      9
+    ]
+  },
+  "aggro": {
+    "autoBattle": false,
+    "attackRange": 1.9,
+    "attackEvery": [
+      1.1,
+      1.7
+    ],
+    "damageBase": 3,
+    "damagePerLevel": 0.16,
+    "typeBonus": {
+      "gun": 1.25,
+      "concrete": 1.15
+    },
+    "giveUpDistance": 36,
+    "hideSeconds": 3,
+    "chaseSeconds": 45,
+    "calmAfterSeconds": 50,
+    "knockBack": 2.2
+  },
+  "lines": {
+    "hunter": {
+      "spot": [
+        "Ooh, a {species}!",
+        "That {species}'s mine.",
+        "Don't move, little guy...",
+        "Found you, {species}!"
+      ],
+      "send": [
+        "Go, {name}!",
+        "{name}, you're up!",
+        "Get 'em, {name}!",
+        "Show it who's boss, {name}!"
+      ],
+      "throw": [
+        "Pod, go!",
+        "Come on, come on...",
+        "Gotcha... maybe?",
+        "In you go!"
+      ],
+      "caught": [
+        "YES! Got a {species}!",
+        "Lv {level} {species}, bagged!",
+        "Easy money.",
+        "Wait till the crew sees this."
+      ],
+      "brokeFree": [
+        "Argh, so close!",
+        "It broke out!",
+        "No no no!"
+      ],
+      "gotAway": [
+        "It got away...",
+        "Next time, {species}.",
+        "Ugh. Wasted pods."
+      ],
+      "won": [
+        "Knocked it out cold.",
+        "Too strong for its own good."
+      ],
+      "lost": [
+        "{name}, no!",
+        "Run!!",
+        "Nope. Nope nope nope."
+      ],
+      "robbed": [
+        "Hey, that was mine!",
+        "Seriously? I saw it first!"
+      ]
+    },
+    "chatter": {
+      "tips": [
+        [
+          "{strong} types wreck {weak} types.",
+          "Learned that one the hard way."
+        ],
+        [
+          "Wear 'em down before you throw.",
+          "Full health and the pod just bounces."
+        ],
+        [
+          "Nets for small fry, cages for the rare ones.",
+          "Cages cost a fortune though."
+        ],
+        [
+          "Rare ones come out at night.",
+          "That's why I never sleep."
+        ],
+        [
+          "Gun types don't flinch at gunfire.",
+          "Yeah, they come looking for it."
+        ],
+        [
+          "Sneak up slow, they don't spot you.",
+          "Sprint and they bolt."
+        ]
+      ],
+      "league": [
+        [
+          "You see {racer} at the {track}?",
+          "Smoked the whole grid. Unreal."
+        ],
+        [
+          "League buy-ins went up again.",
+          "Commissioner's taking a cut, I bet."
+        ],
+        [
+          "{crew} are running the {district} streets now.",
+          "Not for long if the League has a say."
+        ],
+        [
+          "My cousin slotted a {species} in his engine.",
+          "Did it blow up?",
+          "Twice."
+        ],
+        [
+          "Midnight sprints are back on.",
+          "Cops set up roadblocks every time."
+        ]
+      ],
+      "brag": [
+        [
+          "Just caught a Lv {level} {species}!",
+          "Pics or it didn't happen."
+        ],
+        [
+          "Bagged a {species} on {street}.",
+          "No way, those are tough."
+        ],
+        [
+          "My {species} took down a Rebarb today.",
+          "Sure it did."
+        ]
+      ],
+      "news": [
+        [
+          "Sirens all night. Somebody's hot.",
+          "Not my business."
+        ],
+        [
+          "Armored truck got hit last week.",
+          "Cash all over the street, I heard."
+        ],
+        [
+          "Streetmon fight on the corner earlier.",
+          "{strong} vs {weak}. No contest."
+        ],
+        [
+          "Stay off the sidewalk, these drivers are nuts.",
+          "Tell me about it."
+        ]
+      ]
+    }
+  }
+}

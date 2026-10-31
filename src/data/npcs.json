@@ -1,0 +1,709 @@
+{
+  "_comment": "People who live in the sewers. home: the district whose maze they live in; spot: 0-7; even spots stand round that maze's hub, odd spots live at camps out in the halls (1 = the hall nearest the hub, 3 the next, 5 the third). role: quest (gives quests), rest (heals your team for a fee), market (black market), talk. dialogue: start node, optional 'when' rules picked in order ({quest, is: none | active | ready | done, node}), and nodes {text, choices: [[label, next]]} where next is a node id or 'end'; a node may also 'do' an action: startQuest:<id>, turnIn:<id>, shop, rest.",
+  "npcs": [
+    {
+      "id": "old-ray",
+      "name": "Old Ray",
+      "home": "midtown",
+      "spot": 0,
+      "role": "quest",
+      "look": {
+        "top": "#6b5a48",
+        "legs": "#2a2d33",
+        "hair": "#cfcfcf"
+      },
+      "dialogue": {
+        "start": "hi",
+        "when": [
+          {
+            "quest": "lost-gutterat",
+            "is": "active",
+            "node": "waiting"
+          },
+          {
+            "quest": "lost-gutterat",
+            "is": "done",
+            "node": "thanks"
+          }
+        ],
+        "nodes": {
+          "hi": {
+            "text": "Topside folks don't come down here. You lost?",
+            "choices": [
+              [
+                "Looking for work.",
+                "job"
+              ],
+              [
+                "Just passing through.",
+                "end"
+              ]
+            ]
+          },
+          "job": {
+            "text": "My Gutterat, Pepper, ran off towards one of the big chambers. She's scared of the steam. Bring her back to the Under-Station?",
+            "choices": [
+              [
+                "I'll find her.",
+                "accept"
+              ],
+              [
+                "Not now.",
+                "end"
+              ]
+            ]
+          },
+          "accept": {
+            "text": "Bless you. She'll follow you if you're kind to her.",
+            "do": "startQuest:lost-gutterat",
+            "choices": [
+              [
+                "On it.",
+                "end"
+              ]
+            ]
+          },
+          "waiting": {
+            "text": "Any sign of Pepper? Last I heard she was squeaking from a chamber to the east.",
+            "choices": [
+              [
+                "Still looking.",
+                "end"
+              ]
+            ]
+          },
+          "thanks": {
+            "text": "Pepper hasn't left my side since. You're welcome down here any time.",
+            "choices": [
+              [
+                "Glad she's home.",
+                "end"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "dot",
+      "name": "Dot",
+      "home": "midtown",
+      "spot": 1,
+      "role": "quest",
+      "look": {
+        "top": "#8a3a3a",
+        "legs": "#22252b",
+        "hair": "#3a2a1a",
+        "build": "f",
+        "hairStyle": "ponytail"
+      },
+      "dialogue": {
+        "start": "hi",
+        "when": [
+          {
+            "quest": "valve-job",
+            "is": "ready",
+            "node": "turnin"
+          },
+          {
+            "quest": "valve-job",
+            "is": "active",
+            "node": "waiting"
+          },
+          {
+            "quest": "valve-job",
+            "is": "done",
+            "node": "after"
+          }
+        ],
+        "nodes": {
+          "hi": {
+            "text": "Pressure's dropping on the warm pipe. Somebody pinched the valve wheel and dumped it in a dead end.",
+            "choices": [
+              [
+                "I can fetch it.",
+                "accept"
+              ],
+              [
+                "Not my problem.",
+                "end"
+              ]
+            ]
+          },
+          "accept": {
+            "text": "Follow the marker on your map. Watch the sludge.",
+            "do": "startQuest:valve-job",
+            "choices": [
+              [
+                "Back soon.",
+                "end"
+              ]
+            ]
+          },
+          "waiting": {
+            "text": "No wheel, no heat. Dead end, down the tunnels.",
+            "choices": [
+              [
+                "Going.",
+                "end"
+              ]
+            ]
+          },
+          "turnin": {
+            "text": "That's the one! Hand it over.",
+            "do": "turnIn:valve-job",
+            "choices": [
+              [
+                "Here.",
+                "end"
+              ]
+            ]
+          },
+          "after": {
+            "text": "Warm pipe's warm again. You're all right.",
+            "choices": [
+              [
+                "Stay warm.",
+                "end"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "marco",
+      "name": "Marco",
+      "home": "midtown",
+      "spot": 2,
+      "role": "quest",
+      "look": {
+        "top": "#3a5a3a",
+        "legs": "#3b3f46",
+        "hair": "#151515"
+      },
+      "dialogue": {
+        "start": "hi",
+        "when": [
+          {
+            "quest": "clear-the-nest",
+            "is": "active",
+            "node": "waiting"
+          },
+          {
+            "quest": "clear-the-nest",
+            "is": "done",
+            "node": "after"
+          }
+        ],
+        "nodes": {
+          "hi": {
+            "text": "A nest of feral Drainlings took over a chamber. Nobody can get past to the dry tunnels.",
+            "choices": [
+              [
+                "I'll clear it.",
+                "accept"
+              ],
+              [
+                "Gators? No thanks.",
+                "end"
+              ]
+            ]
+          },
+          "accept": {
+            "text": "Three of them. Mean ones. You can't take them home either: they'd eat your whole team.",
+            "do": "startQuest:clear-the-nest",
+            "choices": [
+              [
+                "Let's see.",
+                "end"
+              ]
+            ]
+          },
+          "waiting": {
+            "text": "Nest's still there. I can hear them snapping.",
+            "choices": [
+              [
+                "On it.",
+                "end"
+              ]
+            ]
+          },
+          "after": {
+            "text": "Dry tunnels are open again. People are moving their stuff already.",
+            "choices": [
+              [
+                "Good.",
+                "end"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "sal",
+      "name": "Sal",
+      "home": "midtown",
+      "spot": 3,
+      "role": "quest",
+      "look": {
+        "top": "#5a4a7a",
+        "legs": "#2a2d33",
+        "hair": "#b07a3a",
+        "build": "f",
+        "hairStyle": "bun"
+      },
+      "dialogue": {
+        "start": "hi",
+        "when": [
+          {
+            "quest": "spore-samples",
+            "is": "ready",
+            "node": "turnin"
+          },
+          {
+            "quest": "spore-samples",
+            "is": "active",
+            "node": "waiting"
+          },
+          {
+            "quest": "spore-samples",
+            "is": "done",
+            "node": "after"
+          }
+        ],
+        "nodes": {
+          "hi": {
+            "text": "I'm studying the mould down here. I need a live Mildew. Catch one for me?",
+            "choices": [
+              [
+                "Sure.",
+                "accept"
+              ],
+              [
+                "Gross.",
+                "end"
+              ]
+            ]
+          },
+          "accept": {
+            "text": "They like dead ends. Here: these Lures help. Sludge types can't resist them.",
+            "do": "startQuest:spore-samples",
+            "choices": [
+              [
+                "Thanks.",
+                "end"
+              ]
+            ]
+          },
+          "waiting": {
+            "text": "A Mildew. Any Mildew. They shuffle around the dead ends.",
+            "choices": [
+              [
+                "Working on it.",
+                "end"
+              ]
+            ]
+          },
+          "turnin": {
+            "text": "Oh, it's beautiful. Let me take some spores. There. Keep it, it likes you.",
+            "do": "turnIn:spore-samples",
+            "choices": [
+              [
+                "Happy to help.",
+                "end"
+              ]
+            ]
+          },
+          "after": {
+            "text": "The spores glow under UV. I think they're talking to each other.",
+            "choices": [
+              [
+                "Creepy.",
+                "end"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "mama-lu",
+      "name": "Mama Lu",
+      "home": "midtown",
+      "spot": 4,
+      "role": "rest",
+      "look": {
+        "top": "#c26a2a",
+        "legs": "#3a2a2a",
+        "hair": "#e8e8e8",
+        "build": "f",
+        "hairStyle": "bun",
+        "skirt": true,
+        "apron": "#efe6d6",
+        "skin": "#a0694a"
+      },
+      "dialogue": {
+        "start": "hi",
+        "nodes": {
+          "hi": {
+            "text": "Sit down, sit down. Your Streetmon look tired. Forty dollars for soup and a warm corner?",
+            "choices": [
+              [
+                "Rest ($40).",
+                "rest"
+              ],
+              [
+                "Maybe later.",
+                "end"
+              ]
+            ]
+          },
+          "rest": {
+            "text": "There. Good as new.",
+            "do": "rest",
+            "choices": [
+              [
+                "Thank you, Mama.",
+                "end"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "fence",
+      "name": "Fence",
+      "home": "midtown",
+      "spot": 5,
+      "role": "market",
+      "look": {
+        "top": "#1d1d22",
+        "legs": "#1d1d22",
+        "hair": "#151515"
+      },
+      "dialogue": {
+        "start": "hi",
+        "nodes": {
+          "hi": {
+            "text": "Things you can't get topside. Stock changes every day. Prices change with how much I like you.",
+            "choices": [
+              [
+                "Show me.",
+                "shop"
+              ],
+              [
+                "Just looking.",
+                "end"
+              ]
+            ]
+          },
+          "shop": {
+            "text": "",
+            "do": "shop",
+            "choices": []
+          }
+        }
+      }
+    },
+    {
+      "id": "pip",
+      "name": "Pip",
+      "home": "midtown",
+      "spot": 6,
+      "role": "talk",
+      "look": {
+        "top": "#2f8f5a",
+        "legs": "#22252b",
+        "hair": "#d8b23a",
+        "build": "f",
+        "hairStyle": "ponytail"
+      },
+      "dialogue": {
+        "start": "hi",
+        "nodes": {
+          "hi": {
+            "text": "Tips? Steam grates blow every few seconds, wait for the gap. The fast channels carry you, don't fight them. And cops never come down here.",
+            "choices": [
+              [
+                "What's this place?",
+                "place"
+              ],
+              [
+                "Thanks.",
+                "end"
+              ]
+            ]
+          },
+          "place": {
+            "text": "The Under-Station. Every district's got a hub like this, but this is where folks live. Help people out and they'll trust you more.",
+            "choices": [
+              [
+                "Got it.",
+                "end"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "hollis",
+      "name": "Hollis",
+      "home": "uptown",
+      "spot": 0,
+      "role": "quest",
+      "look": {
+        "top": "#3a4a6a",
+        "legs": "#2a2d33",
+        "hair": "#8a7a6a"
+      },
+      "dialogue": {
+        "start": "hi",
+        "when": [
+          {
+            "quest": "signal-down-here",
+            "is": "ready",
+            "node": "turnin"
+          },
+          {
+            "quest": "signal-down-here",
+            "is": "active",
+            "node": "waiting"
+          },
+          {
+            "quest": "signal-down-here",
+            "is": "done",
+            "node": "after"
+          }
+        ],
+        "nodes": {
+          "hi": {
+            "text": "I'm building a radio to hear the city up there. Need three parts: an antenna, a coil and a speaker. They're scattered in the dead ends.",
+            "choices": [
+              [
+                "I'll find them.",
+                "accept"
+              ],
+              [
+                "Not today.",
+                "end"
+              ]
+            ]
+          },
+          "accept": {
+            "text": "Antenna first. Then the coil, then the speaker.",
+            "do": "startQuest:signal-down-here",
+            "choices": [
+              [
+                "Okay.",
+                "end"
+              ]
+            ]
+          },
+          "waiting": {
+            "text": "Still missing parts. Check your map.",
+            "choices": [
+              [
+                "Going.",
+                "end"
+              ]
+            ]
+          },
+          "turnin": {
+            "text": "That's all three! Listen... traffic, sirens, someone singing. Beautiful.",
+            "do": "turnIn:signal-down-here",
+            "choices": [
+              [
+                "Enjoy.",
+                "end"
+              ]
+            ]
+          },
+          "after": {
+            "text": "I listen every night now. You sound famous up there.",
+            "choices": [
+              [
+                "Ha.",
+                "end"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "queenie",
+      "name": "Queenie",
+      "home": "downtown",
+      "spot": 0,
+      "role": "quest",
+      "look": {
+        "top": "#7a2a5a",
+        "legs": "#1d1d22",
+        "hair": "#151515",
+        "build": "f",
+        "hairStyle": "long",
+        "skirt": true
+      },
+      "dialogue": {
+        "start": "hi",
+        "when": [
+          {
+            "quest": "the-king-below",
+            "is": "active",
+            "node": "waiting"
+          },
+          {
+            "quest": "the-king-below",
+            "is": "done",
+            "node": "after"
+          }
+        ],
+        "nodes": {
+          "hi": {
+            "text": "There's a Ratking holding court down here. It takes our food and scares the kids. You look strong. Are you?",
+            "choices": [
+              [
+                "I'll deal with it.",
+                "accept"
+              ],
+              [
+                "No.",
+                "end"
+              ]
+            ]
+          },
+          "accept": {
+            "text": "It sits in the far chamber. It won't be alone. Folks say you can't catch a king.",
+            "do": "startQuest:the-king-below",
+            "choices": [
+              [
+                "We'll see.",
+                "end"
+              ]
+            ]
+          },
+          "waiting": {
+            "text": "The court's still squeaking. The far chamber.",
+            "choices": [
+              [
+                "Going.",
+                "end"
+              ]
+            ]
+          },
+          "after": {
+            "text": "The tunnels are ours again. The whole Under-Station's talking about you.",
+            "choices": [
+              [
+                "Long live the Under-Station.",
+                "end"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "gus",
+      "name": "Gus",
+      "home": "midtown",
+      "spot": 7,
+      "role": "quest",
+      "look": {
+        "top": "#3f5a3a",
+        "legs": "#23262b",
+        "hair": "#9a9a92"
+      },
+      "dialogue": {
+        "start": "hi",
+        "when": [
+          {
+            "quest": "the-deep-hum",
+            "is": "active",
+            "node": "waiting"
+          },
+          {
+            "quest": "the-deep-hum",
+            "is": "ready",
+            "node": "back"
+          },
+          {
+            "quest": "the-deep-hum",
+            "is": "done",
+            "node": "after"
+          }
+        ],
+        "nodes": {
+          "hi": {
+            "text": "Forty years I've worked these pipes. We always hum when we work, so the big one knows we're friends. Lately it's humming back. Louder every night.",
+            "choices": [
+              [
+                "The big one?",
+                "what"
+              ],
+              [
+                "Not my problem.",
+                "end"
+              ]
+            ]
+          },
+          "what": {
+            "text": "Undertow. Sleeps under the old cistern. If it wakes angry, the water comes up with it, and the Under-Station goes under. Somebody strong has to calm it down. Or catch it.",
+            "choices": [
+              [
+                "I'll go.",
+                "accept"
+              ],
+              [
+                "Maybe later.",
+                "end"
+              ]
+            ]
+          },
+          "accept": {
+            "text": "Follow the hum to the old cistern, then the flooded chamber past it. Folks down here will come running when they hear it. You won't be fighting alone.",
+            "do": "startQuest:the-deep-hum",
+            "choices": [
+              [
+                "Here goes.",
+                "end"
+              ]
+            ]
+          },
+          "waiting": {
+            "text": "Hear that? Follow it. And whatever you do, don't stop humming.",
+            "choices": [
+              [
+                "Going.",
+                "end"
+              ]
+            ]
+          },
+          "back": {
+            "text": "The pipes went quiet an hour ago. Was that you? Sit, tell me everything.",
+            "do": "turnIn:the-deep-hum",
+            "choices": [
+              [
+                "It's calm now.",
+                "end"
+              ]
+            ]
+          },
+          "after": {
+            "text": "First quiet night in a month. The kids are calling you the one who sang Undertow to sleep.",
+            "choices": [
+              [
+                "Something like that.",
+                "end"
+              ]
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,1030 @@
+{
+  "_comment": "Streetmondex text per species (presentation only). Numbers such as stats, height and weight come from creatures.json. Every species needs an entry; Data validation checks it.",
+  "entries": {
+    "strapback": {
+      "category": "Hooded Kid",
+      "lore": [
+        "Strapback hang around corner stores after dark, eyes glowing orange under their hoods.",
+        "They tape anything metal to themselves. Nobody knows where they get the tape."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "downtown",
+            "park"
+          ],
+          "times": [
+            "dusk",
+            "night"
+          ],
+          "text": "Home turf: Downtown, at dusk and at night (strays turn up in the Park). Only dangerous in the Park"
+        }
+      ]
+    },
+    "holster": {
+      "category": "Sidearm",
+      "lore": [
+        "Holster stand with their hands near their hips, always ready to draw first.",
+        "Some say the pouches hold spare magazines; others say snacks."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "downtown",
+            "park"
+          ],
+          "times": [
+            "night"
+          ],
+          "text": "Home turf: Downtown, at night (strays turn up in the Park). Only dangerous in the Park"
+        }
+      ]
+    },
+    "hardcase": {
+      "category": "Armoured Case",
+      "lore": [
+        "The latch on Hardcase's chest has never been seen open.",
+        "Gangs bring a Hardcase to a deal so everyone keeps their hands where they can be seen."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "text": "Only by evolving Holster"
+        }
+      ]
+    },
+    "slugger": {
+      "category": "Revolver Hound",
+      "lore": [
+        "Slugger's shoulder cylinders click round as it sniffs out trouble.",
+        "A Slugger on a leash is the classic patrol partner for night-shift officers."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "waterfront",
+            "downtown",
+            "park"
+          ],
+          "times": [
+            "night"
+          ],
+          "text": "Home turf: the Waterfront, at night (strays turn up in Downtown and the Park). Only dangerous in the Park"
+        }
+      ]
+    },
+    "longshot": {
+      "category": "Scope Heron",
+      "lore": [
+        "Longshot stand on one leg on the piers for hours, watching the water through a scope eye.",
+        "It never misses twice. Usually it doesn't need to."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "waterfront",
+            "park"
+          ],
+          "times": [
+            "day",
+            "dusk"
+          ],
+          "text": "Home turf: the Waterfront, by day and at dusk (strays turn up in the Park)"
+        }
+      ]
+    },
+    "overwatch": {
+      "category": "Tripod Sentinel",
+      "lore": [
+        "Overwatch plant their tripod legs on roof edges and watch whole blocks at a time.",
+        "Pigeons won't land within ten metres of one."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "waterfront"
+          ],
+          "times": [
+            "day",
+            "dusk"
+          ],
+          "text": "Home turf: the Waterfront, by day and at dusk"
+        }
+      ]
+    },
+    "cinderblock": {
+      "category": "Block Golem",
+      "lore": [
+        "A stack of cinder blocks that got up and walked off a building site.",
+        "Cinderblock rebuild themselves with whatever bricks are lying around."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "uptown",
+            "midtown"
+          ],
+          "times": [
+            "day",
+            "dusk",
+            "night"
+          ],
+          "text": "Home turf: Uptown, by day, at dusk and at night (strays turn up in Midtown)"
+        }
+      ]
+    },
+    "overpass": {
+      "category": "Bridge Span",
+      "lore": [
+        "Traffic rumbles across Overpass's back in its sleep.",
+        "Commuters swear the BQE was shorter before one moved in underneath."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "waterfront"
+          ],
+          "times": [
+            "night"
+          ],
+          "text": "Home turf: the Waterfront, at night"
+        }
+      ]
+    },
+    "curbstone": {
+      "category": "Kerb Armadillo",
+      "lore": [
+        "Curbstone curl into balls at the side of the road and wait to trip someone up.",
+        "Street sweepers give them a wide berth."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "uptown"
+          ],
+          "times": [
+            "day",
+            "dusk"
+          ],
+          "text": "Home turf: Uptown, by day and at dusk"
+        }
+      ]
+    },
+    "rebarb": {
+      "category": "Rebar Porcupine",
+      "lore": [
+        "Rebarb bristle with steel rods and fire them when cornered.",
+        "Building sites post signs warning about them. Nobody reads the signs."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "downtown",
+            "park"
+          ],
+          "times": [
+            "day",
+            "dusk",
+            "night"
+          ],
+          "text": "Home turf: Downtown, by day, at dusk and at night (strays turn up in the Park). Only dangerous in the Park"
+        }
+      ]
+    },
+    "doubleshift": {
+      "category": "Clock Runner",
+      "lore": [
+        "Doubleshift run their routes before dawn, the clock on their belly ticking fast.",
+        "They evolve if they keep levelling through the small hours."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "midtown",
+            "uptown"
+          ],
+          "times": [
+            "day",
+            "dusk"
+          ],
+          "text": "Home turf: Midtown, by day and at dusk (strays turn up in Uptown)"
+        }
+      ]
+    },
+    "overtime": {
+      "category": "Twin Clock",
+      "lore": [
+        "Overtime has a clock on each side and has never once clocked out.",
+        "It gets stronger the longer the fight goes on."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "midtown"
+          ],
+          "times": [
+            "night"
+          ],
+          "text": "Home turf: Midtown, at night"
+        }
+      ]
+    },
+    "hustlepup": {
+      "category": "Courier Pup",
+      "lore": [
+        "Hustlepup haul backpacks twice their size between offices all day.",
+        "Tip one and it will remember you for life."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "park",
+            "uptown"
+          ],
+          "times": [
+            "day",
+            "dusk"
+          ],
+          "text": "Home turf: the Park, by day and at dusk (strays turn up in Uptown)"
+        }
+      ]
+    },
+    "cashew": {
+      "category": "Coin Squirrel",
+      "lore": [
+        "Cashew stuff their cheeks with coins from park fountains.",
+        "It never spends them. Nobody knows where the stash is."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "park"
+          ],
+          "times": [
+            "day",
+            "dusk"
+          ],
+          "text": "Home turf: the Park, by day and at dusk"
+        }
+      ]
+    },
+    "exhaustfume": {
+      "category": "Tailpipe Cloud",
+      "lore": [
+        "Exhaustfume drift out of tailpipes in traffic jams and hang at ankle height.",
+        "Breathing one in makes your eyes water for an hour."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "downtown",
+            "midtown"
+          ],
+          "times": [
+            "day",
+            "dusk",
+            "night"
+          ],
+          "text": "Home turf: Downtown, by day, at dusk and at night (strays turn up in Midtown)"
+        }
+      ]
+    },
+    "backfire": {
+      "category": "Twin Pipe",
+      "lore": [
+        "Backfire's pipes go off like gunshots, which drives Gun types wild.",
+        "Car alarms go off when one walks past."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "downtown",
+            "park"
+          ],
+          "times": [
+            "night"
+          ],
+          "text": "Home turf: Downtown, at night (strays turn up in the Park). Only dangerous in the Park"
+        }
+      ]
+    },
+    "hazeling": {
+      "category": "Haze Fox",
+      "lore": [
+        "A see-through fox with three ring-tipped tails, gone the moment you look straight at it.",
+        "Park rangers only know one is near from the smell of incense."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "park"
+          ],
+          "times": [
+            "dusk",
+            "night"
+          ],
+          "text": "Home turf: the Park, at dusk and at night"
+        }
+      ]
+    },
+    "flue": {
+      "category": "Chimney Lizard",
+      "lore": [
+        "Flue warm themselves on rooftop chimneys and puff soot rings when content.",
+        "Old brownstones with a Flue in the chimney never need heating."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "uptown"
+          ],
+          "times": [
+            "night"
+          ],
+          "text": "Home turf: Uptown, at night"
+        }
+      ]
+    },
+    "subsonic": {
+      "category": "Speaker Pup",
+      "lore": [
+        "Subsonic's cone thumps so low you feel it before you hear it.",
+        "It evolves if it levels up near the clubs at night."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "midtown",
+            "downtown"
+          ],
+          "times": [
+            "night"
+          ],
+          "text": "Home turf: Midtown, at night (strays turn up in Downtown)"
+        }
+      ]
+    },
+    "woofer": {
+      "category": "Stack Beast",
+      "lore": [
+        "Three cones and a ring on its back: windows rattle a block away when Woofer barks.",
+        "Block parties used to rent one. Then the neighbours complained."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "downtown",
+            "park"
+          ],
+          "times": [
+            "night"
+          ],
+          "text": "Home turf: Downtown, at night (strays turn up in the Park). Only dangerous in the Park"
+        }
+      ]
+    },
+    "streetlamp": {
+      "category": "Lamp Moth",
+      "lore": [
+        "Streetlamp hum at mains frequency and gather under bridges after dusk.",
+        "Lost walkers follow their glow home. Usually."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "park",
+            "uptown"
+          ],
+          "times": [
+            "dusk",
+            "night"
+          ],
+          "text": "Home turf: the Park, at dusk and at night (strays turn up in Uptown)"
+        }
+      ]
+    },
+    "wirewhip": {
+      "category": "Live Wire Eel",
+      "lore": [
+        "Wirewhip hang from stubs of power line, crackling.",
+        "Linemen check for one before they climb."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "waterfront",
+            "park"
+          ],
+          "times": [
+            "night"
+          ],
+          "text": "Home turf: the Waterfront, at night (strays turn up in the Park). Only dangerous in the Park"
+        }
+      ]
+    },
+    "rooftail": {
+      "category": "Antenna Pigeon",
+      "lore": [
+        "Rooftail gather on antennas before storms; the static makes their feathers stand up.",
+        "Couriers say a flock overhead means the signal is about to drop."
+      ],
+      "habitatHints": [
+        {
+          "biome": "roof",
+          "districts": [
+            "uptown",
+            "midtown",
+            "downtown"
+          ],
+          "times": [
+            "day",
+            "dusk"
+          ],
+          "text": "Rooftops in every district, by day and dusk"
+        }
+      ]
+    },
+    "antennaroc": {
+      "category": "Aerial Roc",
+      "lore": [
+        "Antennaroc only land on the highest aerial in sight, and the whole block's TVs go to snow.",
+        "Its chest speaker plays whatever station it last flew through."
+      ],
+      "habitatHints": [
+        {
+          "biome": "roof",
+          "districts": [
+            "midtown",
+            "downtown"
+          ],
+          "times": [
+            "dusk"
+          ],
+          "text": "High rooftops in Midtown and Downtown, at dusk (or evolve Rooftail)"
+        }
+      ]
+    },
+    "neonmoth": {
+      "category": "Neon Moth",
+      "lore": [
+        "Neonmoth circle bar signs all night and buzz when they're nervous.",
+        "A flickering sign usually means one is sleeping inside."
+      ],
+      "habitatHints": [
+        {
+          "biome": "roof",
+          "districts": [
+            "midtown",
+            "downtown"
+          ],
+          "times": [
+            "dusk",
+            "night"
+          ],
+          "text": "Rooftops in Midtown and Downtown, at dusk and at night"
+        }
+      ]
+    },
+    "marqueen": {
+      "category": "Marquee Moth",
+      "lore": [
+        "Marqueen's wings are theatre marquees, every bulb lit.",
+        "Evolves from a Neonmoth that levels up at night."
+      ],
+      "habitatHints": [
+        {
+          "biome": "roof",
+          "districts": [
+            "downtown"
+          ],
+          "times": [
+            "night"
+          ],
+          "text": "Downtown rooftops at night (or evolve Neonmoth at night)"
+        }
+      ]
+    },
+    "dishling": {
+      "category": "Dish Turtle",
+      "lore": [
+        "Dishling turn their shells to follow the strongest signal, a few degrees an hour.",
+        "Building supers find them wedged behind the water tank."
+      ],
+      "habitatHints": [
+        {
+          "biome": "roof",
+          "districts": [
+            "uptown",
+            "midtown"
+          ],
+          "times": [
+            "day",
+            "dusk",
+            "night"
+          ],
+          "text": "Rooftops in Uptown and Midtown, any time"
+        }
+      ]
+    },
+    "broadcastle": {
+      "category": "Tower Turtle",
+      "lore": [
+        "A concrete broadcast tower on legs; its aviation light blinks in time with its heartbeat.",
+        "Pirate radio DJs follow it from roof to roof."
+      ],
+      "habitatHints": [
+        {
+          "biome": "roof",
+          "districts": [
+            "uptown"
+          ],
+          "times": [
+            "night"
+          ],
+          "text": "Uptown rooftops at night (or evolve Dishling)"
+        }
+      ]
+    },
+    "gutterat": {
+      "category": "Gutter Rat",
+      "lore": [
+        "Gutterat travel in packs and pass messages by tapping on pipes.",
+        "Leave out a crust and a Gutterat will trade you a bottle cap for it."
+      ],
+      "habitatHints": [
+        {
+          "biome": "sewer",
+          "districts": [
+            "uptown",
+            "midtown",
+            "downtown"
+          ],
+          "times": [
+            "day",
+            "dusk",
+            "night"
+          ],
+          "text": "Sewers under every district, any time"
+        }
+      ]
+    },
+    "ratking": {
+      "category": "Rat Monarch",
+      "lore": [
+        "Its crown is made of bottle caps paid as tribute by its court.",
+        "Evolves from a Gutterat at Lv 22; wild ones rule the Downtown sewers at night."
+      ],
+      "habitatHints": [
+        {
+          "biome": "sewer",
+          "districts": [
+            "downtown"
+          ],
+          "times": [
+            "night"
+          ],
+          "text": "Downtown sewers at night (or evolve Gutterat)"
+        }
+      ]
+    },
+    "drainling": {
+      "category": "Flushed Gator",
+      "lore": [
+        "Every Drainling started as someone's pet. They don't hold a grudge, mostly.",
+        "They like the fast channels and drift along with the current."
+      ],
+      "habitatHints": [
+        {
+          "biome": "sewer",
+          "districts": [
+            "midtown",
+            "downtown"
+          ],
+          "times": [
+            "day",
+            "dusk",
+            "night"
+          ],
+          "text": "Midtown and Downtown sewers, near the channels"
+        }
+      ]
+    },
+    "sewergator": {
+      "category": "Concrete Gator",
+      "lore": [
+        "Concrete has grown into its hide, plate by plate.",
+        "Maintenance crews leave a sandwich at the grate as a toll."
+      ],
+      "habitatHints": [
+        {
+          "biome": "sewer",
+          "districts": [
+            "midtown"
+          ],
+          "times": [
+            "night"
+          ],
+          "text": "Midtown sewers at night (or evolve Drainling)"
+        }
+      ]
+    },
+    "mildew": {
+      "category": "Walking Mold",
+      "lore": [
+        "A cluster of mushrooms that learned to shuffle.",
+        "It puffs spores when startled; they make you sneeze for an hour."
+      ],
+      "habitatHints": [
+        {
+          "biome": "sewer",
+          "districts": [
+            "uptown",
+            "midtown"
+          ],
+          "times": [
+            "day",
+            "dusk",
+            "night"
+          ],
+          "text": "Dead ends and chambers under Uptown and Midtown"
+        }
+      ]
+    },
+    "moldmother": {
+      "category": "Fungal Matriarch",
+      "lore": [
+        "Moldmother carpets whole chambers and glows a soft green in the dark.",
+        "Tunnel dwellers say the air near it tastes like rain."
+      ],
+      "habitatHints": [
+        {
+          "biome": "sewer",
+          "districts": [
+            "uptown"
+          ],
+          "times": [
+            "night"
+          ],
+          "text": "Uptown sewer chambers at night (or evolve Mildew)"
+        }
+      ]
+    },
+    "gridlock": {
+      "category": "Traffic Titan",
+      "lore": [
+        "Gridlock surfaces when the whole city is stuck at once. Nobody agrees whether it causes the jams or feeds on them.",
+        "Trainers say if you hear every car alarm on a block go off together, run towards it, not away."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "midtown",
+            "downtown"
+          ],
+          "times": [
+            "day",
+            "dusk"
+          ],
+          "text": "Rampages through Midtown or Downtown traffic, very rarely (a raid)"
+        }
+      ]
+    },
+    "blackout": {
+      "category": "Grid Wraith",
+      "lore": [
+        "Blackout drifts down avenues at night and drinks every light it passes.",
+        "When it's gone the street lamps come back on all at once, brighter than before."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "uptown",
+            "midtown"
+          ],
+          "times": [
+            "night"
+          ],
+          "text": "Uptown or Midtown streets at night, very rarely (a raid)"
+        }
+      ]
+    },
+    "undertow": {
+      "category": "Sewer Leviathan",
+      "lore": [
+        "The sewer crews hum when they work so it knows they're friends. Nobody has ever said what happens if you don't.",
+        "It sleeps under the oldest chamber in the tunnels. Something has to wake it."
+      ],
+      "habitatHints": [
+        {
+          "biome": "sewer",
+          "districts": [
+            "midtown"
+          ],
+          "text": "Deep in the Midtown sewer, once the sewer community asks for help (a quest)"
+        }
+      ]
+    },
+    "curbcrusher": {
+      "category": "Kerb Ram",
+      "lore": [
+        "Curbcrusher shoves parked cars back onto the road if they so much as touch its kerb.",
+        "Its hazard stripes are painted on. Nobody knows who keeps repainting them."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "uptown"
+          ],
+          "times": [
+            "day",
+            "dusk"
+          ],
+          "text": "Home turf: Uptown, by day and at dusk, or evolve Curbstone (Lv 24)"
+        }
+      ]
+    },
+    "jackpot": {
+      "category": "Slot Squirrel",
+      "lore": [
+        "Jackpot's belly reels spin when it's excited. Three cherries means it's about to bite.",
+        "It hoards coins in Park tree hollows, and Park rangers find them by the bucket."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "park"
+          ],
+          "times": [
+            "day",
+            "dusk"
+          ],
+          "text": "Home turf: the Park, by day and at dusk, or evolve Cashew (Lv 22)"
+        }
+      ]
+    },
+    "fogbank": {
+      "category": "Lantern Fog",
+      "lore": [
+        "Fogbank rolls over the Park lake at night with a warm light glowing somewhere inside.",
+        "Lost joggers who follow the light always seem to end up at the gate nearest home."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "park"
+          ],
+          "times": [
+            "night"
+          ],
+          "text": "Home turf: the Park, at night, or evolve Hazeling (Lv 28)"
+        }
+      ]
+    },
+    "floodlight": {
+      "category": "Stadium Moth",
+      "lore": [
+        "Floodlight turns the Park bright as day when it flares its four lamps.",
+        "Every moth in the city flies to it, and so do half the night's Streetmon."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "park"
+          ],
+          "times": [
+            "night"
+          ],
+          "text": "Home turf: the Park, at night, or evolve Streetlamp (Lv 26)"
+        }
+      ]
+    },
+    "barricade": {
+      "category": "Roadblock",
+      "lore": [
+        "Barricade plants itself across a street and dares anything on wheels to try.",
+        "Downtown crews rent it by the night. The police have tried to impound it three times."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "downtown",
+            "park"
+          ],
+          "times": [
+            "night"
+          ],
+          "text": "Home turf: Downtown, at night (strays turn up in the Park). Only dangerous in the Park, or evolve Rebarb (Lv 30)"
+        }
+      ]
+    },
+    "bigshot": {
+      "category": "Debt Collector",
+      "lore": [
+        "Bigshot's bat is two shotgun barrels taped together, and it has never missed a swing.",
+        "Waterfront loan sharks keep one around. The interest rates go up when it's in the room."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "waterfront",
+            "park"
+          ],
+          "times": [
+            "night"
+          ],
+          "text": "Home turf: the Waterfront, at night (strays turn up in the Park). Only dangerous in the Park, or evolve Slugger (Lv 30)"
+        }
+      ]
+    },
+    "smokestack": {
+      "category": "Old Chimney",
+      "lore": [
+        "Smokestack wandered off when its factory closed and never let its fire go out.",
+        "On cold Uptown nights the homeless sleep in its shadow for the warmth."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "uptown"
+          ],
+          "times": [
+            "night"
+          ],
+          "text": "Home turf: Uptown, at night, or evolve Flue (Lv 32)"
+        }
+      ]
+    },
+    "livewire": {
+      "category": "Live Line",
+      "lore": [
+        "Livewire is a downed power line that refused to stay down.",
+        "It hums one low note, and the street lights flicker in time."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "waterfront",
+            "park"
+          ],
+          "times": [
+            "night"
+          ],
+          "text": "Home turf: the Waterfront, at night (strays turn up in the Park). Only dangerous in the Park, or evolve Wirewhip (Lv 33)"
+        }
+      ]
+    },
+    "hustlehound": {
+      "category": "Courier Hound",
+      "lore": [
+        "Hustlehound has never delivered a package late, and has never used the front door.",
+        "Its goggles are pushed up because it doesn't need them; it just likes the look."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "park",
+            "uptown"
+          ],
+          "times": [
+            "day",
+            "dusk"
+          ],
+          "text": "Home turf: the Park, by day and at dusk (strays turn up in Uptown), or evolve Hustlepup (Lv 22)"
+        }
+      ]
+    },
+    "tagling": {
+      "category": "Spray Can",
+      "lore": [
+        "Tagling tags every wall it passes and its paint never quite dries.",
+        "Midtown building owners chase it with buckets. It always gets away, dripping."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "midtown"
+          ],
+          "times": [
+            "day",
+            "dusk"
+          ],
+          "text": "Home turf: Midtown, by day and at dusk"
+        }
+      ]
+    },
+    "muralist": {
+      "category": "Neon Painter",
+      "lore": [
+        "Muralist paints a whole wall overnight and signs it with a glowing halo.",
+        "Galleries have tried to buy its murals. It only paints on walls that aren't for sale."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "midtown"
+          ],
+          "times": [
+            "night"
+          ],
+          "text": "Home turf: Midtown, at night, or evolve Tagling (Lv 25)"
+        }
+      ]
+    },
+    "bollard": {
+      "category": "Mooring Post",
+      "lore": [
+        "Bollard wandered up the pier one day. Ships still try to tie up to it.",
+        "It is almost impossible to push over. Waterfront kids dare each other to try."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "waterfront"
+          ],
+          "times": [
+            "day",
+            "dusk"
+          ],
+          "text": "Home turf: the Waterfront, by day and at dusk"
+        }
+      ]
+    },
+    "gullgrifter": {
+      "category": "Pier Hustler",
+      "lore": [
+        "Gullgrifter runs a chip racket on the pier in a stolen flat cap.",
+        "It has never paid for anything and has never missed a dropped fry."
+      ],
+      "habitatHints": [
+        {
+          "biome": "street",
+          "districts": [
+            "waterfront"
+          ],
+          "times": [
+            "day",
+            "dusk"
+          ],
+          "text": "Home turf: the Waterfront, by day and at dusk"
+        }
+      ]
+    },
+    "clogger": {
+      "category": "Sewer Clog",
+      "lore": [
+        "Clogger is everything anyone ever flushed, packed hard enough to walk.",
+        "Sewer crews have pulled a wedding ring, three phones and a set of car keys out of one."
+      ],
+      "habitatHints": [
+        {
+          "biome": "sewer",
+          "districts": [
+            "uptown",
+            "midtown"
+          ],
+          "times": [
+            "day",
+            "dusk",
+            "night"
+          ],
+          "text": "Sewers under Uptown and Midtown, by day, at dusk and at night"
+        }
+      ]
+    }
+  }
+}

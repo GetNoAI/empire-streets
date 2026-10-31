@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "_comment": "Destructible street props (src/systems/destruction.js rules, src/systems/DestructionWorld.ts world). hp: damage to break it. breakSpeedKmh: a car at or above this snaps it off (slowed by carSlow, its health hit by carDamage); slower, it's solid. radius: footprint (m) for cars, battles and Streetmon. material sets the break sound and how much bullets do (materials.bullet). Broken props leave physics debris (capped, faded out), and are repaired when you're far away and not looking (settings.repairSeconds, repairMinDistance), the way open-world games put their streets back. Explosions, gunfire, Streetmon moves and legendary stomps damage them too.",
+  "settings": {
+    "maxDebris": 70,
+    "debrisLife": [9, 15],
+    "debrisFade": 1.5,
+    "repairSeconds": 150,
+    "repairMinDistance": 70,
+    "cellSize": 8,
+    "decals": { "bullet": 220, "scorch": 48, "crack": 48 }
+  },
+  "materials": {
+    "metal": { "bullet": 0.5, "melee": 0.4, "explosion": 1, "streetmon": 1, "legendary": 3, "sound": "metal" },
+    "lightMetal": { "bullet": 1.2, "melee": 1, "explosion": 1.5, "streetmon": 1.4, "legendary": 4, "sound": "lightMetal" },
+    "wood": { "bullet": 0.8, "melee": 0.7, "explosion": 1.2, "streetmon": 1, "legendary": 3, "sound": "wood" },
+    "plastic": { "bullet": 1.4, "melee": 1.2, "explosion": 2, "streetmon": 1.5, "legendary": 4, "sound": "plastic" }
+  },
+  "kinds": {
+    "lamp": { "name": "Street lamp", "hp": 320, "material": "metal", "radius": 0.18, "breakSpeedKmh": 38, "carSlow": 0.86, "carDamage": 45, "debris": "pole" },
+    "hydrant": { "name": "Fire hydrant", "hp": 220, "material": "metal", "radius": 0.24, "breakSpeedKmh": 26, "carSlow": 0.9, "carDamage": 25, "debris": "hydrant", "geyserSeconds": 14 },
+    "tree": { "name": "Street tree", "hp": 360, "material": "wood", "radius": 0.3, "breakSpeedKmh": 50, "carSlow": 0.72, "carDamage": 60, "debris": "tree" },
+    "parkTree": { "name": "Park tree", "hp": 480, "material": "wood", "radius": 0.32, "breakSpeedKmh": 62, "carSlow": 0.66, "carDamage": 75, "debris": "tree" },
+    "trashCan": { "name": "Trash can", "hp": 60, "material": "lightMetal", "radius": 0.32, "breakSpeedKmh": 10, "carSlow": 0.97, "carDamage": 3, "debris": "can" },
+    "newsBox": { "name": "Newspaper box", "hp": 90, "material": "plastic", "radius": 0.36, "breakSpeedKmh": 14, "carSlow": 0.95, "carDamage": 6, "debris": "box" },
+    "bench": { "name": "Bench", "hp": 140, "material": "wood", "radius": 0.85, "breakSpeedKmh": 18, "carSlow": 0.92, "carDamage": 10, "debris": "bench" },
+    "mailbox": { "name": "Mailbox", "hp": 160, "material": "metal", "radius": 0.36, "breakSpeedKmh": 20, "carSlow": 0.93, "carDamage": 12, "debris": "box" }
+  },
+  "damage": {
+    "explosionRadius": 1.4,
+    "explosionDamage": 520,
+    "streetmonPerPower": 2.2,
+    "streetmonRadius": 1.8,
+    "stompDamage": 900
+  }
+}

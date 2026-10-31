@@ -1,0 +1,108 @@
+Empire Streets — creature model polish: execution log (2026-10-29)
+
+== 1. Build (scripts/build-creatures.ts) ==
+Streetmon creature build — 2026-10-29T14:06:41.609Z
+validator: GlbCheck (Khronos-equivalent data checks; gltf-validator not installed); budget 300-1500 triangles, <= 5 draw calls; warnings fail the build
+
+  file                    tris  draws    KB  bevel/plain/cut  rough metal  errors warnings
+✔ strapback.glb           1204      3   253           12/0/0   0.38  0.75       0        0
+✔ strapback_shiny.glb     1204      3   253           12/0/0   0.38  0.75       0        0
+✔ holster.glb             1392      3   286           16/0/0   0.38  0.75       0        0
+✔ holster_shiny.glb       1392      3   286           16/0/0   0.38  0.75       0        0
+✔ hardcase.glb            1300      3   270           15/0/0   0.45  0.58       0        0
+✔ hardcase_shiny.glb      1300      3   270           15/0/0   0.45  0.58       0        0
+✔ slugger.glb             1332      3   277           14/0/0   0.38  0.75       0        0
+✔ slugger_shiny.glb       1332      3   277           14/0/0   0.38  0.75       0        0
+✔ longshot.glb             848      3   198            5/0/0   0.38  0.75       0        0
+✔ longshot_shiny.glb       848      3   198            5/0/0   0.38  0.75       0        0
+✔ overwatch.glb           1014      3   232            5/0/0   0.38  0.75       0        0
+✔ overwatch_shiny.glb     1014      3   232            5/0/0   0.38  0.75       0        0
+✔ cinderblock.glb          898      3   199            7/0/0   0.60  0.20       0        0
+✔ cinderblock_shiny.glb    898      3   199            7/0/0   0.60  0.20       0        0
+✔ overpass.glb            1176      3   248           13/0/0   0.60  0.20       0        0
+✔ overpass_shiny.glb      1176      3   248           13/0/0   0.60  0.20       0        0
+✔ curbstone.glb           1186      3   265           11/0/0   0.60  0.20       0        0
+✔ curbstone_shiny.glb     1186      3   265           11/0/0   0.60  0.20       0        0
+✔ rebarb.glb              1218      3   251            4/0/0   0.53  0.36       0        0
+✔ rebarb_shiny.glb        1218      3   251            4/0/0   0.53  0.36       0        0
+✔ doubleshift.glb         1196      3   263            2/0/0   0.45  0.60       0        0
+✔ doubleshift_shiny.glb   1196      3   263            2/0/0   0.45  0.60       0        0
+✔ overtime.glb            1488      3   326            1/1/1   0.45  0.60       0        0
+✔ overtime_shiny.glb      1488      3   326            1/1/1   0.45  0.60       0        0
+✔ hustlepup.glb           1214      3   264           10/0/0   0.45  0.60       0        0
+✔ hustlepup_shiny.glb     1214      3   264           10/0/0   0.45  0.60       0        0
+✔ cashew.glb              1280      3   284            0/0/0   0.45  0.60       0        0
+✔ cashew_shiny.glb        1280      3   284            0/0/0   0.45  0.60       0        0
+✔ exhaustfume.glb          952      4   195            1/0/0   0.56  0.20       0        0
+✔ exhaustfume_shiny.glb    952      4   195            1/0/0   0.56  0.20       0        0
+✔ backfire.glb            1304      4   258            2/0/0   0.56  0.20       0        0
+✔ backfire_shiny.glb      1304      4   258            2/0/0   0.56  0.20       0        0
+✔ hazeling.glb            1222      4   272            0/0/0   0.56  0.20       0        0
+✔ hazeling_shiny.glb      1222      4   272            0/0/0   0.56  0.20       0        0
+✔ flue.glb                1242      4   304           10/0/0   0.57  0.20       0        0
+✔ flue_shiny.glb          1242      4   304           10/0/0   0.57  0.20       0        0
+✔ subsonic.glb            1012      3   214            3/0/0   0.30  0.25       0        0
+✔ subsonic_shiny.glb      1012      3   214            3/0/0   0.30  0.25       0        0
+✔ woofer.glb              1488      3   329            0/8/6   0.30  0.25       0        0
+✔ woofer_shiny.glb        1488      3   329            0/8/6   0.30  0.25       0        0
+✔ streetlamp.glb           736      3   167            2/0/0   0.30  0.25       0        0
+✔ streetlamp_shiny.glb     736      3   167            2/0/0   0.30  0.25       0        0
+✔ wirewhip.glb            1408      3   345            0/0/0   0.30  0.25       0        0
+✔ wirewhip_shiny.glb      1408      3   345            0/0/0   0.30  0.25       0        0
+✔ rooftail.glb             970      4   233            2/0/0   0.40  0.55       0        0
+✔ rooftail_shiny.glb       970      4   233            2/0/0   0.40  0.55       0        0
+✔ antennaroc.glb          1242      4   296            3/0/0   0.37  0.46       0        0
+✔ antennaroc_shiny.glb    1242      4   296            3/0/0   0.37  0.46       0        0
+✔ neonmoth.glb             694      5   169            0/0/0   0.45  0.45       0        0
+✔ neonmoth_shiny.glb       694      5   169            0/0/0   0.45  0.45       0        0
+✔ marqueen.glb            1118      5   244            0/0/0   0.45  0.45       0        0
+✔ marqueen_shiny.glb      1118      5   244            0/0/0   0.45  0.45       0        0
+✔ dishling.glb            1038      4   227            6/0/0   0.40  0.55       0        0
+✔ dishling_shiny.glb      1038      4   227            6/0/0   0.40  0.55       0        0
+✔ broadcastle.glb         1150      4   248           10/0/0   0.46  0.45       0        0
+✔ broadcastle_shiny.glb   1150      4   248           10/0/0   0.46  0.45       0        0
+✔ gutterat.glb             910      4   223            4/0/0   0.32  0.20       0        0
+✔ gutterat_shiny.glb       910      4   223            4/0/0   0.32  0.20       0        0
+✔ ratking.glb             1256      4   337            4/0/0   0.36  0.32       0        0
+✔ ratking_shiny.glb       1256      4   337            4/0/0   0.36  0.32       0        0
+✔ drainling.glb           1186      4   278           11/0/0   0.32  0.20       0        0
+✔ drainling_shiny.glb     1186      4   278           11/0/0   0.32  0.20       0        0
+✔ sewergator.glb          1368      3   307           17/0/0   0.40  0.20       0        0
+✔ sewergator_shiny.glb    1368      3   307           17/0/0   0.40  0.20       0        0
+✔ mildew.glb              1192      4   264            2/0/0   0.39  0.20       0        0
+✔ mildew_shiny.glb        1192      4   264            2/0/0   0.39  0.20       0        0
+✔ moldmother.glb          1456      5   380            4/4/4   0.39  0.20       0        0
+✔ moldmother_shiny.glb    1456      5   380            4/4/4   0.39  0.20       0        0
+
+68 files (34 species x standard + shiny) in 2.5 s -> public/creatures/
+triangles: min 694, max 1488, mean 1167
+validation: 0 errors, 0 warnings across 68 files
+manifest: public/creatures/manifest.json (34 entries, bounding boxes and triangle counts refreshed)
+✔ all models regenerated, valid and recorded in the manifest
+
+Columns: bevel/plain/cut = parts kept bevelled / bevels reverted to fit the budget / optional polish parts (joint caps, eye sockets) cut to fit.
+
+== 2. Second, independent loader check (three.js GLTFLoader, in the running game) ==
+68 / 68 files loaded; 0 failures
+  - triangle count after import equals the manifest for every file
+  - every skinned mesh bound to its skeleton; 6 clips per file; every animation track resolves to a node
+  - vertex colours on every mesh; glow materials carry their pulse (glTF extras) on all 34 species
+
+== 3. Unit tests (tests/run.ts) ==
+767 passed, 0 failed (24 new: chamfer geometry, surface ranges, gradient, crevice AO,
+vertex-colour range, glow pulse metadata and run-time pulse, budget fitting, zero-warning exports)
+TypeScript: tsc --noEmit clean (container and Mac). Production bundle builds.
+
+== 4. In-game regression check (browser muted: music off, every track muted) ==
+  - driving: 0-100 km/h in 8.0 s on a clear street (baseline 8.05 s)
+  - wanted level: 4 witnessed carjacks -> 2 stars, 3 police units dispatched; clears normally
+  - wild creatures load the new .glb models; 15 glowing meshes pulsing in the scene
+
+== Validator note ==
+The Khronos glTF-Validator could not be installed: the npm registry is unreachable from the
+build container, and the Mac's npm returns 403 (blocked by security policy) for "gltf-validator".
+Blender wasn't usable either (not running, and its command-line path isn't set). So every file was
+checked by GlbCheck, now extended with the Khronos data checks that apply to these models, with
+warnings counted as failures, and then re-loaded by three.js's GLTFLoader as a second check.
+Once gltf-validator can be installed, `npm run creatures` runs it as well and fails on any of
+its errors or warnings.

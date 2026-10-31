@@ -1,0 +1,11 @@
+node_modules
+dist
+*.log
+.DS_Store
+# Local work files (not part of the game)
+.s*.zip
+.step*.zip
+.three.tgz
+.apply.py
+.bc.mjs
+build/

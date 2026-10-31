@@ -1,0 +1,114 @@
+Streetmon creature build — 2026-10-30T10:51:11.058Z
+validator: GlbCheck (Khronos-equivalent data checks; gltf-validator not installed); budget 300-1500 triangles, <= 5 draw calls; warnings fail the build
+
+atlas: public/creatures/atlas/streetmon_color.png, public/creatures/atlas/streetmon_normal.png, public/creatures/atlas/streetmon_orm.png (512 x 512)
+
+  file                    tris  draws    KB  bevel/plain/cut  merged hidden  wear rust grime  errors warnings
+✔ strapback.glb           1108      3   310           12/0/0       0     96   259   37    96       0        0
+✔ strapback_shiny.glb     1108      3   310           12/0/0       0     96   259   37    96       0        0
+✔ holster.glb             1226      3   339           16/0/0       2    164   317   73    96       0        0
+✔ holster_shiny.glb       1226      3   339           16/0/0       2    164   317   73    96       0        0
+✔ hardcase.glb            1013      3   287           15/0/0       2    285   271   65    96       0        0
+✔ hardcase_shiny.glb      1013      3   287           15/0/0       2    285   271   65    96       0        0
+✔ slugger.glb             1222      3   339           14/0/0      72     38   206   78   216       0        0
+✔ slugger_shiny.glb       1222      3   339           14/0/0      72     38   206   78   216       0        0
+✔ longshot.glb             781      3   237            5/0/0      34     33    95   41    30       0        0
+✔ longshot_shiny.glb       781      3   237            5/0/0      34     33    95   41    30       0        0
+✔ overwatch.glb            927      3   278            5/0/0      48     39   101   35    45       0        0
+✔ overwatch_shiny.glb      927      3   278            5/0/0      48     39   101   35    45       0        0
+✔ cinderblock.glb          863      3   250            7/0/0      18     17   200    0    32       0        0
+✔ cinderblock_shiny.glb    863      3   250            7/0/0      18     17   200    0    32       0        0
+✔ overpass.glb            1134      3   317           13/0/0      20     22   308   20   116       0        0
+✔ overpass_shiny.glb      1134      3   317           13/0/0      20     22   308   20   116       0        0
+✔ curbstone.glb           1122      3   329           11/0/0       8     56   236   52    88       0        0
+✔ curbstone_shiny.glb     1122      3   329           11/0/0       8     56   236   52    88       0        0
+✔ rebarb.glb              1032      3   287            4/0/0     134     52    64    0    88       0        0
+✔ rebarb_shiny.glb        1032      3   287            4/0/0     134     52    64    0    88       0        0
+✔ doubleshift.glb         1037      3   304            2/0/0      22    137     0    0    94       0        0
+✔ doubleshift_shiny.glb   1037      3   304            2/0/0      22    137     0    0    94       0        0
+✔ overtime.glb            1336      3   389            2/0/0      26    194     0    0    94       0        0
+✔ overtime_shiny.glb      1336      3   389            2/0/0      26    194     0    0    94       0        0
+✔ hustlepup.glb           1118      3   321           10/0/0       6     90   199   57   136       0        0
+✔ hustlepup_shiny.glb     1118      3   321           10/0/0       6     90   211   45   136       0        0
+✔ cashew.glb              1105      3   327            0/0/0      24    151     0    0    88       0        0
+✔ cashew_shiny.glb        1105      3   327            0/0/0      24    151     0    0    88       0        0
+✔ exhaustfume.glb          948      4   258            1/0/0       4      0    22   10     0       0        0
+✔ exhaustfume_shiny.glb    948      4   258            1/0/0       4      0    22   10     0       0        0
+✔ backfire.glb            1296      4   345            2/0/0       8      0    53   11     0       0        0
+✔ backfire_shiny.glb      1296      4   345            2/0/0       8      0    53   11     0       0        0
+✔ hazeling.glb            1200      4   349            0/0/0      22      0     0    0    12       0        0
+✔ hazeling_shiny.glb      1200      4   349            0/0/0      22      0     0    0    12       0        0
+✔ flue.glb                1189      4   374           10/0/0       4     49   228    0   116       0        0
+✔ flue_shiny.glb          1189      4   375           10/0/0       4     49   228    0   116       0        0
+✔ subsonic.glb             998      3   278            3/0/0      10      4    88    0    28       0        0
+✔ subsonic_shiny.glb       998      3   278            3/0/0      10      4    88    0    28       0        0
+✔ woofer.glb              1453      3   421            0/8/6      26     35     0    0     4       0        0
+✔ woofer_shiny.glb        1453      3   421            0/8/6      26     35     0    0     4       0        0
+✔ streetlamp.glb           674      3   200            2/0/0      34     28    12    0    72       0        0
+✔ streetlamp_shiny.glb     674      3   200            2/0/0      34     28    12    0    72       0        0
+✔ wirewhip.glb            1386      3   434            0/0/0      12     10     0    0    14       0        0
+✔ wirewhip_shiny.glb      1386      3   434            0/0/0      12     10     0    0    14       0        0
+✔ rooftail.glb             828      4   262            2/0/0      18    124    42   22    36       0        0
+✔ rooftail_shiny.glb       828      4   263            2/0/0      18    124    42   22    36       0        0
+✔ antennaroc.glb          1099      4   344            3/0/0      34    109    78   33    36       0        0
+✔ antennaroc_shiny.glb    1099      4   344            3/0/0      34    109    78   33    36       0        0
+✔ neonmoth.glb             670      5   209            0/0/0      16      8     0    0     0       0        0
+✔ neonmoth_shiny.glb       670      5   209            0/0/0      16      8     0    0     0       0        0
+✔ marqueen.glb            1095      5   314            0/0/0       8     15     0    0     0       0        0
+✔ marqueen_shiny.glb      1095      5   314            0/0/0       8     15     0    0     0       0        0
+✔ dishling.glb             923      4   269            6/0/0      12    103   118   54    88       0        0
+✔ dishling_shiny.glb       923      4   269            6/0/0      12    103   136   36    88       0        0
+✔ broadcastle.glb         1118      4   318           10/0/0      16     16   263   69    88       0        0
+✔ broadcastle_shiny.glb   1118      4   318           10/0/0      16     16   263   69    88       0        0
+✔ gutterat.glb             868      4   273            4/0/0      26     16    80    0    56       0        0
+✔ gutterat_shiny.glb       868      4   273            4/0/0      26     16    80    0    56       0        0
+✔ ratking.glb             1160      4   398            4/0/0      80     16    80    0    56       0        0
+✔ ratking_shiny.glb       1160      4   398            4/0/0      80     16    80    0    56       0        0
+✔ drainling.glb           1116      4   340           11/0/0      22     48   304    0    80       0        0
+✔ drainling_shiny.glb     1116      4   340           11/0/0      22     48   304    0    80       0        0
+✔ sewergator.glb          1308      3   384           17/0/0      12     48   446   50    80       0        0
+✔ sewergator_shiny.glb    1308      3   384           17/0/0      12     48   446   50    80       0        0
+✔ mildew.glb              1104      4   322            2/0/0      16     72    32    0    76       0        0
+✔ mildew_shiny.glb        1104      4   322            2/0/0      16     72    32    0    76       0        0
+✔ moldmother.glb          1472      5   483            4/4/0      24    104    60    0    64       0        0
+✔ moldmother_shiny.glb    1472      5   484            4/4/0      24    104    60    0    64       0        0
+✔ gridlock.glb            1487      5   415           19/7/0      20     41   492   25    88       0        0
+✔ gridlock_shiny.glb      1487      5   415           19/7/0      20     41   506   11    88       0        0
+✔ blackout.glb            1488      5   403           7/11/4      50     71   161   79     0       0        0
+✔ blackout_shiny.glb      1488      5   403           7/11/4      50     71   161   79     0       0        0
+✔ undertow.glb            1472      5   407            6/9/4      24     16   136    0   136       0        0
+✔ undertow_shiny.glb      1472      5   407            6/9/4      24     16   136    0   136       0        0
+✔ curbcrusher.glb         1354      3   366           21/0/0       2      8   392  104   232       0        0
+✔ curbcrusher_shiny.glb   1354      3   366           21/0/0       2      8   392  104   232       0        0
+✔ jackpot.glb             1207      4   349            3/0/0      12    149    76   20    80       0        0
+✔ jackpot_shiny.glb       1207      4   349            3/0/0      12    149    76   20    80       0        0
+✔ fogbank.glb              844      4   237            0/0/0       4      0     0    0     0       0        0
+✔ fogbank_shiny.glb        844      4   237            0/0/0       4      0     0    0     0       0        0
+✔ floodlight.glb           972      3   272            3/0/0      40     16    44    0    60       0        0
+✔ floodlight_shiny.glb     972      3   272            3/0/0      40     16    44    0    60       0        0
+✔ barricade.glb            878      3   254           10/0/0      28     22   219   13   116       0        0
+✔ barricade_shiny.glb      878      3   254           10/0/0      28     22   219   13   116       0        0
+✔ bigshot.glb             1099      3   308           12/0/0       8    109   178   64   116       0        0
+✔ bigshot_shiny.glb       1099      3   308           12/0/0       8    109   178   64   116       0        0
+✔ smokestack.glb          1480      3   407            9/4/0      20      8   208    0   208       0        0
+✔ smokestack_shiny.glb    1480      3   407            9/4/0      20      8   208    0   208       0        0
+✔ livewire.glb            1063      3   277            1/0/0       4     13    32    0    42       0        0
+✔ livewire_shiny.glb      1063      3   277            1/0/0       4     13    32    0    42       0        0
+✔ hustlehound.glb         1255      3   348           14/0/0      16     71   225   43   232       0        0
+✔ hustlehound_shiny.glb   1255      3   348           14/0/0      16     71   225   43   232       0        0
+✔ tagling.glb              920      3   264            5/0/0      26     50   136    0    68       0        0
+✔ tagling_shiny.glb        920      3   264            5/0/0      26     50   136    0    68       0        0
+✔ muralist.glb            1365      3   373            8/0/0      12     39   184    0   116       0        0
+✔ muralist_shiny.glb      1365      3   373            8/0/0      12     39   184    0   116       0        0
+✔ bollard.glb             1125      3   304            4/0/0       8     99   128    0    68       0        0
+✔ bollard_shiny.glb       1125      3   304            4/0/0       8     99   128    0    68       0        0
+✔ gullgrifter.glb          818      3   246            3/0/0      16    146    76   27    26       0        0
+✔ gullgrifter_shiny.glb    818      3   246            3/0/0      16    146    76   27    26       0        0
+✔ clogger.glb              941      3   265            5/0/0       0    115    81    6   114       0        0
+✔ clogger_shiny.glb        941      3   265            5/0/0       0    115    81    6   114       0        0
+
+102 files (51 species x standard + shiny) in 3.6 s -> public/creatures/
+triangles: min 670, max 1488, mean 1112 (hard cap 1500)
+validation: 0 errors, 0 warnings across 102 files
+manifest: public/creatures/manifest.json (51 entries, bounding boxes and triangle counts refreshed)
+✔ all models regenerated, valid and recorded in the manifest

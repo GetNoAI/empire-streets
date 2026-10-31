@@ -1,0 +1,367 @@
+{
+  "_comment": "Gang trainers: they hang out on a street corner (avenue index 0-6, street index 0-19, corner ne/nw/se/sw) or in the park, spot you within 10 m, walk over and challenge you. You can't run from a trainer battle. Win: cash reward and x1.5 XP. They don't challenge you again once beaten. corner \"roof\": they wait on the nearest reachable rooftop to that avenue/street instead (the Skyline Crew), and only see you when you're up there too.",
+  "trainers": [
+    {
+      "id": "dre",
+      "name": "Dre",
+      "gang": "Uptown Hustle",
+      "ave": 5,
+      "street": 3,
+      "corner": "ne",
+      "look": {
+        "top": "#2f8f5a",
+        "legs": "#22252b"
+      },
+      "team": [
+        [
+          "hustlepup",
+          6
+        ],
+        [
+          "doubleshift",
+          7
+        ]
+      ],
+      "reward": 150,
+      "intro": "You're on our corner. Show me what you've got.",
+      "lose": "Respect. You can walk here."
+    },
+    {
+      "id": "mika",
+      "name": "Mika",
+      "gang": "Uptown Hustle",
+      "ave": 1,
+      "street": 5,
+      "corner": "sw",
+      "look": {
+        "top": "#2f8f5a",
+        "legs": "#2f3d5c",
+        "build": "f",
+        "hairStyle": "ponytail"
+      },
+      "team": [
+        [
+          "curbstone",
+          7
+        ],
+        [
+          "cashew",
+          8
+        ],
+        [
+          "exhaustfume",
+          8
+        ]
+      ],
+      "reward": 200,
+      "intro": "Hustle don't stop. Neither do I.",
+      "lose": "Fine. Go on."
+    },
+    {
+      "id": "tavo",
+      "name": "Tavo",
+      "gang": "Park Rats",
+      "ave": 3,
+      "street": 8,
+      "corner": "park",
+      "look": {
+        "top": "#7a5a2a",
+        "legs": "#4a4038"
+      },
+      "team": [
+        [
+          "cashew",
+          9
+        ],
+        [
+          "hazeling",
+          10
+        ]
+      ],
+      "reward": 240,
+      "intro": "Park's ours after dark. And before.",
+      "lose": "You fight dirty. I like it."
+    },
+    {
+      "id": "bree",
+      "name": "Bree",
+      "gang": "Park Rats",
+      "ave": 3,
+      "street": 11,
+      "corner": "park",
+      "look": {
+        "top": "#7a5a2a",
+        "legs": "#22252b",
+        "build": "f",
+        "hairStyle": "long"
+      },
+      "team": [
+        [
+          "longshot",
+          10
+        ],
+        [
+          "hustlepup",
+          11
+        ],
+        [
+          "streetlamp",
+          12
+        ]
+      ],
+      "reward": 300,
+      "intro": "Don't step on the grass. Or me.",
+      "lose": "Ugh. Get out of my park."
+    },
+    {
+      "id": "sal",
+      "name": "Sal",
+      "gang": "Block Saints",
+      "ave": 5,
+      "street": 10,
+      "corner": "nw",
+      "look": {
+        "top": "#e2e2dc",
+        "legs": "#22252b"
+      },
+      "team": [
+        [
+          "cinderblock",
+          12
+        ],
+        [
+          "rebarb",
+          13
+        ]
+      ],
+      "reward": 360,
+      "intro": "Saints run midtown, kid.",
+      "lose": "Alright, alright. You're good."
+    },
+    {
+      "id": "nina",
+      "name": "Nina",
+      "gang": "Block Saints",
+      "ave": 1,
+      "street": 12,
+      "corner": "se",
+      "look": {
+        "top": "#e2e2dc",
+        "legs": "#3b3226",
+        "build": "f",
+        "hairStyle": "bun"
+      },
+      "team": [
+        [
+          "strapback",
+          13
+        ],
+        [
+          "subsonic",
+          13
+        ],
+        [
+          "flue",
+          14
+        ]
+      ],
+      "reward": 420,
+      "intro": "This block's got rules. Rule one: me.",
+      "lose": "You broke rule one."
+    },
+    {
+      "id": "kofi",
+      "name": "Kofi",
+      "gang": "Lot Kings",
+      "ave": 0,
+      "street": 16,
+      "corner": "sw",
+      "look": {
+        "top": "#c78a2a",
+        "legs": "#1a1a1a"
+      },
+      "team": [
+        [
+          "slugger",
+          16
+        ],
+        [
+          "wirewhip",
+          17
+        ]
+      ],
+      "reward": 520,
+      "intro": "Waterfront's a long way to swim back from.",
+      "lose": "Kings don't lose twice."
+    },
+    {
+      "id": "lou",
+      "name": "Lou",
+      "gang": "Lot Kings",
+      "ave": 6,
+      "street": 4,
+      "corner": "ne",
+      "look": {
+        "top": "#c78a2a",
+        "legs": "#2f3d5c"
+      },
+      "team": [
+        [
+          "longshot",
+          14
+        ],
+        [
+          "overpass",
+          16
+        ]
+      ],
+      "reward": 480,
+      "intro": "You came all the way out here for this?",
+      "lose": "Worth the trip, I guess."
+    },
+    {
+      "id": "vex",
+      "name": "Vex",
+      "gang": "The Rooks",
+      "ave": 3,
+      "street": 17,
+      "corner": "nw",
+      "look": {
+        "top": "#7d1f22",
+        "legs": "#1a1a1a"
+      },
+      "team": [
+        [
+          "holster",
+          19
+        ],
+        [
+          "backfire",
+          20
+        ],
+        [
+          "subsonic",
+          19
+        ]
+      ],
+      "reward": 700,
+      "intro": "Rooks own the night. Downtown's our board.",
+      "lose": "Checkmate... for now."
+    },
+    {
+      "id": "rook",
+      "name": "Big Rook",
+      "gang": "The Rooks",
+      "ave": 5,
+      "street": 18,
+      "corner": "se",
+      "look": {
+        "top": "#7d1f22",
+        "legs": "#151515"
+      },
+      "team": [
+        [
+          "woofer",
+          23
+        ],
+        [
+          "overtime",
+          22
+        ],
+        [
+          "hardcase",
+          24
+        ]
+      ],
+      "reward": 1200,
+      "intro": "You beat my crew? Then you deal with me.",
+      "lose": "...Nobody's done that before. Respect."
+    },
+    {
+      "id": "kite",
+      "name": "Kite",
+      "gang": "Skyline Crew",
+      "ave": 4,
+      "street": 3,
+      "corner": "roof",
+      "look": {
+        "top": "#3aa6d9",
+        "legs": "#1d2430"
+      },
+      "team": [
+        [
+          "rooftail",
+          12
+        ],
+        [
+          "dishling",
+          13
+        ]
+      ],
+      "reward": 300,
+      "intro": "Took the fire escape, huh? Up here we fly.",
+      "lose": "Okay, okay. The roof's yours."
+    },
+    {
+      "id": "vega",
+      "name": "Vega",
+      "gang": "Skyline Crew",
+      "ave": 2,
+      "street": 12,
+      "corner": "roof",
+      "look": {
+        "top": "#3aa6d9",
+        "legs": "#3a2a4a",
+        "build": "f",
+        "hairStyle": "long",
+        "skirt": true
+      },
+      "team": [
+        [
+          "neonmoth",
+          15
+        ],
+        [
+          "rooftail",
+          15
+        ],
+        [
+          "streetlamp",
+          16
+        ]
+      ],
+      "reward": 400,
+      "intro": "Lights are better up here. So are the fights.",
+      "lose": "You've got a head for heights."
+    },
+    {
+      "id": "lux",
+      "name": "Lux",
+      "gang": "Skyline Crew",
+      "ave": 3,
+      "street": 17,
+      "corner": "roof",
+      "look": {
+        "top": "#3aa6d9",
+        "legs": "#101014"
+      },
+      "team": [
+        [
+          "marqueen",
+          26
+        ],
+        [
+          "antennaroc",
+          24
+        ],
+        [
+          "dishling",
+          22
+        ]
+      ],
+      "reward": 650,
+      "intro": "Nobody comes up to my roof uninvited.",
+      "lose": "Fine. Come back when you want a rematch... no, wait, don't."
+    }
+  ]
+}

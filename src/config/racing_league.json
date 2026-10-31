@@ -1,0 +1,146 @@
+{
+  "version": 1,
+  "_comment": "The Underground Streetmon Racing League (USRL). Divisions are ranks: you hold the highest one whose requirements you meet (Street Cred, story flags, District Bosses beaten). Your division sets the entry fee charged when you accept a league race and the payout multiplier on prize money; a division's tracks are open to it and every division above. Track ids are races.json tracks; boss ids are campaign_quests.json bosses.",
+  "name": "Underground Streetmon Racing League",
+  "short": "USRL",
+  "passFlag": "league-pass",
+  "crews": [
+    {
+      "id": "dockside",
+      "name": "The Dockside Crew",
+      "type": "concrete",
+      "turf": "waterfront",
+      "boss": "dockside-dutch",
+      "color": "#9aa0a6"
+    },
+    {
+      "id": "smoke-syndicate",
+      "name": "The Smoke Syndicate",
+      "type": "smoke",
+      "turf": "downtown",
+      "boss": "haze",
+      "color": "#a58bd8"
+    },
+    {
+      "id": "bassline-cartel",
+      "name": "The Bassline Cartel",
+      "type": "bass",
+      "turf": "downtown",
+      "boss": "sal",
+      "color": "#2f7bff"
+    },
+    {
+      "id": "tactical",
+      "name": "Police Tactical Unit",
+      "type": "gun",
+      "turf": "uptown",
+      "boss": "captain-hale",
+      "color": "#3a6fd8"
+    },
+    {
+      "id": "commission",
+      "name": "The League Commission",
+      "type": "sludge",
+      "turf": "uptown",
+      "boss": "commissioner-varga",
+      "color": "#ffd23f"
+    }
+  ],
+  "divisions": [
+    {
+      "id": "rookie",
+      "name": "Rookie Division",
+      "rank": 1,
+      "requires": {
+        "streetCred": 0
+      },
+      "entryFee": 0,
+      "payoutMult": 1,
+      "tracks": [
+        "west-side-sprint",
+        "uptown-switchback",
+        "central-green-circuit"
+      ]
+    },
+    {
+      "id": "street",
+      "name": "Street Division",
+      "rank": 2,
+      "requires": {
+        "streetCred": 20,
+        "flags": [
+          "league-pass"
+        ]
+      },
+      "entryFee": 150,
+      "payoutMult": 1.15,
+      "tracks": [
+        "harbor-run"
+      ]
+    },
+    {
+      "id": "pro",
+      "name": "Pro Division",
+      "rank": 3,
+      "requires": {
+        "streetCred": 60,
+        "bosses": [
+          "haze",
+          "sal"
+        ]
+      },
+      "entryFee": 400,
+      "payoutMult": 1.35,
+      "tracks": []
+    },
+    {
+      "id": "elite",
+      "name": "Elite Division",
+      "rank": 4,
+      "requires": {
+        "streetCred": 110,
+        "bosses": [
+          "captain-hale"
+        ]
+      },
+      "entryFee": 900,
+      "payoutMult": 1.6,
+      "tracks": []
+    },
+    {
+      "id": "apex",
+      "name": "Apex Champions",
+      "rank": 5,
+      "requires": {
+        "streetCred": 150,
+        "flags": [
+          "campaign-complete"
+        ]
+      },
+      "entryFee": 2000,
+      "payoutMult": 2,
+      "tracks": []
+    }
+  ],
+  "grandPrix": {
+    "id": "apex-grand-prix",
+    "name": "Apex Grand Prix",
+    "buyIn": 2500,
+    "division": "elite",
+    "stages": [
+      {
+        "name": "Stage 1: Waterfront Drift",
+        "track": "west-side-sprint"
+      },
+      {
+        "name": "Stage 2: Uptown Switchback",
+        "track": "uptown-switchback"
+      },
+      {
+        "name": "Stage 3: Pursuit Circuit",
+        "track": "central-green-circuit",
+        "police": 2
+      }
+    ]
+  }
+}

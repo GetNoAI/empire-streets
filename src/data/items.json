@@ -1,0 +1,97 @@
+{
+  "_comment": "Items. kind: evolution (used on a creature to evolve it), capture (thrown to catch a wild Streetmon; catchMult multiplies the catch chance, bonus applies extra against matching targets), heal, field (used from the team screen outside battle: the Escape Rope). price 0 = not sold.",
+  "items": [
+    {
+      "id": "steelCase",
+      "name": "Steel Case",
+      "kind": "evolution",
+      "price": 2500,
+      "description": "A battered steel case with a heavy latch. Holster knows what to do with it."
+    },
+    {
+      "id": "sparkPlug",
+      "name": "Spark Plug",
+      "kind": "evolution",
+      "price": 1500,
+      "description": "Makes Exhaust Fume backfire for good."
+    },
+    {
+      "id": "cuffs",
+      "name": "Cuffs",
+      "kind": "capture",
+      "price": 100,
+      "catchMult": 1,
+      "description": "Standard-issue cuffs. Snap them on and hope they hold.",
+      "model": "cuffs"
+    },
+    {
+      "id": "crate",
+      "name": "Crate",
+      "kind": "capture",
+      "price": 275,
+      "catchMult": 1.5,
+      "bonus": {
+        "types": [
+          "concrete",
+          "grind"
+        ],
+        "mult": 2.5
+      },
+      "description": "A reinforced shipping crate. Better than Cuffs, and the heavy, stubborn Concrete and Grind types settle in it best.",
+      "model": "crate"
+    },
+    {
+      "id": "net",
+      "name": "Net",
+      "kind": "capture",
+      "price": 200,
+      "catchMult": 1,
+      "bonus": {
+        "minSpeed": 80,
+        "mult": 3
+      },
+      "description": "A weighted throw net. Ordinary on slow targets, but fast ones (base Speed 80+) get tangled: x3.",
+      "model": "net"
+    },
+    {
+      "id": "lure",
+      "name": "Sludge Lure",
+      "kind": "capture",
+      "price": 0,
+      "catchMult": 1,
+      "bonus": {
+        "types": [
+          "sludge"
+        ],
+        "mult": 3
+      },
+      "description": "A jar of something that smells irresistible to sewer things. x3 against Sludge types. Only sold on the black market.",
+      "model": "lure"
+    },
+    {
+      "id": "cage",
+      "name": "Cage",
+      "kind": "capture",
+      "price": 0,
+      "catchMult": 2.5,
+      "description": "A steel animal-control cage. x2.5 on anything. Only sold on the black market.",
+      "model": "cage"
+    },
+    {
+      "id": "capturePod",
+      "name": "Capture Pod",
+      "kind": "capture",
+      "price": 0,
+      "catchMult": 3,
+      "description": "A military-grade containment pod. x3 on anything. Only found in supply drops and street events.",
+      "model": "cage"
+    },
+    {
+      "id": "escapeRope",
+      "name": "Escape Rope",
+      "kind": "field",
+      "price": 350,
+      "description": "A knotted rope and a grappling hook. Use it underground (I, your team screen) to climb straight out of the sewers at the nearest manhole."
+    }
+  ]
+}

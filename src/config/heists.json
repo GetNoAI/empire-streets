@@ -1,0 +1,673 @@
+{
+  "_comment": "Heists. Positions are world metres (x east, z south). A facade target's points come from its facade (x, z on the building wall, nx/nz pointing out to the sidewalk). roles: which of breacher / hacker / smoke / hauler a crew must or may have (up to 3 Streetmon). payoutPool: total cash, split across the loot bags when the job is planned. noise: what makes noise (per second breaching (no fading while you're at it), per case smashed, per gunshot or explosion near the job); at the security's noiseLimit the alarm goes off, and an alarm spoils alarmLootLoss of the cash (dye packs). escape.stars: the Wanted Level when the getaway starts (+1 if the alarm went off, plus heat). Deliver the loot to one of the drop-offs with no stars on you. phases.exposure: how suspicious you look to guards and cameras (just passing, hanging round the breach point, breaking in or carrying loot).",
+  "version": 1,
+  "maxCrew": 3,
+  "roles": {
+    "breacher": {
+      "name": "Breacher",
+      "description": "Breaks the vault door, truck doors or display cases. Faster with a strong Attack.",
+      "accepts": {
+        "types": [
+          "concrete",
+          "grind",
+          "gun"
+        ]
+      },
+      "stat": "attack",
+      "ability": {
+        "id": "breach",
+        "label": "E at the vault"
+      }
+    },
+    "hacker": {
+      "name": "Hacker / Jammer",
+      "description": "Jams the cameras and the alarm line for a while: cameras go dark and the breach makes less noise.",
+      "accepts": {
+        "types": [
+          "wire",
+          "bass"
+        ]
+      },
+      "stat": "speed",
+      "ability": {
+        "id": "jam",
+        "keys": [
+          "KeyZ"
+        ],
+        "gamepadButton": 2,
+        "label": "Z",
+        "seconds": 45,
+        "cooldown": 60,
+        "range": 40,
+        "noiseMult": 0.4
+      }
+    },
+    "smoke": {
+      "name": "Smoke / Crowd Control",
+      "description": "Smokes the scene: guards nearby are knocked out cold, bystanders can't see a thing to report, and police can't see through it.",
+      "accepts": {
+        "types": [
+          "smoke",
+          "sludge"
+        ]
+      },
+      "stat": "loud",
+      "ability": {
+        "id": "smokescreen",
+        "keys": [
+          "KeyX"
+        ],
+        "gamepadButton": 1,
+        "label": "X",
+        "seconds": 50,
+        "cooldown": 40,
+        "radius": 14
+      }
+    },
+    "hauler": {
+      "name": "Hauler",
+      "description": "Carries loot bags so you don't have to. Heavier, tougher Streetmon carry more.",
+      "accepts": {
+        "types": [
+          "concrete",
+          "grind",
+          "bass",
+          "gun",
+          "sludge"
+        ],
+        "minWeightKg": 20
+      },
+      "stat": "defense",
+      "capacity": {
+        "baseKg": 14,
+        "perDefense": 0.25,
+        "perWeightKg": 0.2,
+        "maxKg": 70
+      }
+    }
+  },
+  "skill": {
+    "base": 0.8,
+    "perStat": 0.004,
+    "perLevel": 0.005,
+    "min": 0.8,
+    "max": 1.5,
+    "withoutBreacher": 0.45
+  },
+  "encumbrance": {
+    "freeKg": 6,
+    "speedLossPerKg": 0.011,
+    "minSpeedMult": 0.42,
+    "noSprintAboveKg": 28
+  },
+  "payout": {
+    "optionalRoleBonus": 0.05
+  },
+  "heatRules": {
+    "decayPerMinute": 1.2,
+    "securityPerHeat": 35,
+    "starsPerHeat": 60,
+    "max": 100
+  },
+  "phases": {
+    "leaveRadiusExtra": 12,
+    "resultSeconds": 6,
+    "deliverRequiresNoStars": true,
+    "suspicionDecay": 0.35,
+    "noiseDecay": 4,
+    "exposure": {
+      "passing": 0,
+      "atTarget": 0.3,
+      "breaching": 1
+    }
+  },
+  "dropOffs": [
+    {
+      "id": "west-side-lockup",
+      "name": "West Side Lock-up",
+      "x": -440.3,
+      "z": -321,
+      "door": {
+        "x": -434.5,
+        "z": -321,
+        "nx": -1,
+        "nz": 0
+      },
+      "radius": 7
+    },
+    {
+      "id": "east-river-lockup",
+      "name": "East River Lock-up",
+      "x": 440.3,
+      "z": 121,
+      "door": {
+        "x": 434.5,
+        "z": 121,
+        "nx": 1,
+        "nz": 0
+      },
+      "radius": 7
+    },
+    {
+      "id": "battery-lockup",
+      "name": "Battery Lock-up",
+      "x": -309.7,
+      "z": 543.5,
+      "door": {
+        "x": -315.5,
+        "z": 543.5,
+        "nx": 1,
+        "nz": 0
+      },
+      "radius": 7
+    }
+  ],
+  "targets": [
+    {
+      "id": "quik-cash",
+      "name": "Quik Cash Check Cashing",
+      "kind": "checkCashing",
+      "district": "uptown",
+      "description": "A corner check-casher with a cheap safe in the back wall and one guard who'd rather be home.",
+      "difficulty": 1,
+      "setupCost": 0,
+      "cooldownMinutes": 8,
+      "roles": {
+        "required": [
+          "breacher"
+        ],
+        "optional": [
+          "hacker",
+          "hauler"
+        ]
+      },
+      "payoutPool": {
+        "min": 1500,
+        "max": 2200
+      },
+      "loot": {
+        "bags": 3,
+        "kgPerBag": 8
+      },
+      "security": {
+        "level": 1,
+        "suspicionRate": 0.55,
+        "alarmDelay": 12,
+        "noiseLimit": 100
+      },
+      "noise": {
+        "breachPerSecond": 3,
+        "smash": 15,
+        "gunfire": 35,
+        "explosion": 60,
+        "alarmLootLoss": 0.2
+      },
+      "breach": {
+        "mode": "vault",
+        "seconds": 10
+      },
+      "escape": {
+        "stars": 2,
+        "dropOffs": [
+          "west-side-lockup",
+          "east-river-lockup"
+        ]
+      },
+      "heat": 8,
+      "location": {
+        "facade": {
+          "x": 118.5,
+          "z": -476,
+          "nx": 0,
+          "nz": 1,
+          "length": 32
+        },
+        "radius": 28,
+        "plan": {
+          "x": 106.5,
+          "z": -472.8
+        },
+        "breachPoints": [
+          {
+            "x": 118.5,
+            "z": -474.7
+          }
+        ],
+        "loot": [
+          {
+            "x": 119.7,
+            "z": -474.1
+          },
+          {
+            "x": 118.5,
+            "z": -474.1
+          },
+          {
+            "x": 117.3,
+            "z": -474.1
+          }
+        ],
+        "guards": [
+          {
+            "x": 123.0,
+            "z": -473.4,
+            "patrolTo": {
+              "x": 114.0,
+              "z": -473.4
+            }
+          }
+        ],
+        "cameras": [
+          {
+            "x": 125.0,
+            "z": -475.8,
+            "y": 3.4
+          },
+          {
+            "x": 112.0,
+            "z": -475.8,
+            "y": 3.4
+          }
+        ],
+        "sign": "QUIK CASH"
+      }
+    },
+    {
+      "id": "diamond-row",
+      "name": "Diamond Row Jewelers",
+      "kind": "jewelryStore",
+      "district": "midtown",
+      "description": "Four display cases in the window across from the park, two guards and a sidewalk full of witnesses. Smoke them out or the whole block calls it in.",
+      "difficulty": 2,
+      "setupCost": 150,
+      "cooldownMinutes": 10,
+      "roles": {
+        "required": [
+          "smoke"
+        ],
+        "optional": [
+          "breacher",
+          "hauler"
+        ]
+      },
+      "payoutPool": {
+        "min": 5200,
+        "max": 6800
+      },
+      "loot": {
+        "bags": 4,
+        "kgPerBag": 3
+      },
+      "security": {
+        "level": 2,
+        "suspicionRate": 0.7,
+        "alarmDelay": 9,
+        "noiseLimit": 100,
+        "witnessesUntilPacified": true
+      },
+      "noise": {
+        "breachPerSecond": 0,
+        "smash": 22,
+        "gunfire": 35,
+        "explosion": 60,
+        "alarmLootLoss": 0.25
+      },
+      "breach": {
+        "mode": "smash",
+        "seconds": 3.5
+      },
+      "escape": {
+        "stars": 3,
+        "dropOffs": [
+          "east-river-lockup",
+          "west-side-lockup"
+        ]
+      },
+      "heat": 14,
+      "location": {
+        "facade": {
+          "x": 31.8,
+          "z": 290,
+          "nx": 0,
+          "nz": -1,
+          "length": 33
+        },
+        "radius": 28,
+        "plan": {
+          "x": 18.8,
+          "z": 286.8
+        },
+        "breachPoints": [
+          {
+            "x": 25.8,
+            "z": 289.0
+          },
+          {
+            "x": 29.8,
+            "z": 289.0
+          },
+          {
+            "x": 33.8,
+            "z": 289.0
+          },
+          {
+            "x": 37.8,
+            "z": 289.0
+          }
+        ],
+        "loot": [
+          {
+            "x": 25.8,
+            "z": 288.1
+          },
+          {
+            "x": 29.8,
+            "z": 288.1
+          },
+          {
+            "x": 33.8,
+            "z": 288.1
+          },
+          {
+            "x": 37.8,
+            "z": 288.1
+          }
+        ],
+        "guards": [
+          {
+            "x": 22.8,
+            "z": 287.2
+          },
+          {
+            "x": 40.8,
+            "z": 287.2,
+            "patrolTo": {
+              "x": 34.8,
+              "z": 287.2
+            }
+          }
+        ],
+        "cameras": [
+          {
+            "x": 20.8,
+            "z": 289.8,
+            "y": 3.6
+          },
+          {
+            "x": 31.8,
+            "z": 289.8,
+            "y": 3.8
+          },
+          {
+            "x": 42.8,
+            "z": 289.8,
+            "y": 3.6
+          }
+        ],
+        "sign": "DIAMOND ROW"
+      }
+    },
+    {
+      "id": "armored-transport",
+      "name": "Armored Transport Pickup",
+      "kind": "armoredTruck",
+      "district": "downtown",
+      "description": "An armored van loading cash outside the depot. Two guards, no cameras, and it pulls out after four minutes whether you're done or not. Cutting the doors is loud: jam the alarm line or expect company.",
+      "difficulty": 3,
+      "setupCost": 250,
+      "cooldownMinutes": 12,
+      "timeLimitSeconds": 240,
+      "roles": {
+        "required": [
+          "breacher"
+        ],
+        "optional": [
+          "hacker",
+          "smoke",
+          "hauler"
+        ]
+      },
+      "payoutPool": {
+        "min": 6500,
+        "max": 8500
+      },
+      "loot": {
+        "bags": 5,
+        "kgPerBag": 14
+      },
+      "security": {
+        "level": 3,
+        "suspicionRate": 0.9,
+        "alarmDelay": 7,
+        "noiseLimit": 100
+      },
+      "noise": {
+        "breachPerSecond": 10,
+        "smash": 20,
+        "gunfire": 35,
+        "explosion": 45,
+        "alarmLootLoss": 0.25
+      },
+      "breach": {
+        "mode": "truck",
+        "seconds": 14
+      },
+      "escape": {
+        "stars": 4,
+        "dropOffs": [
+          "battery-lockup",
+          "east-river-lockup"
+        ]
+      },
+      "heat": 20,
+      "location": {
+        "truck": {
+          "x": 290.3,
+          "z": 433,
+          "heading": -1.5708
+        },
+        "radius": 30,
+        "plan": {
+          "x": 286.5,
+          "z": 452
+        },
+        "breachPoints": [
+          {
+            "x": 290.3,
+            "z": 428.9
+          }
+        ],
+        "loot": [
+          {
+            "x": 289.1,
+            "z": 427.9
+          },
+          {
+            "x": 289.7,
+            "z": 427.9
+          },
+          {
+            "x": 290.3,
+            "z": 427.9
+          },
+          {
+            "x": 290.9,
+            "z": 427.9
+          },
+          {
+            "x": 291.5,
+            "z": 427.9
+          }
+        ],
+        "guards": [
+          {
+            "x": 287.0,
+            "z": 428.0,
+            "patrolTo": {
+              "x": 287.0,
+              "z": 440.0
+            }
+          },
+          {
+            "x": 293.6,
+            "z": 437.5
+          }
+        ],
+        "cameras": [],
+        "sign": ""
+      }
+    },
+    {
+      "id": "first-empire-vault",
+      "name": "First Empire Savings & Trust",
+      "kind": "bankVault",
+      "district": "downtown",
+      "description": "The big one: the night-deposit vault on 6th Ave. Cameras, three guards, a live alarm on the door and a vault that takes a while to crack. Expect tanks.",
+      "difficulty": 5,
+      "setupCost": 500,
+      "cooldownMinutes": 20,
+      "roles": {
+        "required": [
+          "breacher",
+          "hacker"
+        ],
+        "optional": [
+          "smoke",
+          "hauler"
+        ]
+      },
+      "payoutPool": {
+        "min": 16000,
+        "max": 21000
+      },
+      "loot": {
+        "bags": 8,
+        "kgPerBag": 15
+      },
+      "security": {
+        "level": 4,
+        "suspicionRate": 1.0,
+        "alarmDelay": 5,
+        "noiseLimit": 100
+      },
+      "noise": {
+        "breachPerSecond": 4,
+        "smash": 20,
+        "gunfire": 40,
+        "explosion": 60,
+        "alarmLootLoss": 0.3
+      },
+      "breach": {
+        "mode": "vault",
+        "seconds": 22
+      },
+      "escape": {
+        "stars": 5,
+        "dropOffs": [
+          "battery-lockup",
+          "west-side-lockup"
+        ]
+      },
+      "heat": 35,
+      "location": {
+        "facade": {
+          "x": 15.5,
+          "z": 496,
+          "nx": -1,
+          "nz": 0,
+          "length": 40
+        },
+        "radius": 30,
+        "plan": {
+          "x": 12.3,
+          "z": 481.0
+        },
+        "breachPoints": [
+          {
+            "x": 14.1,
+            "z": 496.0
+          }
+        ],
+        "loot": [
+          {
+            "x": 13.5,
+            "z": 498.1
+          },
+          {
+            "x": 13.5,
+            "z": 496.7
+          },
+          {
+            "x": 13.5,
+            "z": 495.3
+          },
+          {
+            "x": 13.5,
+            "z": 493.9
+          },
+          {
+            "x": 12.4,
+            "z": 498.1
+          },
+          {
+            "x": 12.4,
+            "z": 496.7
+          },
+          {
+            "x": 12.4,
+            "z": 495.3
+          },
+          {
+            "x": 12.4,
+            "z": 493.9
+          }
+        ],
+        "guards": [
+          {
+            "x": 12.9,
+            "z": 502.0,
+            "patrolTo": {
+              "x": 12.9,
+              "z": 497.5
+            }
+          },
+          {
+            "x": 12.9,
+            "z": 490.0
+          },
+          {
+            "x": 11.9,
+            "z": 484.0,
+            "patrolTo": {
+              "x": 11.9,
+              "z": 492.0
+            }
+          }
+        ],
+        "cameras": [
+          {
+            "x": 15.2,
+            "z": 504.0,
+            "y": 3.8
+          },
+          {
+            "x": 15.2,
+            "z": 488.0,
+            "y": 3.8
+          },
+          {
+            "x": 15.2,
+            "z": 512.0,
+            "y": 3.6
+          },
+          {
+            "x": 15.2,
+            "z": 480.0,
+            "y": 3.6
+          }
+        ],
+        "sign": "FIRST EMPIRE"
+      }
+    }
+  ]
+}

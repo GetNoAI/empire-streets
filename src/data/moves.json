@@ -1,0 +1,1166 @@
+{
+  "_comment": "Streetmon moves. power 0 = status move. accuracy null = never misses. target: foe | allFoes | self. ammo: rounds a Gun move uses (Gun-type users only; others ignore it). projectile: partly blocked by Concrete defenders. loud: reveals the user (Gun mechanic). effects: flinch {chance}, choke {chance}, stat {who, stat, stages, chance}, cloud (Smoke cloud on the foe side), glass (Broken Glass hazard), reload, multiHit {min, max}, ricochet, emptyClip, recoil {fraction}, heal {fraction}, critUp, grindScaling {perStage}.",
+  "moves": [
+    {
+      "id": "pistolWhip",
+      "name": "Pistol Whip",
+      "type": "gun",
+      "power": 40,
+      "accuracy": 100,
+      "target": "foe"
+    },
+    {
+      "id": "snapShot",
+      "name": "Snap Shot",
+      "type": "gun",
+      "power": 40,
+      "accuracy": 100,
+      "target": "foe",
+      "priority": 1,
+      "ammo": 1,
+      "projectile": true,
+      "loud": true
+    },
+    {
+      "id": "doubleTap",
+      "name": "Double Tap",
+      "type": "gun",
+      "power": 30,
+      "accuracy": 95,
+      "target": "foe",
+      "ammo": 2,
+      "projectile": true,
+      "loud": true,
+      "effects": [
+        {
+          "type": "multiHit",
+          "min": 2,
+          "max": 2
+        }
+      ]
+    },
+    {
+      "id": "buckshot",
+      "name": "Buckshot",
+      "type": "gun",
+      "power": 75,
+      "accuracy": 85,
+      "target": "foe",
+      "ammo": 2,
+      "projectile": true,
+      "loud": true,
+      "effects": [
+        {
+          "type": "flinch",
+          "chance": 0.1
+        }
+      ]
+    },
+    {
+      "id": "tracerRound",
+      "name": "Tracer Round",
+      "type": "gun",
+      "power": 55,
+      "accuracy": null,
+      "target": "foe",
+      "ammo": 1,
+      "projectile": true,
+      "loud": true
+    },
+    {
+      "id": "suppressingFire",
+      "name": "Suppressing Fire",
+      "type": "gun",
+      "power": 35,
+      "accuracy": 90,
+      "target": "allFoes",
+      "ammo": 3,
+      "projectile": true,
+      "loud": true,
+      "effects": [
+        {
+          "type": "stat",
+          "who": "foe",
+          "stat": "speed",
+          "stages": -1,
+          "chance": 1
+        }
+      ]
+    },
+    {
+      "id": "longShot",
+      "name": "Long Shot",
+      "type": "gun",
+      "power": 95,
+      "accuracy": 80,
+      "target": "foe",
+      "ammo": 1,
+      "projectile": true,
+      "loud": true,
+      "effects": [
+        {
+          "type": "critUp"
+        }
+      ]
+    },
+    {
+      "id": "ricochet",
+      "name": "Ricochet",
+      "type": "gun",
+      "power": 50,
+      "accuracy": 95,
+      "target": "foe",
+      "ammo": 1,
+      "projectile": true,
+      "loud": true,
+      "signature": true,
+      "description": "Ignores Concrete blocking and Smoke clouds, then bounces into a second foe (or the same one) for half damage.",
+      "effects": [
+        {
+          "type": "ricochet"
+        }
+      ]
+    },
+    {
+      "id": "emptyTheClip",
+      "name": "Empty the Clip",
+      "type": "gun",
+      "power": 20,
+      "accuracy": 90,
+      "target": "foe",
+      "ammo": 0,
+      "projectile": true,
+      "loud": true,
+      "signature": true,
+      "description": "Fires every round left in the magazine (at least 2), one hit each. Leaves the user empty.",
+      "effects": [
+        {
+          "type": "emptyClip"
+        }
+      ]
+    },
+    {
+      "id": "reload",
+      "name": "Reload",
+      "type": "gun",
+      "power": 0,
+      "accuracy": null,
+      "target": "self",
+      "description": "Refills the magazine. Takes the whole turn; the next shot hits twice as hard.",
+      "effects": [
+        {
+          "type": "reload"
+        }
+      ]
+    },
+    {
+      "id": "steadyAim",
+      "name": "Steady Aim",
+      "type": "gun",
+      "power": 0,
+      "accuracy": null,
+      "target": "self",
+      "effects": [
+        {
+          "type": "stat",
+          "who": "self",
+          "stat": "accuracy",
+          "stages": 2,
+          "chance": 1
+        },
+        {
+          "type": "critUp"
+        }
+      ]
+    },
+    {
+      "id": "slabSlam",
+      "name": "Slab Slam",
+      "type": "concrete",
+      "power": 45,
+      "accuracy": 100,
+      "target": "foe"
+    },
+    {
+      "id": "rebarJab",
+      "name": "Rebar Jab",
+      "type": "concrete",
+      "power": 55,
+      "accuracy": 95,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "flinch",
+          "chance": 0.2
+        }
+      ]
+    },
+    {
+      "id": "brokenGlass",
+      "name": "Broken Glass",
+      "type": "concrete",
+      "power": 0,
+      "accuracy": null,
+      "target": "foe",
+      "description": "Scatters glass on the foe's side: anything switching in is cut for 1/8 of its HP.",
+      "effects": [
+        {
+          "type": "glass"
+        }
+      ]
+    },
+    {
+      "id": "brace",
+      "name": "Brace",
+      "type": "concrete",
+      "power": 0,
+      "accuracy": null,
+      "target": "self",
+      "effects": [
+        {
+          "type": "stat",
+          "who": "self",
+          "stat": "defense",
+          "stages": 2,
+          "chance": 1
+        }
+      ]
+    },
+    {
+      "id": "rubbleDrop",
+      "name": "Rubble Drop",
+      "type": "concrete",
+      "power": 80,
+      "accuracy": 90,
+      "target": "foe"
+    },
+    {
+      "id": "curbRoll",
+      "name": "Curb Roll",
+      "type": "concrete",
+      "power": 20,
+      "accuracy": 90,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "multiHit",
+          "min": 2,
+          "max": 5
+        }
+      ]
+    },
+    {
+      "id": "spikeVolley",
+      "name": "Spike Volley",
+      "type": "concrete",
+      "power": 25,
+      "accuracy": 90,
+      "target": "foe",
+      "projectile": true,
+      "effects": [
+        {
+          "type": "multiHit",
+          "min": 2,
+          "max": 4
+        }
+      ]
+    },
+    {
+      "id": "jackhammer",
+      "name": "Jackhammer",
+      "type": "concrete",
+      "power": 105,
+      "accuracy": 80,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "stat",
+          "who": "self",
+          "stat": "speed",
+          "stages": -1,
+          "chance": 1
+        }
+      ]
+    },
+    {
+      "id": "foundation",
+      "name": "Foundation",
+      "type": "concrete",
+      "power": 0,
+      "accuracy": null,
+      "target": "self",
+      "effects": [
+        {
+          "type": "heal",
+          "fraction": 0.5
+        }
+      ]
+    },
+    {
+      "id": "spanCollapse",
+      "name": "Span Collapse",
+      "type": "concrete",
+      "power": 120,
+      "accuracy": 85,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "recoil",
+          "fraction": 0.33
+        }
+      ]
+    },
+    {
+      "id": "hustle",
+      "name": "Hustle",
+      "type": "grind",
+      "power": 40,
+      "accuracy": 100,
+      "target": "foe",
+      "priority": 1
+    },
+    {
+      "id": "shoulderCheck",
+      "name": "Shoulder Check",
+      "type": "grind",
+      "power": 50,
+      "accuracy": 100,
+      "target": "foe"
+    },
+    {
+      "id": "clockIn",
+      "name": "Clock In",
+      "type": "grind",
+      "power": 0,
+      "accuracy": null,
+      "target": "self",
+      "effects": [
+        {
+          "type": "stat",
+          "who": "self",
+          "stat": "defense",
+          "stages": 1,
+          "chance": 1
+        },
+        {
+          "type": "stat",
+          "who": "self",
+          "stat": "speed",
+          "stages": 1,
+          "chance": 1
+        }
+      ]
+    },
+    {
+      "id": "overtimeShift",
+      "name": "Overtime",
+      "type": "grind",
+      "power": 0,
+      "accuracy": null,
+      "target": "self",
+      "effects": [
+        {
+          "type": "stat",
+          "who": "self",
+          "stat": "attack",
+          "stages": 2,
+          "chance": 1
+        }
+      ]
+    },
+    {
+      "id": "doubleShift",
+      "name": "Double Shift",
+      "type": "grind",
+      "power": 30,
+      "accuracy": 95,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "multiHit",
+          "min": 2,
+          "max": 2
+        }
+      ]
+    },
+    {
+      "id": "shakedown",
+      "name": "Shakedown",
+      "type": "grind",
+      "power": 55,
+      "accuracy": 100,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "stat",
+          "who": "foe",
+          "stat": "attack",
+          "stages": -1,
+          "chance": 0.5
+        }
+      ]
+    },
+    {
+      "id": "coinToss",
+      "name": "Coin Toss",
+      "type": "grind",
+      "power": 60,
+      "accuracy": 90,
+      "target": "foe",
+      "projectile": true,
+      "effects": [
+        {
+          "type": "critUp"
+        }
+      ]
+    },
+    {
+      "id": "grindDown",
+      "name": "Grind Down",
+      "type": "grind",
+      "power": 50,
+      "accuracy": 100,
+      "target": "foe",
+      "description": "25 more power for every Grind stage the user has built up.",
+      "effects": [
+        {
+          "type": "grindScaling",
+          "perStage": 25
+        }
+      ]
+    },
+    {
+      "id": "burnout",
+      "name": "Burnout",
+      "type": "grind",
+      "power": 110,
+      "accuracy": 95,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "stat",
+          "who": "self",
+          "stat": "defense",
+          "stages": -1,
+          "chance": 1
+        }
+      ]
+    },
+    {
+      "id": "secondWind",
+      "name": "Second Wind",
+      "type": "grind",
+      "power": 0,
+      "accuracy": null,
+      "target": "self",
+      "effects": [
+        {
+          "type": "heal",
+          "fraction": 0.5
+        }
+      ]
+    },
+    {
+      "id": "exhaust",
+      "name": "Exhaust",
+      "type": "smoke",
+      "power": 40,
+      "accuracy": 100,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "choke",
+          "chance": 0.3
+        }
+      ]
+    },
+    {
+      "id": "smokescreen",
+      "name": "Smokescreen",
+      "type": "smoke",
+      "power": 0,
+      "accuracy": null,
+      "target": "foe",
+      "description": "A cloud over the foe's side for 3 turns: their accuracy drops to 70%.",
+      "effects": [
+        {
+          "type": "cloud"
+        }
+      ]
+    },
+    {
+      "id": "haze",
+      "name": "Haze",
+      "type": "smoke",
+      "power": 0,
+      "accuracy": null,
+      "target": "self",
+      "effects": [
+        {
+          "type": "stat",
+          "who": "self",
+          "stat": "evasion",
+          "stages": 2,
+          "chance": 1
+        }
+      ]
+    },
+    {
+      "id": "fumeLeak",
+      "name": "Fume Leak",
+      "type": "smoke",
+      "power": 25,
+      "accuracy": 100,
+      "target": "allFoes",
+      "effects": [
+        {
+          "type": "choke",
+          "chance": 0.5
+        }
+      ]
+    },
+    {
+      "id": "chokeHold",
+      "name": "Choke Hold",
+      "type": "smoke",
+      "power": 0,
+      "accuracy": 85,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "choke",
+          "chance": 1
+        }
+      ]
+    },
+    {
+      "id": "smokeRing",
+      "name": "Smoke Ring",
+      "type": "smoke",
+      "power": 55,
+      "accuracy": 95,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "stat",
+          "who": "foe",
+          "stat": "accuracy",
+          "stages": -1,
+          "chance": 0.5
+        }
+      ]
+    },
+    {
+      "id": "sootBurst",
+      "name": "Soot Burst",
+      "type": "smoke",
+      "power": 65,
+      "accuracy": 95,
+      "target": "allFoes"
+    },
+    {
+      "id": "backfire",
+      "name": "Backfire",
+      "type": "smoke",
+      "power": 90,
+      "accuracy": 90,
+      "target": "foe",
+      "loud": true,
+      "effects": [
+        {
+          "type": "flinch",
+          "chance": 0.2
+        },
+        {
+          "type": "recoil",
+          "fraction": 0.25
+        }
+      ]
+    },
+    {
+      "id": "thump",
+      "name": "Thump",
+      "type": "bass",
+      "power": 40,
+      "accuracy": 100,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "flinch",
+          "chance": 0.1
+        }
+      ]
+    },
+    {
+      "id": "feedback",
+      "name": "Feedback",
+      "type": "bass",
+      "power": 60,
+      "accuracy": 100,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "flinch",
+          "chance": 0.3
+        }
+      ]
+    },
+    {
+      "id": "staticLash",
+      "name": "Static Lash",
+      "type": "bass",
+      "power": 50,
+      "accuracy": 100,
+      "target": "foe",
+      "priority": 1,
+      "effects": [
+        {
+          "type": "flinch",
+          "chance": 0.1
+        }
+      ]
+    },
+    {
+      "id": "wireSnap",
+      "name": "Wire Snap",
+      "type": "bass",
+      "power": 35,
+      "accuracy": 95,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "multiHit",
+          "min": 2,
+          "max": 2
+        },
+        {
+          "type": "flinch",
+          "chance": 0.1
+        }
+      ]
+    },
+    {
+      "id": "subPulse",
+      "name": "Sub Pulse",
+      "type": "bass",
+      "power": 70,
+      "accuracy": 100,
+      "target": "allFoes",
+      "loud": true,
+      "effects": [
+        {
+          "type": "flinch",
+          "chance": 0.1
+        }
+      ]
+    },
+    {
+      "id": "theDrop",
+      "name": "The Drop",
+      "type": "bass",
+      "power": 100,
+      "accuracy": 90,
+      "target": "allFoes",
+      "loud": true,
+      "effects": [
+        {
+          "type": "flinch",
+          "chance": 0.2
+        }
+      ]
+    },
+    {
+      "id": "tempo",
+      "name": "Tempo",
+      "type": "bass",
+      "power": 0,
+      "accuracy": null,
+      "target": "self",
+      "effects": [
+        {
+          "type": "stat",
+          "who": "self",
+          "stat": "speed",
+          "stages": 2,
+          "chance": 1
+        }
+      ]
+    },
+    {
+      "id": "soundWall",
+      "name": "Sound Wall",
+      "type": "bass",
+      "power": 0,
+      "accuracy": null,
+      "target": "self",
+      "effects": [
+        {
+          "type": "stat",
+          "who": "self",
+          "stat": "defense",
+          "stages": 1,
+          "chance": 1
+        },
+        {
+          "type": "stat",
+          "who": "self",
+          "stat": "evasion",
+          "stages": 1,
+          "chance": 1
+        }
+      ]
+    },
+    {
+      "id": "lampFlash",
+      "name": "Lamp Flash",
+      "type": "bass",
+      "power": 0,
+      "accuracy": 100,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "stat",
+          "who": "foe",
+          "stat": "accuracy",
+          "stages": -2,
+          "chance": 1
+        }
+      ]
+    },
+    {
+      "id": "tranqDart",
+      "name": "Tranq Dart",
+      "type": "gun",
+      "power": 25,
+      "accuracy": 95,
+      "target": "foe",
+      "ammo": 1,
+      "projectile": true,
+      "description": "A tranquilliser dart: slows the target down.",
+      "effects": [
+        {
+          "type": "stat",
+          "who": "foe",
+          "stat": "speed",
+          "stages": -2,
+          "chance": 1
+        }
+      ]
+    },
+    {
+      "id": "beanbag",
+      "name": "Beanbag Round",
+      "type": "gun",
+      "power": 45,
+      "accuracy": 90,
+      "target": "foe",
+      "ammo": 1,
+      "projectile": true,
+      "loud": true,
+      "description": "Less-lethal shotgun round. Can make the target flinch.",
+      "effects": [
+        {
+          "type": "flinch",
+          "chance": 0.3
+        }
+      ]
+    },
+    {
+      "id": "zap",
+      "name": "Zap",
+      "type": "wire",
+      "power": 40,
+      "accuracy": 100,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "flinch",
+          "chance": 0.1
+        }
+      ],
+      "description": "A quick jolt from a live wire."
+    },
+    {
+      "id": "staticCharge",
+      "name": "Static Charge",
+      "type": "wire",
+      "power": 0,
+      "accuracy": null,
+      "target": "self",
+      "effects": [
+        {
+          "type": "stat",
+          "who": "self",
+          "stat": "speed",
+          "stages": 2,
+          "chance": 1
+        }
+      ],
+      "description": "Builds up charge; sharply raises Speed."
+    },
+    {
+      "id": "antennaPeck",
+      "name": "Antenna Peck",
+      "type": "wire",
+      "power": 55,
+      "accuracy": 100,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "critUp"
+        }
+      ],
+      "description": "Stabs with a live antenna tip. High critical-hit ratio."
+    },
+    {
+      "id": "neonFlash",
+      "name": "Neon Flash",
+      "type": "wire",
+      "power": 0,
+      "accuracy": 90,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "stat",
+          "who": "foe",
+          "stat": "accuracy",
+          "stages": -1,
+          "chance": 1
+        }
+      ],
+      "description": "A blinding flash of neon. Lowers the foe's accuracy."
+    },
+    {
+      "id": "signalJam",
+      "name": "Signal Jam",
+      "type": "wire",
+      "power": 60,
+      "accuracy": 100,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "stat",
+          "who": "foe",
+          "stat": "speed",
+          "stages": -1,
+          "chance": 0.5
+        }
+      ],
+      "description": "Scrambles the foe's signals; may lower its Speed."
+    },
+    {
+      "id": "powerSurge",
+      "name": "Power Surge",
+      "type": "wire",
+      "power": 75,
+      "accuracy": 90,
+      "target": "allFoes",
+      "effects": [
+        {
+          "type": "recoil",
+          "fraction": 0.2
+        }
+      ],
+      "description": "Overloads the whole block. Hits every foe; the user takes some recoil."
+    },
+    {
+      "id": "dishBeam",
+      "name": "Dish Beam",
+      "type": "wire",
+      "power": 90,
+      "accuracy": 90,
+      "target": "foe",
+      "signature": true,
+      "description": "Broadcastle's signature: every dish on the mast focuses on one target."
+    },
+    {
+      "id": "lightsOut",
+      "name": "Lights Out",
+      "type": "wire",
+      "power": 70,
+      "accuracy": 100,
+      "target": "allFoes",
+      "signature": true,
+      "effects": [
+        {
+          "type": "stat",
+          "who": "foe",
+          "stat": "accuracy",
+          "stages": -1,
+          "chance": 0.5
+        }
+      ],
+      "description": "Marqueen's signature: the whole marquee blows at once. Hits every foe and may lower accuracy."
+    },
+    {
+      "id": "ooze",
+      "name": "Ooze",
+      "type": "sludge",
+      "power": 40,
+      "accuracy": 100,
+      "target": "foe",
+      "description": "Slaps the foe with sewer muck."
+    },
+    {
+      "id": "corrode",
+      "name": "Corrode",
+      "type": "sludge",
+      "power": 60,
+      "accuracy": 100,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "stat",
+          "who": "foe",
+          "stat": "defense",
+          "stages": -1,
+          "chance": 0.3
+        }
+      ],
+      "description": "Eats away at armour; may lower Defense."
+    },
+    {
+      "id": "toxicSplash",
+      "name": "Toxic Splash",
+      "type": "sludge",
+      "power": 45,
+      "accuracy": 95,
+      "target": "allFoes",
+      "effects": [
+        {
+          "type": "choke",
+          "chance": 0.2
+        }
+      ],
+      "description": "Splashes every foe; may leave them choking."
+    },
+    {
+      "id": "clog",
+      "name": "Clog",
+      "type": "sludge",
+      "power": 0,
+      "accuracy": 90,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "stat",
+          "who": "foe",
+          "stat": "speed",
+          "stages": -2,
+          "chance": 1
+        }
+      ],
+      "description": "Gums the foe up. Sharply lowers Speed."
+    },
+    {
+      "id": "backflow",
+      "name": "Backflow",
+      "type": "sludge",
+      "power": 85,
+      "accuracy": 85,
+      "target": "foe",
+      "description": "A surge of everything that went down the drain."
+    },
+    {
+      "id": "plague",
+      "name": "Plague",
+      "type": "sludge",
+      "power": 80,
+      "accuracy": 95,
+      "target": "allFoes",
+      "signature": true,
+      "effects": [
+        {
+          "type": "choke",
+          "chance": 0.3
+        }
+      ],
+      "description": "Ratking's signature: the whole court swarms out. Hits every foe; may leave them choking."
+    },
+    {
+      "id": "deathRoll",
+      "name": "Death Roll",
+      "type": "sludge",
+      "power": 110,
+      "accuracy": 85,
+      "target": "foe",
+      "signature": true,
+      "effects": [
+        {
+          "type": "recoil",
+          "fraction": 0.25
+        }
+      ],
+      "description": "Sewergator's signature: it clamps down and rolls. The user takes some recoil."
+    },
+    {
+      "id": "sporeBloom",
+      "name": "Spore Bloom",
+      "type": "sludge",
+      "power": 0,
+      "accuracy": null,
+      "target": "self",
+      "signature": true,
+      "effects": [
+        {
+          "type": "cloud"
+        },
+        {
+          "type": "heal",
+          "fraction": 0.33
+        }
+      ],
+      "description": "Moldmother's signature: fills the tunnel with spores (a smoke cloud) and heals a third of its HP."
+    },
+    {
+      "id": "pileUp",
+      "name": "Pile-Up",
+      "type": "concrete",
+      "power": 110,
+      "accuracy": 90,
+      "target": "allFoes",
+      "signature": true,
+      "effects": [
+        {
+          "type": "stat",
+          "who": "foe",
+          "stat": "defense",
+          "stages": -1,
+          "chance": 0.3
+        }
+      ],
+      "description": "Gridlock's signature: a chain reaction of crushed cars rains down on every foe. May lower their Defense."
+    },
+    {
+      "id": "gridlockSlam",
+      "name": "Gridlock Slam",
+      "type": "concrete",
+      "power": 95,
+      "accuracy": 95,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "stat",
+          "who": "foe",
+          "stat": "speed",
+          "stages": -1,
+          "chance": 0.5
+        }
+      ],
+      "description": "A slam like a bus hitting the kerb. May leave the target stuck in traffic (Speed down)."
+    },
+    {
+      "id": "rushHour",
+      "name": "Rush Hour",
+      "type": "grind",
+      "power": 85,
+      "accuracy": 100,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "stat",
+          "who": "self",
+          "stat": "speed",
+          "stages": 1,
+          "chance": 1
+        }
+      ],
+      "description": "Charges like everyone's late for work. Raises the user's Speed."
+    },
+    {
+      "id": "gridFailure",
+      "name": "Grid Failure",
+      "type": "wire",
+      "power": 105,
+      "accuracy": 90,
+      "target": "allFoes",
+      "signature": true,
+      "effects": [
+        {
+          "type": "stat",
+          "who": "foe",
+          "stat": "speed",
+          "stages": -1,
+          "chance": 0.3
+        }
+      ],
+      "description": "Blackout's signature: the whole grid arcs at once. Hits every foe; may slow them."
+    },
+    {
+      "id": "neonStorm",
+      "name": "Neon Storm",
+      "type": "wire",
+      "power": 90,
+      "accuracy": 95,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "stat",
+          "who": "foe",
+          "stat": "accuracy",
+          "stages": -1,
+          "chance": 0.3
+        }
+      ],
+      "description": "A beam of every sign on the avenue. May dazzle the target (accuracy down)."
+    },
+    {
+      "id": "brownout",
+      "name": "Brownout",
+      "type": "smoke",
+      "power": 0,
+      "accuracy": null,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "cloud"
+        }
+      ],
+      "description": "The lights dim and smoke rolls in over the foe's side, cutting their accuracy for a few turns."
+    },
+    {
+      "id": "floodSurge",
+      "name": "Flood Surge",
+      "type": "sludge",
+      "power": 105,
+      "accuracy": 90,
+      "target": "allFoes",
+      "signature": true,
+      "effects": [
+        {
+          "type": "choke",
+          "chance": 0.3
+        }
+      ],
+      "description": "Undertow's signature: every drain backs up at once. Hits every foe; may leave them choking."
+    },
+    {
+      "id": "undertowPull",
+      "name": "Undertow Pull",
+      "type": "sludge",
+      "power": 90,
+      "accuracy": 95,
+      "target": "foe",
+      "effects": [
+        {
+          "type": "stat",
+          "who": "foe",
+          "stat": "speed",
+          "stages": -1,
+          "chance": 0.6
+        }
+      ],
+      "description": "Drags the target down into the current. May lower its Speed."
+    },
+    {
+      "id": "deepHum",
+      "name": "Deep Hum",
+      "type": "bass",
+      "power": 80,
+      "accuracy": 100,
+      "target": "allFoes",
+      "loud": true,
+      "description": "A note so low the pipes sing. Hits every foe."
+    }
+  ]
+}

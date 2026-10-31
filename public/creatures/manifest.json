@@ -1,0 +1,5440 @@
+{
+  "generated": "2026-10-30T10:51:14.703Z",
+  "validator": "GlbCheck (Khronos-equivalent data checks; gltf-validator not installed)",
+  "atlas": {
+    "size": 512,
+    "files": {
+      "color": "atlas/streetmon_color.png",
+      "normal": "atlas/streetmon_normal.png",
+      "orm": "atlas/streetmon_orm.png"
+    }
+  },
+  "creatures": [
+    {
+      "id": "strapback",
+      "name": "Strapback",
+      "dex": 1,
+      "types": [
+        "gun"
+      ],
+      "file": "creatures/strapback.glb",
+      "triangles": 1108,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.246,
+          0,
+          -0.193
+        ],
+        "max": [
+          0.246,
+          0.85,
+          0.149
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 317404,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 0.85,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "arm_L",
+        "leg_L",
+        "arm_R",
+        "leg_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "metal",
+          "secondary": "armor",
+          "accent": "gloss",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.08
+      },
+      "atlasCells": {
+        "vgrad": 336,
+        "wear": 259,
+        "grime": 96,
+        "rust": 37,
+        "flat": 240,
+        "hgrad": 36,
+        "core": 24
+      },
+      "polish": {
+        "triangles": 1028,
+        "bevelled": 12,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 0,
+        "hiddenCulled": 96
+      },
+      "shiny": {
+        "file": "creatures/strapback_shiny.glb",
+        "triangles": 1108,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.246,
+            0,
+            -0.193
+          ],
+          "max": [
+            0.246,
+            0.85,
+            0.149
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 317444,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "holster",
+      "name": "Holster",
+      "dex": 2,
+      "types": [
+        "gun"
+      ],
+      "file": "creatures/holster.glb",
+      "triangles": 1226,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.465,
+          0,
+          -0.282
+        ],
+        "max": [
+          0.465,
+          1.4,
+          0.218
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 347120,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 1.4,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "arm_L",
+        "leg_L",
+        "arm_R",
+        "leg_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "metal",
+          "secondary": "armor",
+          "accent": "gloss",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.08
+      },
+      "atlasCells": {
+        "vgrad": 368,
+        "wear": 317,
+        "grime": 96,
+        "rust": 73,
+        "flat": 220,
+        "vstrong": 12,
+        "hgrad": 36,
+        "core": 24
+      },
+      "polish": {
+        "triangles": 1146,
+        "bevelled": 16,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 2,
+        "hiddenCulled": 164
+      },
+      "shiny": {
+        "file": "creatures/holster_shiny.glb",
+        "triangles": 1226,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.465,
+            0,
+            -0.282
+          ],
+          "max": [
+            0.465,
+            1.4,
+            0.218
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 347156,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "hardcase",
+      "name": "Hardcase",
+      "dex": 3,
+      "types": [
+        "gun",
+        "concrete"
+      ],
+      "file": "creatures/hardcase.glb",
+      "triangles": 1013,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.758,
+          0,
+          -0.422
+        ],
+        "max": [
+          0.758,
+          2,
+          0.315
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 293412,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 2,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "arm_L",
+        "leg_L",
+        "arm_R",
+        "leg_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "metal",
+          "secondary": "armor",
+          "accent": "gloss",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.098
+      },
+      "atlasCells": {
+        "vgrad": 211,
+        "wear": 271,
+        "grime": 96,
+        "rust": 65,
+        "flat": 162,
+        "vstrong": 92,
+        "hgrad": 12,
+        "core": 24
+      },
+      "polish": {
+        "triangles": 933,
+        "bevelled": 15,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 2,
+        "hiddenCulled": 285
+      },
+      "shiny": {
+        "file": "creatures/hardcase_shiny.glb",
+        "triangles": 1013,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.758,
+            0,
+            -0.422
+          ],
+          "max": [
+            0.758,
+            2,
+            0.315
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 293448,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "slugger",
+      "name": "Slugger",
+      "dex": 4,
+      "types": [
+        "gun"
+      ],
+      "file": "creatures/slugger.glb",
+      "triangles": 1222,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.376,
+          0,
+          -0.755
+        ],
+        "max": [
+          0.376,
+          0.9,
+          0.812
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 347472,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 0.9,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "tail",
+        "leg_FL",
+        "leg_BL",
+        "leg_FR",
+        "leg_BR",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "metal",
+          "secondary": "armor",
+          "accent": "gloss",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.08
+      },
+      "atlasCells": {
+        "hgrad": 100,
+        "rust": 78,
+        "wear": 206,
+        "vgrad": 326,
+        "grime": 216,
+        "flat": 192,
+        "core": 24
+      },
+      "polish": {
+        "triangles": 1142,
+        "bevelled": 14,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 72,
+        "hiddenCulled": 38
+      },
+      "shiny": {
+        "file": "creatures/slugger_shiny.glb",
+        "triangles": 1222,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.376,
+            0,
+            -0.755
+          ],
+          "max": [
+            0.376,
+            0.9,
+            0.812
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 347508,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "longshot",
+      "name": "Longshot",
+      "dex": 5,
+      "types": [
+        "gun"
+      ],
+      "file": "creatures/longshot.glb",
+      "triangles": 781,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.153,
+          0,
+          -0.313
+        ],
+        "max": [
+          0.153,
+          1,
+          0.438
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 243028,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 1,
+      "nodes": [
+        "root",
+        "body",
+        "neck",
+        "head",
+        "leg_L",
+        "leg_R",
+        "scope",
+        "wing_L",
+        "wing_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "metal",
+          "secondary": "armor",
+          "accent": "gloss",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.08
+      },
+      "atlasCells": {
+        "vstrong": 80,
+        "hgrad": 31,
+        "vgrad": 62,
+        "grime": 30,
+        "flat": 314,
+        "wear": 95,
+        "rust": 41,
+        "core": 48
+      },
+      "polish": {
+        "triangles": 701,
+        "bevelled": 5,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 34,
+        "hiddenCulled": 33
+      },
+      "shiny": {
+        "file": "creatures/longshot_shiny.glb",
+        "triangles": 781,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.153,
+            0,
+            -0.313
+          ],
+          "max": [
+            0.153,
+            1,
+            0.438
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 243068,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "overwatch",
+      "name": "Overwatch",
+      "dex": 6,
+      "types": [
+        "gun"
+      ],
+      "file": "creatures/overwatch.glb",
+      "triangles": 927,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.204,
+          0,
+          -0.419
+        ],
+        "max": [
+          0.204,
+          1.6,
+          0.8
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 284860,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 1.6,
+      "nodes": [
+        "root",
+        "body",
+        "neck",
+        "head",
+        "leg_L",
+        "leg_R",
+        "leg_B",
+        "scope",
+        "wing_L",
+        "wing_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "metal",
+          "secondary": "armor",
+          "accent": "gloss",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.08
+      },
+      "atlasCells": {
+        "vgrad": 168,
+        "grime": 45,
+        "flat": 438,
+        "wear": 101,
+        "rust": 35,
+        "hgrad": 12,
+        "core": 48
+      },
+      "polish": {
+        "triangles": 847,
+        "bevelled": 5,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 48,
+        "hiddenCulled": 39
+      },
+      "shiny": {
+        "file": "creatures/overwatch_shiny.glb",
+        "triangles": 927,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.204,
+            0,
+            -0.419
+          ],
+          "max": [
+            0.204,
+            1.6,
+            0.8
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 284900,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "cinderblock",
+      "name": "Cinderblock",
+      "dex": 7,
+      "types": [
+        "concrete"
+      ],
+      "file": "creatures/cinderblock.glb",
+      "triangles": 863,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.416,
+          0,
+          -0.291
+        ],
+        "max": [
+          0.416,
+          0.9,
+          0.163
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 255792,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 0.9,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "leg_L",
+        "arm_L",
+        "leg_R",
+        "arm_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "concrete",
+          "secondary": "concrete",
+          "accent": "armor",
+          "dark": "rubber",
+          "white": "concrete",
+          "eye": "glow"
+        },
+        "bevel": 0.14
+      },
+      "atlasCells": {
+        "vgrad": 299,
+        "grime": 32,
+        "wear": 200,
+        "hgrad": 36,
+        "flat": 120,
+        "core": 96
+      },
+      "polish": {
+        "triangles": 783,
+        "bevelled": 7,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 18,
+        "hiddenCulled": 17
+      },
+      "shiny": {
+        "file": "creatures/cinderblock_shiny.glb",
+        "triangles": 863,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.416,
+            0,
+            -0.291
+          ],
+          "max": [
+            0.416,
+            0.9,
+            0.163
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 255828,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "overpass",
+      "name": "Overpass",
+      "dex": 8,
+      "types": [
+        "concrete"
+      ],
+      "file": "creatures/overpass.glb",
+      "triangles": 1134,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.878,
+          0,
+          -0.274
+        ],
+        "max": [
+          0.878,
+          2.2,
+          0.477
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 324128,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 2.2,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "leg_L",
+        "arm_L",
+        "leg_R",
+        "arm_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "concrete",
+          "secondary": "concrete",
+          "accent": "armor",
+          "dark": "rubber",
+          "white": "concrete",
+          "eye": "glow"
+        },
+        "bevel": 0.14
+      },
+      "atlasCells": {
+        "vstrong": 20,
+        "grime": 116,
+        "wear": 308,
+        "vgrad": 214,
+        "rust": 20,
+        "flat": 244,
+        "hgrad": 36,
+        "core": 96
+      },
+      "polish": {
+        "triangles": 1054,
+        "bevelled": 13,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 20,
+        "hiddenCulled": 22
+      },
+      "shiny": {
+        "file": "creatures/overpass_shiny.glb",
+        "triangles": 1134,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.878,
+            0,
+            -0.274
+          ],
+          "max": [
+            0.878,
+            2.2,
+            0.477
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 324164,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "curbstone",
+      "name": "Curbstone",
+      "dex": 9,
+      "types": [
+        "concrete"
+      ],
+      "file": "creatures/curbstone.glb",
+      "triangles": 1122,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.305,
+          0,
+          -0.661
+        ],
+        "max": [
+          0.305,
+          0.6,
+          0.629
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow",
+        "idle_curled"
+      ],
+      "bytes": 336596,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 0.6,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "tail",
+        "leg_FL",
+        "leg_BL",
+        "leg_FR",
+        "leg_BR",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "concrete",
+          "secondary": "concrete",
+          "accent": "armor",
+          "dark": "rubber",
+          "white": "concrete",
+          "eye": "glow"
+        },
+        "bevel": 0.14
+      },
+      "atlasCells": {
+        "vstrong": 90,
+        "hgrad": 92,
+        "wear": 236,
+        "rust": 52,
+        "vgrad": 172,
+        "grime": 88,
+        "flat": 280,
+        "core": 32
+      },
+      "polish": {
+        "triangles": 1042,
+        "bevelled": 11,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 8,
+        "hiddenCulled": 56
+      },
+      "shiny": {
+        "file": "creatures/curbstone_shiny.glb",
+        "triangles": 1122,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.305,
+            0,
+            -0.661
+          ],
+          "max": [
+            0.305,
+            0.6,
+            0.629
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow",
+          "idle_curled"
+        ],
+        "bytes": 336632,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "rebarb",
+      "name": "Rebarb",
+      "dex": 10,
+      "types": [
+        "concrete",
+        "gun"
+      ],
+      "file": "creatures/rebarb.glb",
+      "triangles": 1032,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.307,
+          0,
+          -0.582
+        ],
+        "max": [
+          0.307,
+          0.7,
+          0.601
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 293820,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 0.7,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "leg_FL",
+        "leg_BL",
+        "leg_FR",
+        "leg_BR",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "concrete",
+          "secondary": "concrete",
+          "accent": "armor",
+          "dark": "rubber",
+          "white": "concrete",
+          "eye": "glow"
+        },
+        "bevel": 0.122
+      },
+      "atlasCells": {
+        "vstrong": 100,
+        "vgrad": 310,
+        "flat": 234,
+        "hgrad": 60,
+        "grime": 88,
+        "wear": 64,
+        "core": 96
+      },
+      "polish": {
+        "triangles": 952,
+        "bevelled": 4,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 134,
+        "hiddenCulled": 52
+      },
+      "shiny": {
+        "file": "creatures/rebarb_shiny.glb",
+        "triangles": 1032,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.307,
+            0,
+            -0.582
+          ],
+          "max": [
+            0.307,
+            0.7,
+            0.601
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 293848,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "doubleshift",
+      "name": "Double Shift",
+      "dex": 11,
+      "types": [
+        "grind"
+      ],
+      "file": "creatures/doubleshift.glb",
+      "triangles": 1037,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.162,
+          0,
+          -0.096
+        ],
+        "max": [
+          0.158,
+          0.9,
+          0.122
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 311456,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 0.9,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "clock_hand_0",
+        "clock_hour_0",
+        "leg_L",
+        "arm_L",
+        "leg_R",
+        "arm_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "armor",
+          "secondary": "metal",
+          "accent": "gloss",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.1
+      },
+      "atlasCells": {
+        "vgrad": 424,
+        "flat": 407,
+        "grime": 94,
+        "core": 32
+      },
+      "polish": {
+        "triangles": 957,
+        "bevelled": 2,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 22,
+        "hiddenCulled": 137
+      },
+      "shiny": {
+        "file": "creatures/doubleshift_shiny.glb",
+        "triangles": 1037,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.162,
+            0,
+            -0.096
+          ],
+          "max": [
+            0.158,
+            0.9,
+            0.122
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 311492,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "overtime",
+      "name": "Overtime",
+      "dex": 12,
+      "types": [
+        "grind"
+      ],
+      "file": "creatures/overtime.glb",
+      "triangles": 1336,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.243,
+          0,
+          -0.188
+        ],
+        "max": [
+          0.237,
+          1.5,
+          0.188
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 398424,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 1.5,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "clock_hand_0",
+        "clock_hour_0",
+        "clock_hand_1",
+        "clock_hour_1",
+        "leg_L",
+        "arm_L",
+        "leg_R",
+        "arm_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "armor",
+          "secondary": "metal",
+          "accent": "gloss",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.1
+      },
+      "atlasCells": {
+        "vgrad": 708,
+        "flat": 422,
+        "grime": 94,
+        "core": 32
+      },
+      "polish": {
+        "triangles": 1256,
+        "bevelled": 2,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 26,
+        "hiddenCulled": 194
+      },
+      "shiny": {
+        "file": "creatures/overtime_shiny.glb",
+        "triangles": 1336,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.243,
+            0,
+            -0.188
+          ],
+          "max": [
+            0.237,
+            1.5,
+            0.188
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 398460,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "hustlepup",
+      "name": "Hustlepup",
+      "dex": 13,
+      "types": [
+        "grind"
+      ],
+      "file": "creatures/hustlepup.glb",
+      "triangles": 1118,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.118,
+          0,
+          -0.253
+        ],
+        "max": [
+          0.118,
+          0.6,
+          0.345
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 329024,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 0.6,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "tail",
+        "pack",
+        "ear_L",
+        "ear_R",
+        "leg_FL",
+        "leg_BL",
+        "leg_FR",
+        "leg_BR",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "armor",
+          "secondary": "metal",
+          "accent": "gloss",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.1
+      },
+      "atlasCells": {
+        "hgrad": 48,
+        "rust": 57,
+        "wear": 199,
+        "vgrad": 134,
+        "grime": 136,
+        "flat": 432,
+        "core": 32
+      },
+      "polish": {
+        "triangles": 1038,
+        "bevelled": 10,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 6,
+        "hiddenCulled": 90
+      },
+      "shiny": {
+        "file": "creatures/hustlepup_shiny.glb",
+        "triangles": 1118,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.118,
+            0,
+            -0.253
+          ],
+          "max": [
+            0.118,
+            0.6,
+            0.345
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 329056,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "cashew",
+      "name": "Cashew",
+      "dex": 14,
+      "types": [
+        "grind"
+      ],
+      "file": "creatures/cashew.glb",
+      "triangles": 1105,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.139,
+          0,
+          -0.282
+        ],
+        "max": [
+          0.139,
+          0.5,
+          0.154
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 335088,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 0.5,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "tail_0",
+        "tail_1",
+        "tail_2",
+        "leg_L",
+        "arm_L",
+        "leg_R",
+        "arm_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "armor",
+          "secondary": "metal",
+          "accent": "gloss",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.1
+      },
+      "atlasCells": {
+        "vstrong": 72,
+        "grime": 88,
+        "vgrad": 507,
+        "flat": 326,
+        "core": 32
+      },
+      "polish": {
+        "triangles": 1025,
+        "bevelled": 0,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 24,
+        "hiddenCulled": 151
+      },
+      "shiny": {
+        "file": "creatures/cashew_shiny.glb",
+        "triangles": 1105,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.139,
+            0,
+            -0.282
+          ],
+          "max": [
+            0.139,
+            0.5,
+            0.154
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 335124,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "exhaustfume",
+      "name": "Exhaust Fume",
+      "dex": 15,
+      "types": [
+        "smoke"
+      ],
+      "file": "creatures/exhaustfume.glb",
+      "triangles": 948,
+      "drawCalls": 4,
+      "bbox": {
+        "min": [
+          -0.379,
+          0.261,
+          -0.267
+        ],
+        "max": [
+          0.287,
+          0.8,
+          0.36
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 263928,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 0.8,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "fabric",
+          "secondary": "fabric",
+          "accent": "metal",
+          "dark": "rubber",
+          "white": "fabric",
+          "eye": "glow"
+        },
+        "bevel": 0.16
+      },
+      "atlasCells": {
+        "vgrad": 348,
+        "vstrong": 320,
+        "wear": 22,
+        "rust": 10,
+        "flat": 72,
+        "core": 96
+      },
+      "polish": {
+        "triangles": 868,
+        "bevelled": 1,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 4,
+        "hiddenCulled": 0
+      },
+      "shiny": {
+        "file": "creatures/exhaustfume_shiny.glb",
+        "triangles": 948,
+        "drawCalls": 4,
+        "bbox": {
+          "min": [
+            -0.379,
+            0.261,
+            -0.267
+          ],
+          "max": [
+            0.287,
+            0.8,
+            0.36
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 263976,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "backfire",
+      "name": "Backfire",
+      "dex": 16,
+      "types": [
+        "smoke"
+      ],
+      "file": "creatures/backfire.glb",
+      "triangles": 1296,
+      "drawCalls": 4,
+      "bbox": {
+        "min": [
+          -0.524,
+          0.514,
+          -0.491
+        ],
+        "max": [
+          0.46,
+          1.4,
+          0.671
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 352816,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 1.4,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "flare",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "fabric",
+          "secondary": "fabric",
+          "accent": "metal",
+          "dark": "rubber",
+          "white": "fabric",
+          "eye": "glow"
+        },
+        "bevel": 0.16
+      },
+      "atlasCells": {
+        "vgrad": 456,
+        "vstrong": 320,
+        "wear": 53,
+        "rust": 11,
+        "flat": 232,
+        "core": 144
+      },
+      "polish": {
+        "triangles": 1216,
+        "bevelled": 2,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 8,
+        "hiddenCulled": 0
+      },
+      "shiny": {
+        "file": "creatures/backfire_shiny.glb",
+        "triangles": 1296,
+        "drawCalls": 4,
+        "bbox": {
+          "min": [
+            -0.524,
+            0.514,
+            -0.491
+          ],
+          "max": [
+            0.46,
+            1.4,
+            0.671
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 352860,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "hazeling",
+      "name": "Hazeling",
+      "dex": 17,
+      "types": [
+        "smoke"
+      ],
+      "file": "creatures/hazeling.glb",
+      "triangles": 1200,
+      "drawCalls": 4,
+      "bbox": {
+        "min": [
+          -0.197,
+          0,
+          -0.494
+        ],
+        "max": [
+          0.197,
+          0.7,
+          0.485
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 357436,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 0.7,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "leg_FL",
+        "leg_BL",
+        "leg_FR",
+        "leg_BR",
+        "tail_0",
+        "tail_1",
+        "tail_2",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "fabric",
+          "secondary": "fabric",
+          "accent": "metal",
+          "dark": "rubber",
+          "white": "fabric",
+          "eye": "glow"
+        },
+        "bevel": 0.16
+      },
+      "atlasCells": {
+        "vstrong": 128,
+        "vgrad": 812,
+        "grime": 12,
+        "flat": 72,
+        "core": 96
+      },
+      "polish": {
+        "triangles": 1120,
+        "bevelled": 0,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 22,
+        "hiddenCulled": 0
+      },
+      "shiny": {
+        "file": "creatures/hazeling_shiny.glb",
+        "triangles": 1200,
+        "drawCalls": 4,
+        "bbox": {
+          "min": [
+            -0.197,
+            0,
+            -0.494
+          ],
+          "max": [
+            0.197,
+            0.7,
+            0.485
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 357488,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "flue",
+      "name": "Flue",
+      "dex": 18,
+      "types": [
+        "smoke",
+        "concrete"
+      ],
+      "file": "creatures/flue.glb",
+      "triangles": 1189,
+      "drawCalls": 4,
+      "bbox": {
+        "min": [
+          -0.231,
+          0,
+          -0.733
+        ],
+        "max": [
+          0.231,
+          1.3,
+          0.313
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 383452,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 1.3,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "tail_0",
+        "tail_1",
+        "leg_L",
+        "arm_L",
+        "leg_R",
+        "arm_R",
+        "puff_0",
+        "puff_1",
+        "puff_2",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "fabric",
+          "secondary": "fabric",
+          "accent": "metal",
+          "dark": "rubber",
+          "white": "fabric",
+          "eye": "glow"
+        },
+        "bevel": 0.154
+      },
+      "atlasCells": {
+        "vstrong": 128,
+        "vgrad": 194,
+        "wear": 228,
+        "flat": 327,
+        "grime": 116,
+        "hgrad": 8,
+        "core": 108
+      },
+      "polish": {
+        "triangles": 1109,
+        "bevelled": 10,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 4,
+        "hiddenCulled": 49
+      },
+      "shiny": {
+        "file": "creatures/flue_shiny.glb",
+        "triangles": 1189,
+        "drawCalls": 4,
+        "bbox": {
+          "min": [
+            -0.231,
+            0,
+            -0.733
+          ],
+          "max": [
+            0.231,
+            1.3,
+            0.313
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 383500,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "subsonic",
+      "name": "Subsonic",
+      "dex": 19,
+      "types": [
+        "bass"
+      ],
+      "file": "creatures/subsonic.glb",
+      "triangles": 998,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.356,
+          0,
+          -0.316
+        ],
+        "max": [
+          0.356,
+          0.8,
+          0.385
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 284612,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 0.8,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "rings_0",
+        "leg_L",
+        "leg_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "gloss",
+          "secondary": "rubber",
+          "accent": "metal",
+          "dark": "vent",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.16
+      },
+      "atlasCells": {
+        "vstrong": 140,
+        "vgrad": 150,
+        "wear": 88,
+        "flat": 72,
+        "grime": 28,
+        "core": 440
+      },
+      "polish": {
+        "triangles": 918,
+        "bevelled": 3,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 10,
+        "hiddenCulled": 4
+      },
+      "shiny": {
+        "file": "creatures/subsonic_shiny.glb",
+        "triangles": 998,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.356,
+            0,
+            -0.316
+          ],
+          "max": [
+            0.356,
+            0.8,
+            0.385
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 284648,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "woofer",
+      "name": "Woofer",
+      "dex": 20,
+      "types": [
+        "bass"
+      ],
+      "file": "creatures/woofer.glb",
+      "triangles": 1453,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.761,
+          0,
+          -0.78
+        ],
+        "max": [
+          0.761,
+          1.5,
+          0.735
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 431132,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 1.5,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "rings_0",
+        "rings_1",
+        "rings_2",
+        "leg_L",
+        "arm_L",
+        "leg_R",
+        "arm_R",
+        "emitter",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "gloss",
+          "secondary": "rubber",
+          "accent": "metal",
+          "dark": "vent",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.16
+      },
+      "atlasCells": {
+        "vstrong": 152,
+        "vgrad": 177,
+        "grime": 4,
+        "hgrad": 20,
+        "core": 1020
+      },
+      "polish": {
+        "triangles": 1373,
+        "bevelled": 0,
+        "plain": 8,
+        "extrasDropped": 6,
+        "coplanarSaved": 26,
+        "hiddenCulled": 35
+      },
+      "shiny": {
+        "file": "creatures/woofer_shiny.glb",
+        "triangles": 1453,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.761,
+            0,
+            -0.78
+          ],
+          "max": [
+            0.761,
+            1.5,
+            0.735
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 431168,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "streetlamp",
+      "name": "Streetlamp",
+      "dex": 21,
+      "types": [
+        "bass"
+      ],
+      "file": "creatures/streetlamp.glb",
+      "triangles": 674,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.344,
+          0.004,
+          -0.098
+        ],
+        "max": [
+          0.344,
+          1,
+          0.127
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 204292,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 1,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "wing_L",
+        "wing_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "gloss",
+          "secondary": "rubber",
+          "accent": "metal",
+          "dark": "vent",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.16
+      },
+      "atlasCells": {
+        "grime": 72,
+        "vstrong": 16,
+        "wear": 12,
+        "flat": 352,
+        "vgrad": 62,
+        "core": 80
+      },
+      "polish": {
+        "triangles": 594,
+        "bevelled": 2,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 34,
+        "hiddenCulled": 28
+      },
+      "shiny": {
+        "file": "creatures/streetlamp_shiny.glb",
+        "triangles": 674,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.344,
+            0.004,
+            -0.098
+          ],
+          "max": [
+            0.344,
+            1,
+            0.127
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 204328,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "wirewhip",
+      "name": "Wirewhip",
+      "dex": 22,
+      "types": [
+        "bass"
+      ],
+      "file": "creatures/wirewhip.glb",
+      "triangles": 1386,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.371,
+          0.084,
+          -0.065
+        ],
+        "max": [
+          0.371,
+          1.2,
+          0.066
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 444612,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 1.2,
+      "nodes": [
+        "root",
+        "body",
+        "seg_0",
+        "seg_1",
+        "seg_2",
+        "seg_3",
+        "seg_4",
+        "seg_5",
+        "seg_6",
+        "seg_7",
+        "seg_8",
+        "seg_9",
+        "seg_10",
+        "seg_11",
+        "spark_0",
+        "spark_1",
+        "spark_2",
+        "spark_3",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "gloss",
+          "secondary": "rubber",
+          "accent": "metal",
+          "dark": "vent",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.16
+      },
+      "atlasCells": {
+        "hgrad": 20,
+        "flat": 760,
+        "grime": 14,
+        "core": 512
+      },
+      "polish": {
+        "triangles": 1306,
+        "bevelled": 0,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 12,
+        "hiddenCulled": 10
+      },
+      "shiny": {
+        "file": "creatures/wirewhip_shiny.glb",
+        "triangles": 1386,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.371,
+            0.084,
+            -0.065
+          ],
+          "max": [
+            0.371,
+            1.2,
+            0.066
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 444644,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "rooftail",
+      "name": "Rooftail",
+      "dex": 23,
+      "types": [
+        "wire"
+      ],
+      "file": "creatures/rooftail.glb",
+      "triangles": 828,
+      "drawCalls": 4,
+      "bbox": {
+        "min": [
+          -0.153,
+          0,
+          -0.272
+        ],
+        "max": [
+          0.153,
+          0.6,
+          0.237
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 268752,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 0.6,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "tail_0",
+        "ant_0",
+        "ant_1",
+        "wing_L",
+        "wing_R",
+        "leg_L",
+        "leg_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "metal",
+          "secondary": "vent",
+          "accent": "gloss",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.1
+      },
+      "atlasCells": {
+        "vstrong": 104,
+        "hgrad": 76,
+        "vgrad": 140,
+        "flat": 248,
+        "wear": 42,
+        "rust": 22,
+        "grime": 36,
+        "core": 80
+      },
+      "polish": {
+        "triangles": 748,
+        "bevelled": 2,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 18,
+        "hiddenCulled": 124
+      },
+      "shiny": {
+        "file": "creatures/rooftail_shiny.glb",
+        "triangles": 828,
+        "drawCalls": 4,
+        "bbox": {
+          "min": [
+            -0.153,
+            0,
+            -0.272
+          ],
+          "max": [
+            0.153,
+            0.6,
+            0.237
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 268800,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "antennaroc",
+      "name": "Antennaroc",
+      "dex": 24,
+      "types": [
+        "wire",
+        "bass"
+      ],
+      "file": "creatures/antennaroc.glb",
+      "triangles": 1099,
+      "drawCalls": 4,
+      "bbox": {
+        "min": [
+          -0.311,
+          0,
+          -0.472
+        ],
+        "max": [
+          0.311,
+          1.3,
+          0.368
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 352532,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 1.3,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "tail_0",
+        "ant_0",
+        "ant_1",
+        "ant_2",
+        "ant_3",
+        "ant_4",
+        "wing_L",
+        "wing_R",
+        "leg_L",
+        "leg_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "metal",
+          "secondary": "vent",
+          "accent": "gloss",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.118
+      },
+      "atlasCells": {
+        "vstrong": 80,
+        "wear": 78,
+        "rust": 33,
+        "vgrad": 232,
+        "flat": 248,
+        "hgrad": 12,
+        "grime": 36,
+        "core": 300
+      },
+      "polish": {
+        "triangles": 1019,
+        "bevelled": 3,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 34,
+        "hiddenCulled": 109
+      },
+      "shiny": {
+        "file": "creatures/antennaroc_shiny.glb",
+        "triangles": 1099,
+        "drawCalls": 4,
+        "bbox": {
+          "min": [
+            -0.311,
+            0,
+            -0.472
+          ],
+          "max": [
+            0.311,
+            1.3,
+            0.368
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 352580,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "neonmoth",
+      "name": "Neonmoth",
+      "dex": 25,
+      "types": [
+        "wire",
+        "smoke"
+      ],
+      "file": "creatures/neonmoth.glb",
+      "triangles": 670,
+      "drawCalls": 5,
+      "bbox": {
+        "min": [
+          -0.366,
+          0.116,
+          -0.14
+        ],
+        "max": [
+          0.366,
+          0.7,
+          0.141
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 214440,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 0.7,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "wing_L",
+        "wing_R",
+        "glow",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "metal",
+          "secondary": "vent",
+          "accent": "gloss",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.118
+      },
+      "atlasCells": {
+        "vgrad": 269,
+        "flat": 67,
+        "vstrong": 24,
+        "core": 230
+      },
+      "polish": {
+        "triangles": 590,
+        "bevelled": 0,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 16,
+        "hiddenCulled": 8
+      },
+      "shiny": {
+        "file": "creatures/neonmoth_shiny.glb",
+        "triangles": 670,
+        "drawCalls": 5,
+        "bbox": {
+          "min": [
+            -0.366,
+            0.116,
+            -0.14
+          ],
+          "max": [
+            0.366,
+            0.7,
+            0.141
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 214500,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "marqueen",
+      "name": "Marqueen",
+      "dex": 26,
+      "types": [
+        "wire",
+        "smoke"
+      ],
+      "file": "creatures/marqueen.glb",
+      "triangles": 1095,
+      "drawCalls": 5,
+      "bbox": {
+        "min": [
+          -0.768,
+          0.173,
+          -0.234
+        ],
+        "max": [
+          0.768,
+          1.4,
+          0.199
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 321480,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 1.4,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "wing_L",
+        "wing_R",
+        "glow",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "metal",
+          "secondary": "vent",
+          "accent": "gloss",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.118
+      },
+      "atlasCells": {
+        "vgrad": 265,
+        "flat": 120,
+        "vstrong": 24,
+        "core": 606
+      },
+      "polish": {
+        "triangles": 1015,
+        "bevelled": 0,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 8,
+        "hiddenCulled": 15
+      },
+      "shiny": {
+        "file": "creatures/marqueen_shiny.glb",
+        "triangles": 1095,
+        "drawCalls": 5,
+        "bbox": {
+          "min": [
+            -0.768,
+            0.173,
+            -0.234
+          ],
+          "max": [
+            0.768,
+            1.4,
+            0.199
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 321540,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "dishling",
+      "name": "Dishling",
+      "dex": 27,
+      "types": [
+        "wire"
+      ],
+      "file": "creatures/dishling.glb",
+      "triangles": 923,
+      "drawCalls": 4,
+      "bbox": {
+        "min": [
+          -0.297,
+          0,
+          -0.277
+        ],
+        "max": [
+          0.297,
+          0.55,
+          0.341
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 275140,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 0.55,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "arm",
+        "leg_FL",
+        "leg_BL",
+        "leg_FR",
+        "leg_BR",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "metal",
+          "secondary": "vent",
+          "accent": "gloss",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.1
+      },
+      "atlasCells": {
+        "wear": 118,
+        "rust": 54,
+        "hgrad": 26,
+        "vgrad": 228,
+        "flat": 267,
+        "grime": 88,
+        "core": 62
+      },
+      "polish": {
+        "triangles": 843,
+        "bevelled": 6,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 12,
+        "hiddenCulled": 103
+      },
+      "shiny": {
+        "file": "creatures/dishling_shiny.glb",
+        "triangles": 923,
+        "drawCalls": 4,
+        "bbox": {
+          "min": [
+            -0.297,
+            0,
+            -0.277
+          ],
+          "max": [
+            0.297,
+            0.55,
+            0.341
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 275184,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "broadcastle",
+      "name": "Broadcastle",
+      "dex": 28,
+      "types": [
+        "wire",
+        "concrete"
+      ],
+      "file": "creatures/broadcastle.glb",
+      "triangles": 1118,
+      "drawCalls": 4,
+      "bbox": {
+        "min": [
+          -0.445,
+          0,
+          -0.445
+        ],
+        "max": [
+          0.445,
+          2.1,
+          0.653
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 325124,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 2.1,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "mast",
+        "leg_FL",
+        "leg_BL",
+        "leg_FR",
+        "leg_BR",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "metal",
+          "secondary": "vent",
+          "accent": "gloss",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.112
+      },
+      "atlasCells": {
+        "vgrad": 150,
+        "wear": 263,
+        "rust": 69,
+        "hgrad": 12,
+        "vstrong": 20,
+        "flat": 238,
+        "grime": 88,
+        "core": 198
+      },
+      "polish": {
+        "triangles": 1038,
+        "bevelled": 10,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 16,
+        "hiddenCulled": 16
+      },
+      "shiny": {
+        "file": "creatures/broadcastle_shiny.glb",
+        "triangles": 1118,
+        "drawCalls": 4,
+        "bbox": {
+          "min": [
+            -0.445,
+            0,
+            -0.445
+          ],
+          "max": [
+            0.445,
+            2.1,
+            0.653
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 325164,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "gutterat",
+      "name": "Gutterat",
+      "dex": 29,
+      "types": [
+        "sludge"
+      ],
+      "file": "creatures/gutterat.glb",
+      "triangles": 868,
+      "drawCalls": 4,
+      "bbox": {
+        "min": [
+          -0.214,
+          0,
+          -0.863
+        ],
+        "max": [
+          0.214,
+          0.5,
+          0.631
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 279892,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 0.5,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "leg_FL",
+        "leg_BL",
+        "leg_FR",
+        "leg_BR",
+        "tail_0",
+        "tail_1",
+        "tail_2",
+        "tail_3",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "gloss",
+          "secondary": "rubber",
+          "accent": "metal",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.15
+      },
+      "atlasCells": {
+        "vstrong": 92,
+        "vgrad": 126,
+        "flat": 200,
+        "grime": 56,
+        "wear": 80,
+        "hgrad": 48,
+        "core": 186
+      },
+      "polish": {
+        "triangles": 788,
+        "bevelled": 4,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 26,
+        "hiddenCulled": 16
+      },
+      "shiny": {
+        "file": "creatures/gutterat_shiny.glb",
+        "triangles": 868,
+        "drawCalls": 4,
+        "bbox": {
+          "min": [
+            -0.214,
+            0,
+            -0.863
+          ],
+          "max": [
+            0.214,
+            0.5,
+            0.631
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 279868,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "ratking",
+      "name": "Ratking",
+      "dex": 30,
+      "types": [
+        "sludge",
+        "grind"
+      ],
+      "file": "creatures/ratking.glb",
+      "triangles": 1160,
+      "drawCalls": 4,
+      "bbox": {
+        "min": [
+          -0.428,
+          0,
+          -1.725
+        ],
+        "max": [
+          0.428,
+          1.2,
+          1.262
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 407536,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 1.2,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "rider",
+        "leg_FL",
+        "leg_BL",
+        "leg_FR",
+        "leg_BR",
+        "tail_0",
+        "tail_1",
+        "tail_2",
+        "tail_3",
+        "tail_4",
+        "tail_5",
+        "tail_6",
+        "tail_7",
+        "tail_8",
+        "tail_9",
+        "tail_10",
+        "tail_11",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "gloss",
+          "secondary": "rubber",
+          "accent": "metal",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.135
+      },
+      "atlasCells": {
+        "vstrong": 92,
+        "flat": 370,
+        "vgrad": 152,
+        "grime": 56,
+        "wear": 80,
+        "hgrad": 144,
+        "core": 186
+      },
+      "polish": {
+        "triangles": 1080,
+        "bevelled": 4,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 80,
+        "hiddenCulled": 16
+      },
+      "shiny": {
+        "file": "creatures/ratking_shiny.glb",
+        "triangles": 1160,
+        "drawCalls": 4,
+        "bbox": {
+          "min": [
+            -0.428,
+            0,
+            -1.725
+          ],
+          "max": [
+            0.428,
+            1.2,
+            1.262
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 407512,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "drainling",
+      "name": "Drainling",
+      "dex": 31,
+      "types": [
+        "sludge"
+      ],
+      "file": "creatures/drainling.glb",
+      "triangles": 1116,
+      "drawCalls": 4,
+      "bbox": {
+        "min": [
+          -0.428,
+          0,
+          -1.675
+        ],
+        "max": [
+          0.428,
+          0.6,
+          1.283
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 348464,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 0.6,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "jaw",
+        "leg_FL",
+        "leg_BL",
+        "leg_FR",
+        "leg_BR",
+        "tail_0",
+        "tail_1",
+        "tail_2",
+        "tail_3",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "gloss",
+          "secondary": "rubber",
+          "accent": "metal",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.15
+      },
+      "atlasCells": {
+        "hgrad": 60,
+        "wear": 304,
+        "vgrad": 422,
+        "flat": 72,
+        "grime": 80,
+        "vstrong": 36,
+        "core": 62
+      },
+      "polish": {
+        "triangles": 1036,
+        "bevelled": 11,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 22,
+        "hiddenCulled": 48
+      },
+      "shiny": {
+        "file": "creatures/drainling_shiny.glb",
+        "triangles": 1116,
+        "drawCalls": 4,
+        "bbox": {
+          "min": [
+            -0.428,
+            0,
+            -1.675
+          ],
+          "max": [
+            0.428,
+            0.6,
+            1.283
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 348516,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "sewergator",
+      "name": "Sewergator",
+      "dex": 32,
+      "types": [
+        "sludge",
+        "concrete"
+      ],
+      "file": "creatures/sewergator.glb",
+      "triangles": 1308,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -1.433,
+          0,
+          -5.614
+        ],
+        "max": [
+          1.433,
+          2,
+          4.3
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 393352,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 2,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "jaw",
+        "leg_FL",
+        "leg_BL",
+        "leg_FR",
+        "leg_BR",
+        "tail_0",
+        "tail_1",
+        "tail_2",
+        "tail_3",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "gloss",
+          "secondary": "rubber",
+          "accent": "metal",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.147
+      },
+      "atlasCells": {
+        "hgrad": 120,
+        "wear": 446,
+        "rust": 50,
+        "flat": 72,
+        "vgrad": 392,
+        "grime": 80,
+        "vstrong": 36,
+        "core": 32
+      },
+      "polish": {
+        "triangles": 1228,
+        "bevelled": 17,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 12,
+        "hiddenCulled": 48
+      },
+      "shiny": {
+        "file": "creatures/sewergator_shiny.glb",
+        "triangles": 1308,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -1.433,
+            0,
+            -5.614
+          ],
+          "max": [
+            1.433,
+            2,
+            4.3
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 393388,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "mildew",
+      "name": "Mildew",
+      "dex": 33,
+      "types": [
+        "sludge",
+        "smoke"
+      ],
+      "file": "creatures/mildew.glb",
+      "triangles": 1104,
+      "drawCalls": 4,
+      "bbox": {
+        "min": [
+          -0.227,
+          0,
+          -0.26
+        ],
+        "max": [
+          0.244,
+          0.6,
+          0.2
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 330092,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 0.6,
+      "nodes": [
+        "root",
+        "body",
+        "cap_0",
+        "cap_1",
+        "cap_2",
+        "cap_3",
+        "leg_L",
+        "leg_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "gloss",
+          "secondary": "rubber",
+          "accent": "metal",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.153
+      },
+      "atlasCells": {
+        "vstrong": 232,
+        "grime": 76,
+        "vgrad": 280,
+        "flat": 276,
+        "wear": 32,
+        "core": 128
+      },
+      "polish": {
+        "triangles": 1024,
+        "bevelled": 2,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 16,
+        "hiddenCulled": 72
+      },
+      "shiny": {
+        "file": "creatures/mildew_shiny.glb",
+        "triangles": 1104,
+        "drawCalls": 4,
+        "bbox": {
+          "min": [
+            -0.227,
+            0,
+            -0.26
+          ],
+          "max": [
+            0.244,
+            0.6,
+            0.2
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 330140,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "moldmother",
+      "name": "Moldmother",
+      "dex": 34,
+      "types": [
+        "sludge",
+        "smoke"
+      ],
+      "file": "creatures/moldmother.glb",
+      "triangles": 1472,
+      "drawCalls": 5,
+      "bbox": {
+        "min": [
+          -0.608,
+          0,
+          -0.526
+        ],
+        "max": [
+          0.608,
+          1.6,
+          0.636
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 495052,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 1.6,
+      "nodes": [
+        "root",
+        "body",
+        "cap_0",
+        "cap_1",
+        "cap_2",
+        "cap_3",
+        "cap_4",
+        "cap_5",
+        "leg_L",
+        "leg_R",
+        "spore_0",
+        "spore_1",
+        "spore_2",
+        "spore_3",
+        "spore_4",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "gloss",
+          "secondary": "rubber",
+          "accent": "metal",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.153
+      },
+      "atlasCells": {
+        "vstrong": 136,
+        "grime": 64,
+        "vgrad": 512,
+        "wear": 60,
+        "flat": 324,
+        "core": 296
+      },
+      "polish": {
+        "triangles": 1392,
+        "bevelled": 4,
+        "plain": 4,
+        "extrasDropped": 0,
+        "coplanarSaved": 24,
+        "hiddenCulled": 104
+      },
+      "shiny": {
+        "file": "creatures/moldmother_shiny.glb",
+        "triangles": 1472,
+        "drawCalls": 5,
+        "bbox": {
+          "min": [
+            -0.608,
+            0,
+            -0.526
+          ],
+          "max": [
+            0.608,
+            1.6,
+            0.636
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 495116,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "gridlock",
+      "name": "Gridlock",
+      "dex": 35,
+      "types": [
+        "concrete",
+        "grind"
+      ],
+      "file": "creatures/gridlock.glb",
+      "triangles": 1487,
+      "drawCalls": 5,
+      "bbox": {
+        "min": [
+          -1.718,
+          0,
+          -0.757
+        ],
+        "max": [
+          1.718,
+          3.6,
+          0.873
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 424864,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 3.6,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "leg_L",
+        "arm_L",
+        "leg_R",
+        "arm_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "concrete",
+          "secondary": "concrete",
+          "accent": "armor",
+          "dark": "rubber",
+          "white": "concrete",
+          "eye": "glow"
+        },
+        "bevel": 0.128
+      },
+      "atlasCells": {
+        "vgrad": 322,
+        "wear": 492,
+        "grime": 88,
+        "rust": 25,
+        "hgrad": 84,
+        "flat": 120,
+        "core": 276
+      },
+      "polish": {
+        "triangles": 1407,
+        "bevelled": 19,
+        "plain": 7,
+        "extrasDropped": 0,
+        "coplanarSaved": 20,
+        "hiddenCulled": 41
+      },
+      "shiny": {
+        "file": "creatures/gridlock_shiny.glb",
+        "triangles": 1487,
+        "drawCalls": 5,
+        "bbox": {
+          "min": [
+            -1.718,
+            0,
+            -0.757
+          ],
+          "max": [
+            1.718,
+            3.6,
+            0.873
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 424852,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "blackout",
+      "name": "Blackout",
+      "dex": 36,
+      "types": [
+        "wire",
+        "smoke"
+      ],
+      "file": "creatures/blackout.glb",
+      "triangles": 1488,
+      "drawCalls": 5,
+      "bbox": {
+        "min": [
+          -1.57,
+          0.165,
+          -1.024
+        ],
+        "max": [
+          1.57,
+          3.8,
+          1.024
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 412368,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 3.8,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "arm_L",
+        "arm_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "metal",
+          "secondary": "vent",
+          "accent": "gloss",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.118
+      },
+      "atlasCells": {
+        "vgrad": 414,
+        "hgrad": 60,
+        "wear": 161,
+        "rust": 79,
+        "flat": 178,
+        "core": 516
+      },
+      "polish": {
+        "triangles": 1408,
+        "bevelled": 7,
+        "plain": 11,
+        "extrasDropped": 4,
+        "coplanarSaved": 50,
+        "hiddenCulled": 71
+      },
+      "shiny": {
+        "file": "creatures/blackout_shiny.glb",
+        "triangles": 1488,
+        "drawCalls": 5,
+        "bbox": {
+          "min": [
+            -1.57,
+            0.165,
+            -1.024
+          ],
+          "max": [
+            1.57,
+            3.8,
+            1.024
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 412428,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "undertow",
+      "name": "Undertow",
+      "dex": 37,
+      "types": [
+        "sludge",
+        "bass"
+      ],
+      "file": "creatures/undertow.glb",
+      "triangles": 1472,
+      "drawCalls": 5,
+      "bbox": {
+        "min": [
+          -1.072,
+          0,
+          -1.511
+        ],
+        "max": [
+          1.072,
+          3.4,
+          1.887
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 416740,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 3.4,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "leg_L",
+        "leg_L2",
+        "leg_R",
+        "leg_R2",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "gloss",
+          "secondary": "rubber",
+          "accent": "metal",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.153
+      },
+      "atlasCells": {
+        "vstrong": 236,
+        "wear": 136,
+        "vgrad": 256,
+        "grime": 136,
+        "hgrad": 192,
+        "core": 436
+      },
+      "polish": {
+        "triangles": 1392,
+        "bevelled": 6,
+        "plain": 9,
+        "extrasDropped": 4,
+        "coplanarSaved": 24,
+        "hiddenCulled": 16
+      },
+      "shiny": {
+        "file": "creatures/undertow_shiny.glb",
+        "triangles": 1472,
+        "drawCalls": 5,
+        "bbox": {
+          "min": [
+            -1.072,
+            0,
+            -1.511
+          ],
+          "max": [
+            1.072,
+            3.4,
+            1.887
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 416796,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "curbcrusher",
+      "name": "Curbcrusher",
+      "dex": 38,
+      "types": [
+        "concrete"
+      ],
+      "file": "creatures/curbcrusher.glb",
+      "triangles": 1354,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.471,
+          0,
+          -0.609
+        ],
+        "max": [
+          0.445,
+          1,
+          0.959
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 374952,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 1,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "leg_FL",
+        "leg_BL",
+        "leg_FR",
+        "leg_BR",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "concrete",
+          "secondary": "concrete",
+          "accent": "armor",
+          "dark": "rubber",
+          "white": "concrete",
+          "eye": "glow"
+        },
+        "bevel": 0.14
+      },
+      "atlasCells": {
+        "vstrong": 120,
+        "hgrad": 96,
+        "wear": 392,
+        "rust": 104,
+        "vgrad": 234,
+        "grime": 232,
+        "flat": 72,
+        "core": 24
+      },
+      "polish": {
+        "triangles": 1274,
+        "bevelled": 21,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 2,
+        "hiddenCulled": 8
+      },
+      "shiny": {
+        "file": "creatures/curbcrusher_shiny.glb",
+        "triangles": 1354,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.471,
+            0,
+            -0.609
+          ],
+          "max": [
+            0.445,
+            1,
+            0.959
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 374988,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "jackpot",
+      "name": "Jackpot",
+      "dex": 39,
+      "types": [
+        "grind"
+      ],
+      "file": "creatures/jackpot.glb",
+      "triangles": 1207,
+      "drawCalls": 4,
+      "bbox": {
+        "min": [
+          -0.202,
+          0,
+          -0.426
+        ],
+        "max": [
+          0.191,
+          0.8,
+          0.208
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 357792,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 0.8,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "tail_0",
+        "tail_1",
+        "leg_L",
+        "arm_L",
+        "leg_R",
+        "arm_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "armor",
+          "secondary": "metal",
+          "accent": "gloss",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.1
+      },
+      "atlasCells": {
+        "vstrong": 108,
+        "vgrad": 417,
+        "wear": 76,
+        "flat": 358,
+        "grime": 80,
+        "rust": 20,
+        "core": 68
+      },
+      "polish": {
+        "triangles": 1127,
+        "bevelled": 3,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 12,
+        "hiddenCulled": 149
+      },
+      "shiny": {
+        "file": "creatures/jackpot_shiny.glb",
+        "triangles": 1207,
+        "drawCalls": 4,
+        "bbox": {
+          "min": [
+            -0.202,
+            0,
+            -0.426
+          ],
+          "max": [
+            0.191,
+            0.8,
+            0.208
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 357840,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "fogbank",
+      "name": "Fogbank",
+      "dex": 40,
+      "types": [
+        "smoke"
+      ],
+      "file": "creatures/fogbank.glb",
+      "triangles": 844,
+      "drawCalls": 4,
+      "bbox": {
+        "min": [
+          -0.789,
+          0.231,
+          -0.501
+        ],
+        "max": [
+          0.789,
+          1.3,
+          0.501
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 243096,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 1.3,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "arm_L",
+        "arm_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "fabric",
+          "secondary": "fabric",
+          "accent": "metal",
+          "dark": "rubber",
+          "white": "fabric",
+          "eye": "glow"
+        },
+        "bevel": 0.16
+      },
+      "atlasCells": {
+        "vstrong": 416,
+        "vgrad": 100,
+        "core": 176,
+        "flat": 72
+      },
+      "polish": {
+        "triangles": 764,
+        "bevelled": 0,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 4,
+        "hiddenCulled": 0
+      },
+      "shiny": {
+        "file": "creatures/fogbank_shiny.glb",
+        "triangles": 844,
+        "drawCalls": 4,
+        "bbox": {
+          "min": [
+            -0.789,
+            0.231,
+            -0.501
+          ],
+          "max": [
+            0.789,
+            1.3,
+            0.501
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 243144,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "floodlight",
+      "name": "Floodlight",
+      "dex": 41,
+      "types": [
+        "bass",
+        "wire"
+      ],
+      "file": "creatures/floodlight.glb",
+      "triangles": 972,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.623,
+          0.011,
+          -0.189
+        ],
+        "max": [
+          0.623,
+          1.7,
+          0.189
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 278968,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 1.7,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "wing_L",
+        "wing_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "gloss",
+          "secondary": "rubber",
+          "accent": "metal",
+          "dark": "vent",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.142
+      },
+      "atlasCells": {
+        "vstrong": 16,
+        "wear": 44,
+        "grime": 60,
+        "flat": 416,
+        "vgrad": 60,
+        "core": 296
+      },
+      "polish": {
+        "triangles": 892,
+        "bevelled": 3,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 40,
+        "hiddenCulled": 16
+      },
+      "shiny": {
+        "file": "creatures/floodlight_shiny.glb",
+        "triangles": 972,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.623,
+            0.011,
+            -0.189
+          ],
+          "max": [
+            0.623,
+            1.7,
+            0.189
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 279004,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "barricade",
+      "name": "Barricade",
+      "dex": 42,
+      "types": [
+        "concrete",
+        "gun"
+      ],
+      "file": "creatures/barricade.glb",
+      "triangles": 878,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.545,
+          0,
+          -0.292
+        ],
+        "max": [
+          0.545,
+          1.4,
+          0.289
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 259584,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 1.4,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "leg_L",
+        "leg_R",
+        "arm_L",
+        "arm_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "concrete",
+          "secondary": "concrete",
+          "accent": "armor",
+          "dark": "rubber",
+          "white": "concrete",
+          "eye": "glow"
+        },
+        "bevel": 0.122
+      },
+      "atlasCells": {
+        "vstrong": 10,
+        "wear": 219,
+        "hgrad": 64,
+        "rust": 13,
+        "vgrad": 208,
+        "grime": 116,
+        "flat": 144,
+        "core": 24
+      },
+      "polish": {
+        "triangles": 798,
+        "bevelled": 10,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 28,
+        "hiddenCulled": 22
+      },
+      "shiny": {
+        "file": "creatures/barricade_shiny.glb",
+        "triangles": 878,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.545,
+            0,
+            -0.292
+          ],
+          "max": [
+            0.545,
+            1.4,
+            0.289
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 259616,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "bigshot",
+      "name": "Bigshot",
+      "dex": 43,
+      "types": [
+        "gun"
+      ],
+      "file": "creatures/bigshot.glb",
+      "triangles": 1099,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.651,
+          0,
+          -0.38
+        ],
+        "max": [
+          0.608,
+          1.5,
+          0.711
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 315192,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 1.5,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "leg_L",
+        "leg_R",
+        "arm_L",
+        "arm_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "metal",
+          "secondary": "armor",
+          "accent": "gloss",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.08
+      },
+      "atlasCells": {
+        "vstrong": 162,
+        "hgrad": 24,
+        "wear": 178,
+        "rust": 64,
+        "vgrad": 335,
+        "grime": 116,
+        "flat": 116,
+        "core": 24
+      },
+      "polish": {
+        "triangles": 1019,
+        "bevelled": 12,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 8,
+        "hiddenCulled": 109
+      },
+      "shiny": {
+        "file": "creatures/bigshot_shiny.glb",
+        "triangles": 1099,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.651,
+            0,
+            -0.38
+          ],
+          "max": [
+            0.608,
+            1.5,
+            0.711
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 315228,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "smokestack",
+      "name": "Smokestack",
+      "dex": 44,
+      "types": [
+        "smoke",
+        "concrete"
+      ],
+      "file": "creatures/smokestack.glb",
+      "triangles": 1480,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.765,
+          0,
+          -0.446
+        ],
+        "max": [
+          0.765,
+          2.2,
+          0.446
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 417100,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 2.2,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "leg_FL",
+        "leg_BL",
+        "leg_FR",
+        "leg_BR",
+        "arm_L",
+        "arm_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "fabric",
+          "secondary": "fabric",
+          "accent": "metal",
+          "dark": "rubber",
+          "white": "fabric",
+          "eye": "glow"
+        },
+        "bevel": 0.154
+      },
+      "atlasCells": {
+        "vstrong": 36,
+        "wear": 208,
+        "hgrad": 516,
+        "vgrad": 52,
+        "grime": 208,
+        "flat": 248,
+        "core": 132
+      },
+      "polish": {
+        "triangles": 1400,
+        "bevelled": 9,
+        "plain": 4,
+        "extrasDropped": 0,
+        "coplanarSaved": 20,
+        "hiddenCulled": 8
+      },
+      "shiny": {
+        "file": "creatures/smokestack_shiny.glb",
+        "triangles": 1480,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.765,
+            0,
+            -0.446
+          ],
+          "max": [
+            0.765,
+            2.2,
+            0.446
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 417136,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "livewire",
+      "name": "Livewire",
+      "dex": 45,
+      "types": [
+        "bass",
+        "wire"
+      ],
+      "file": "creatures/livewire.glb",
+      "triangles": 1063,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.45,
+          -0.013,
+          -0.475
+        ],
+        "max": [
+          0.456,
+          1.587,
+          0.741
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 283804,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 1.6,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "gloss",
+          "secondary": "rubber",
+          "accent": "metal",
+          "dark": "vent",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.142
+      },
+      "atlasCells": {
+        "vgrad": 430,
+        "grime": 42,
+        "flat": 119,
+        "wear": 32,
+        "core": 360
+      },
+      "polish": {
+        "triangles": 983,
+        "bevelled": 1,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 4,
+        "hiddenCulled": 13
+      },
+      "shiny": {
+        "file": "creatures/livewire_shiny.glb",
+        "triangles": 1063,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.45,
+            -0.013,
+            -0.475
+          ],
+          "max": [
+            0.456,
+            1.587,
+            0.741
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 283840,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "hustlehound",
+      "name": "Hustlehound",
+      "dex": 46,
+      "types": [
+        "grind"
+      ],
+      "file": "creatures/hustlehound.glb",
+      "triangles": 1255,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.197,
+          0,
+          -0.569
+        ],
+        "max": [
+          0.197,
+          1,
+          0.74
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 356084,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 1,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "tail",
+        "leg_FL",
+        "leg_BL",
+        "leg_FR",
+        "leg_BR",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "armor",
+          "secondary": "metal",
+          "accent": "gloss",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.1
+      },
+      "atlasCells": {
+        "hgrad": 48,
+        "rust": 43,
+        "wear": 225,
+        "vgrad": 102,
+        "grime": 232,
+        "flat": 493,
+        "core": 32
+      },
+      "polish": {
+        "triangles": 1175,
+        "bevelled": 14,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 16,
+        "hiddenCulled": 71
+      },
+      "shiny": {
+        "file": "creatures/hustlehound_shiny.glb",
+        "triangles": 1255,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.197,
+            0,
+            -0.569
+          ],
+          "max": [
+            0.197,
+            1,
+            0.74
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 356120,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "tagling",
+      "name": "Tagling",
+      "dex": 47,
+      "types": [
+        "sludge"
+      ],
+      "file": "creatures/tagling.glb",
+      "triangles": 920,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.154,
+          0,
+          -0.103
+        ],
+        "max": [
+          0.154,
+          0.6,
+          0.121
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 270356,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 0.6,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "leg_L",
+        "leg_R",
+        "arm_L",
+        "arm_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "gloss",
+          "secondary": "rubber",
+          "accent": "metal",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.15
+      },
+      "atlasCells": {
+        "vstrong": 36,
+        "wear": 136,
+        "vgrad": 94,
+        "hgrad": 18,
+        "flat": 456,
+        "grime": 68,
+        "core": 32
+      },
+      "polish": {
+        "triangles": 840,
+        "bevelled": 5,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 26,
+        "hiddenCulled": 50
+      },
+      "shiny": {
+        "file": "creatures/tagling_shiny.glb",
+        "triangles": 920,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.154,
+            0,
+            -0.103
+          ],
+          "max": [
+            0.154,
+            0.6,
+            0.121
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 270392,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "muralist",
+      "name": "Muralist",
+      "dex": 48,
+      "types": [
+        "sludge",
+        "wire"
+      ],
+      "file": "creatures/muralist.glb",
+      "triangles": 1365,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.356,
+          0,
+          -0.267
+        ],
+        "max": [
+          0.328,
+          1.5,
+          0.503
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 382336,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 1.5,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "leg_L",
+        "leg_R",
+        "arm_L",
+        "arm_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "gloss",
+          "secondary": "rubber",
+          "accent": "metal",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.135
+      },
+      "atlasCells": {
+        "vgrad": 208,
+        "wear": 184,
+        "flat": 417,
+        "grime": 116,
+        "hgrad": 36,
+        "core": 324
+      },
+      "polish": {
+        "triangles": 1285,
+        "bevelled": 8,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 12,
+        "hiddenCulled": 39
+      },
+      "shiny": {
+        "file": "creatures/muralist_shiny.glb",
+        "triangles": 1365,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.356,
+            0,
+            -0.267
+          ],
+          "max": [
+            0.328,
+            1.5,
+            0.503
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 382368,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "bollard",
+      "name": "Bollard",
+      "dex": 49,
+      "types": [
+        "concrete"
+      ],
+      "file": "creatures/bollard.glb",
+      "triangles": 1125,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.255,
+          0,
+          -0.255
+        ],
+        "max": [
+          0.255,
+          0.7,
+          0.255
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 311452,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 0.7,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "leg_L",
+        "leg_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "concrete",
+          "secondary": "concrete",
+          "accent": "armor",
+          "dark": "rubber",
+          "white": "concrete",
+          "eye": "glow"
+        },
+        "bevel": 0.14
+      },
+      "atlasCells": {
+        "vstrong": 174,
+        "wear": 128,
+        "hgrad": 284,
+        "flat": 239,
+        "vgrad": 120,
+        "grime": 68,
+        "core": 32
+      },
+      "polish": {
+        "triangles": 1045,
+        "bevelled": 4,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 8,
+        "hiddenCulled": 99
+      },
+      "shiny": {
+        "file": "creatures/bollard_shiny.glb",
+        "triangles": 1125,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.255,
+            0,
+            -0.255
+          ],
+          "max": [
+            0.255,
+            0.7,
+            0.255
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 311484,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "gullgrifter",
+      "name": "Gullgrifter",
+      "dex": 50,
+      "types": [
+        "grind"
+      ],
+      "file": "creatures/gullgrifter.glb",
+      "triangles": 818,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.175,
+          0.002,
+          -0.338
+        ],
+        "max": [
+          0.175,
+          0.6,
+          0.346
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 252040,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 0.6,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "tail",
+        "wing_L",
+        "leg_L",
+        "wing_R",
+        "leg_R",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "armor",
+          "secondary": "metal",
+          "accent": "gloss",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.1
+      },
+      "atlasCells": {
+        "vstrong": 108,
+        "vgrad": 164,
+        "hgrad": 65,
+        "flat": 240,
+        "wear": 76,
+        "rust": 27,
+        "grime": 26,
+        "core": 32
+      },
+      "polish": {
+        "triangles": 738,
+        "bevelled": 3,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 16,
+        "hiddenCulled": 146
+      },
+      "shiny": {
+        "file": "creatures/gullgrifter_shiny.glb",
+        "triangles": 818,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.175,
+            0.002,
+            -0.338
+          ],
+          "max": [
+            0.175,
+            0.6,
+            0.346
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 252076,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "clogger",
+      "name": "Clogger",
+      "dex": 51,
+      "types": [
+        "sludge",
+        "concrete"
+      ],
+      "file": "creatures/clogger.glb",
+      "triangles": 941,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.568,
+          0,
+          -0.557
+        ],
+        "max": [
+          0.568,
+          1.1,
+          0.55
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow"
+      ],
+      "bytes": 270900,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 1.1,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "leg_FL",
+        "leg_BL",
+        "leg_FR",
+        "leg_BR",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "gloss",
+          "secondary": "rubber",
+          "accent": "metal",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.147
+      },
+      "atlasCells": {
+        "vstrong": 130,
+        "grime": 114,
+        "vgrad": 340,
+        "hgrad": 22,
+        "wear": 81,
+        "rust": 6,
+        "flat": 72,
+        "core": 96
+      },
+      "polish": {
+        "triangles": 861,
+        "bevelled": 5,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 0,
+        "hiddenCulled": 115
+      },
+      "shiny": {
+        "file": "creatures/clogger_shiny.glb",
+        "triangles": 941,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.568,
+            0,
+            -0.557
+          ],
+          "max": [
+            0.568,
+            1.1,
+            0.55
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow"
+        ],
+        "bytes": 270936,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    }
+  ]
+}
