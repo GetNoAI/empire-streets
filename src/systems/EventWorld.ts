@@ -275,12 +275,6 @@ export class EventWorld {
     return out;
   }
 
-  /** The truck an event drives (so the game can keep traffic and streaming off it). */
-  isEventCar(car: Car): boolean {
-    for (const h of this.handles.values()) if (h.kind === 'truck' && h.car === car) return true;
-    return false;
-  }
-
   /** On-screen prompt for the player (or null). */
   prompt(): string | null {
     const h = this.nearCrate();

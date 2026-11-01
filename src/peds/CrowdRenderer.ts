@@ -6,14 +6,20 @@ export type CrowdPose = 'walk' | 'sit' | 'lie' | 'air';
 
 /**
  * Draws many people with one InstancedMesh per body part. A single template rig is posed for each
- * person and its part matrices are copied into the instance buffers, so the whole crowd costs
- * about 17 draw calls regardless of size.
+ * person and its part matrices are copied into the instance buffers. Each part keeps its own
+ * instance count (only the people wearing it), and a part nobody on screen is wearing isn't drawn
+ * at all, so the draw calls follow what's actually worn rather than every optional piece of every
+ * body. Only the parts big enough to show in the shadow map cast shadows.
  */
 interface Rig {
   template: Humanoid;
-  parts: Array<{ node: THREE.Mesh; role: BodyRole; part: BodyPart | null; inst: THREE.InstancedMesh }>;
+  parts: Array<{ node: THREE.Mesh; role: BodyRole; part: BodyPart | null; inst: THREE.InstancedMesh; n: number }>;
   count: number;
 }
+
+/** Small pieces that never show in a 12 cm-a-texel shadow map: no shadow pass for them. */
+const NO_SHADOW = new Set<string>(['eyes', 'glasses', 'badge', 'visor', 'radio', 'tie', 'pocket', 'collar', 'lapels', 'moustache', 'goatee', 'belt', 'pads', 'briefcase']);
+const castsShadow = (role: BodyRole, part: BodyPart | null, tris: number): boolean => !NO_SHADOW.has(part ?? role) && tris >= 30;
 
 /** Which body a look uses: men, women in skirts, women in trousers (each is its own instanced rig). */
 type RigKey = 'm' | 'fs' | 'fp';
@@ -24,8 +30,6 @@ export class CrowdRenderer {
   private readonly rootMatrix = new THREE.Matrix4();
   private readonly color = new THREE.Color();
   private readonly lie = new THREE.Matrix4().makeRotationZ(Math.PI / 2);
-  /** Collapses an unworn piece. */
-  private readonly zero = new THREE.Matrix4().makeScale(0, 0, 0);
 
   constructor(
     scene: THREE.Scene,
@@ -61,20 +65,25 @@ export class CrowdRenderer {
       }
       const inst = new THREE.InstancedMesh(node.geometry, mat, this.capacity);
       inst.count = 0;
-      inst.castShadow = true;
+      const g = node.geometry;
+      inst.castShadow = castsShadow(role, part, (g.index ? g.index.count : g.attributes['position'].count) / 3);
       inst.receiveShadow = false;
       inst.frustumCulled = false;
       inst.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
       // Allocate per-instance colour.
       inst.setColorAt(0, this.color.set(0xffffff));
       scene.add(inst);
-      parts.push({ node, role, part, inst });
+      inst.visible = false;
+      parts.push({ node, role, part, inst, n: 0 });
     }
     return { template, parts, count: 0 };
   }
 
   begin(): void {
-    for (const r of Object.values(this.rigs)) r.count = 0;
+    for (const r of Object.values(this.rigs)) {
+      r.count = 0;
+      for (const p of r.parts) p.n = 0;
+    }
   }
 
   /**
@@ -95,16 +104,22 @@ export class CrowdRenderer {
     if (parent) this.rootMatrix.premultiply(parent);
     t.root.matrix.copy(this.rootMatrix);
     t.root.updateMatrixWorld(true);
-    const i = rig.count++;
+    rig.count++;
     const wear = partsFor(look);
     for (const p of rig.parts) {
-      if (p.part && !wear.has(p.part)) {
-        p.inst.setMatrixAt(i, this.zero);
-        continue;
-      }
+      if (p.part && !wear.has(p.part)) continue;
+      const i = p.n++;
       p.inst.setMatrixAt(i, p.node.matrixWorld);
-      p.inst.setColorAt(i, this.color.set(p.part === 'badge' || p.part === 'visor' ? '#ffffff' : roleColor(look, p.role)));
+      p.inst.setColorAt(i, this.colorOf(p.part === 'badge' || p.part === 'visor' ? '#ffffff' : roleColor(look, p.role)));
     }
+  }
+
+  /** Parsed colours by CSS string (parsing '#rrggbb' for every part of every person adds up). */
+  private readonly colors = new Map<string, THREE.Color>();
+  private colorOf(css: string): THREE.Color {
+    let c = this.colors.get(css);
+    if (!c) this.colors.set(css, (c = new THREE.Color(css)));
+    return c;
   }
 
   private readonly scaleV = new THREE.Vector3();
@@ -115,9 +130,17 @@ export class CrowdRenderer {
   end(): void {
     for (const r of Object.values(this.rigs))
       for (const p of r.parts) {
-        p.inst.count = r.count;
+        p.inst.count = p.n;
+        p.inst.visible = p.n > 0;
+        if (p.n === 0) continue;
+        p.inst.instanceMatrix.clearUpdateRanges();
+        p.inst.instanceMatrix.addUpdateRange(0, p.n * 16);
         p.inst.instanceMatrix.needsUpdate = true;
-        if (p.inst.instanceColor) p.inst.instanceColor.needsUpdate = true;
+        if (p.inst.instanceColor) {
+          p.inst.instanceColor.clearUpdateRanges();
+          p.inst.instanceColor.addUpdateRange(0, p.n * 3);
+          p.inst.instanceColor.needsUpdate = true;
+        }
       }
   }
 }

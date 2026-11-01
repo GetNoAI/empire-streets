@@ -94,7 +94,6 @@ export function validateCinematics(
   c: CinematicConfig,
   known?: { anchors?: string[]; species?: (id: string) => boolean; specs?: (id: string) => boolean; quests?: (id: string) => boolean; acts?: (id: string) => boolean },
 ): true;
-export function parseSeen(raw: unknown, ids: Set<string>): string[];
 
 export class CinematicPlayer {
   constructor(def: CinematicDef, settings: CinematicConfig['settings']);

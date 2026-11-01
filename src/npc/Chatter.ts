@@ -230,11 +230,6 @@ export function roomConversation(roleA: string, roleB: string, seed: number): { 
   return { first: t.a === roleA ? 'a' : 'b', lines: [...pick(t.talks, s >> 2)] };
 }
 
-/** Roles that have something to say to each other (for picking a pair in a room). */
-export function roomPairs(): ReadonlyArray<{ a: string; b: string }> {
-  return ROOM_TALK.map((t) => ({ a: t.a, b: t.b }));
-}
-
 // ---------------------------------------------------------------- the sewers
 
 const SEWER_TALK: readonly Talk[] = [

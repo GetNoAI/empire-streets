@@ -534,11 +534,6 @@ export class RaceWorld {
     return { x: r.car.position.x, z: r.car.position.z };
   }
 
-  /** Every racer car, for the minimap. */
-  racerCars(): Car[] {
-    return this.racers.filter((r) => !r.car.disposed).map((r) => r.car);
-  }
-
   /** One racer knocked out: it pulls over and leaves as traffic. */
   removeRacer(id: string): void {
     const i = this.racers.findIndex((r) => r.id === id);
@@ -653,11 +648,6 @@ export class RaceWorld {
         car.setLayer('race', { ...car.layer('race'), speed: (lo.multipliers.topSpeed ?? 1) * 1.15, accel: (lo.multipliers.acceleration ?? 1) * 1.35 });
       }
     }
-  }
-
-  /** Racers' Streetmon loadouts (for the HUD). */
-  loadouts(): Array<{ car: Car; driver: string; loadout: RivalLoadout | null }> {
-    return this.racers.map((r) => ({ car: r.car, driver: r.driver.name, loadout: r.loadout }));
   }
 
   private drive(r: Racer, dt: number, pace: number): void {
@@ -936,10 +926,5 @@ export class RaceWorld {
       o.model.update(dt, 0, true);
       if (o.flag) o.flag.rotation.x = Math.sin(o.t * (d < 30 ? 9 : 2)) * 0.5;
     }
-  }
-
-  /** Removes everything (leaving the game). */
-  clear(): void {
-    this.removeRacers();
   }
 }

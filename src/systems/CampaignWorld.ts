@@ -263,11 +263,6 @@ export class CampaignWorld {
     }
   }
 
-  /** People standing in the world (tests, debugging). */
-  get standing(): string[] {
-    return [...this.figures.keys()];
-  }
-
   private drop(key: string): void {
     const f = this.figures.get(key);
     if (!f) return;

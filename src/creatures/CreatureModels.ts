@@ -50,6 +50,9 @@ export function shareAtlasTextures(root: THREE.Object3D, cache: Partial<AtlasTex
 }
 
 /** True for a creature's glowing parts (eyes, cores, neon trims): emissive 3.0+ or pulsing. */
+/** How much a skinned Streetmon's rest-pose bounds are grown for culling. */
+const CULL_PAD = 1.8;
+
 export function isGlowMesh(mesh: THREE.Mesh): boolean {
   const m = mesh.material as THREE.MeshStandardMaterial;
   return !Array.isArray(m) && !!m && !m.name?.endsWith('_aura') && (!!m.userData?.pulse || (m.emissiveIntensity ?? 0) >= 3);
@@ -159,12 +162,24 @@ export class CreatureModels {
   async instance(id: string, shiny = false): Promise<CreatureInstance> {
     const src = await this.source(id, shiny);
     const root = cloneSkinned(src.scene);
+    root.updateMatrixWorld(true);
     root.traverse((o) => {
-      if ((o as THREE.Mesh).isMesh) {
-        o.castShadow = true;
-        o.frustumCulled = false; // skinned bounds don't follow the animation
-        if (isGlowMesh(o as THREE.Mesh)) markBloom(o);
+      const m = o as THREE.Mesh;
+      if (!m.isMesh) return;
+      const mat = m.material as THREE.Material;
+      const aura = !Array.isArray(mat) && !!mat?.name?.endsWith('_aura');
+      const glow = isGlowMesh(m);
+      // The aura shell and the glowing bits are light, not matter: no shadow from them.
+      m.castShadow = !aura && !glow;
+      // Off-screen Streetmon are skipped. A skinned mesh's bounds come from its rest pose, so
+      // they're padded to cover the animation (a wing beat, a lunge) rather than turned off.
+      const sk = m as THREE.SkinnedMesh;
+      if (sk.isSkinnedMesh) {
+        sk.computeBoundingSphere();
+        sk.boundingSphere!.radius *= CULL_PAD;
       }
+      m.frustumCulled = true;
+      if (glow) markBloom(m);
     });
     attachEmissivePulse(root);
     const mixer = new THREE.AnimationMixer(root);

@@ -80,10 +80,6 @@ export class TrafficSystem {
     return this.byCar.has(car);
   }
 
-  lookOf(car: Car): HumanoidLook | null {
-    return this.byCar.get(car)?.look ?? null;
-  }
-
   /** Seated drivers (and patrol partners) for rendering. */
   seated(): Array<{ car: Car; look: HumanoidLook; passenger?: boolean }> {
     const out: Array<{ car: Car; look: HumanoidLook; passenger?: boolean }> = [];
@@ -522,10 +518,6 @@ export class TrafficSystem {
       consider(o.x, o.y, o.z, o.halfLen, o.halfW, o.vx * f.x + o.vz * f.z, false);
     }
     return best;
-  }
-
-  clear(): void {
-    for (const d of [...this.drivers]) this.despawn(d);
   }
 }
 

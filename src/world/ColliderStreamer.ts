@@ -75,10 +75,6 @@ export class ColliderStreamer {
     if (!cell || cell.on) c.setEnabled(true);
   }
 
-  isOn(x: number, z: number): boolean {
-    return this.cells.get(`${Math.floor(x / this.o.cell)},${Math.floor(z / this.o.cell)}`)?.on ?? true;
-  }
-
   /** Call every frame with the focus point; does real work only now and then. */
   update(dt: number, x: number, z: number, force = false): void {
     this.since += dt;

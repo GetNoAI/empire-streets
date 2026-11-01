@@ -8,6 +8,8 @@ import { Inventory } from '../src/weapons/Inventory';
 import { WEAPONS, parseWeapons, weapon } from '../src/weapons/WeaponTypes';
 import * as fs from 'node:fs';
 import { INTENSITY, MUSIC, MusicDirector, ZONES, fadeFor, pickTrack, type TrackId } from '../src/audio/Music';
+import { mergeStaticChildren } from '../src/render/StaticMerge';
+import { installHiddenMatrixSkip } from '../src/render/MatrixUpdates';
 import { HEARING, HEIST_INTERIOR, laserOn, laserTouches, planHeistInterior } from '../src/systems/HeistInterior';
 import { HeistRaid } from '../src/systems/HeistRaid';
 import { LAYERS, WorldLayers, layerLabel } from '../src/world/WorldLayers';
@@ -5185,6 +5187,42 @@ console.log('\n# s187: campaign playthrough and balance');
     for (let i = 0; i < 30; i++) hm.update(1 / 30, 1.5, true);
     ok(stand - hm.hips.position.y > 0.2, `crouched, the hips drop ${(stand - hm.hips.position.y).toFixed(2)} m`);
   }
+}
+
+// ---- Optimisation: static merging, hidden matrix skip.
+{
+  const root = new THREE.Group();
+  const a = new THREE.MeshStandardMaterial();
+  const b = new THREE.MeshStandardMaterial();
+  for (let i = 0; i < 6; i++) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), i < 4 ? a : b);
+    m.position.set(i * 2, 0, 0);
+    m.castShadow = true;
+    root.add(m);
+  }
+  const kept = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), a);
+  root.add(kept);
+  const boat = new THREE.Group();
+  boat.add(new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), a));
+  root.add(boat);
+  const saved = mergeStaticChildren(root, new Set([kept]));
+  const merged = root.children.filter((c) => (c as THREE.Mesh).isMesh && c !== kept) as THREE.Mesh[];
+  const box = new THREE.Box3().setFromObject(merged.find((m) => m.material === a)!);
+  ok(saved === 4 && merged.length === 2 && root.children.includes(kept) && root.children.includes(boat), `static merge: 6 boxes in 2 materials -> 2 meshes (saved ${saved} draws), kept parts and groups untouched`);
+  ok(Math.abs(box.max.x - 6.5) < 1e-6 && merged.every((m) => m.castShadow), 'positions are baked in and shadow flags kept');
+  installHiddenMatrixSkip();
+  const scene = new THREE.Scene();
+  const hidden = new THREE.Group();
+  const child = new THREE.Object3D();
+  hidden.add(child);
+  scene.add(hidden);
+  hidden.visible = false;
+  child.position.set(3, 0, 0);
+  scene.updateMatrixWorld();
+  const stale = child.matrixWorld.elements[12];
+  hidden.visible = true;
+  scene.updateMatrixWorld();
+  ok(stale === 0 && child.matrixWorld.elements[12] === 3, 'hidden subtrees skip the matrix update and catch up when shown');
 }
 
 console.log(fails ? `\n${fails} FAILED` : '\nALL PASSED');

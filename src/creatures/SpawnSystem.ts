@@ -372,11 +372,6 @@ export class SpawnSystem {
     return f;
   }
 
-  /** Forget cached walls (a layer's ground changed). */
-  resetWalls(biome?: Biome): void {
-    for (const k of [...this.fields.keys()]) if (!biome || k.startsWith(`${biome}:`)) this.fields.delete(k);
-  }
-
   private trySpawn(ctx: SpawnContext): void {
     const biome = ctx.biome ?? 'street';
     if (biome !== 'street') {
@@ -590,11 +585,6 @@ export class SpawnSystem {
     w.state = 'wander';
     w.stateTime = 0;
     w.calmUntil = now + calmSeconds;
-  }
-
-  clear(): void {
-    for (const w of this.wild) this.dispose(w);
-    this.wild.length = 0;
   }
 
   /**

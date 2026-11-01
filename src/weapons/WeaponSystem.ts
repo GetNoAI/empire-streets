@@ -681,19 +681,9 @@ export class WeaponSystem {
     return this.pickups.filter((k) => k.active).map((k) => ({ x: k.x, z: k.z, kind: k.kind }));
   }
 
-  /** Everything that's currently burning (police and peds avoid it, HUD shows it). */
-  get activeFires(): readonly { x: number; z: number; r: number }[] {
-    return this.fires;
-  }
-
   /** Spread of the crosshair in degrees, for the HUD. */
   crosshairSpread(aiming: boolean, moving: boolean): number {
     return this.inventory.spread(aiming, moving);
-  }
-
-  clearProjectiles(): void {
-    for (const t of this.thrown) this.scene.remove(t.mesh);
-    this.thrown.length = 0;
   }
 }
 

@@ -55,11 +55,6 @@ export class DamageNumbers {
     n.el.style.display = 'block';
   }
 
-  /** How many are on screen (for tests). */
-  get active(): number {
-    return this.nums.filter((n) => n.active).length;
-  }
-
   update(dt: number, camera: THREE.Camera): void {
     const w = window.innerWidth;
     const h = window.innerHeight;
@@ -83,13 +78,6 @@ export class DamageNumbers {
       const pop = t < 0.12 ? 0.7 + (t / 0.12) * 0.5 : 1.2 - Math.min(0.2, (t - 0.12) * 0.4);
       n.el.style.transform = `translate(${sx.toFixed(1)}px, ${sy.toFixed(1)}px) translate(-50%, -50%) scale(${pop.toFixed(2)})`;
       n.el.style.opacity = String(t < 0.7 ? 1 : 1 - (t - 0.7) / 0.3);
-    }
-  }
-
-  clear(): void {
-    for (const n of this.nums) {
-      n.active = false;
-      n.el.style.display = 'none';
     }
   }
 }

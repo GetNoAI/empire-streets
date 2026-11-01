@@ -259,7 +259,13 @@ export function buildCarVisual(spec: VehicleSpec, color: string): CarVisual {
   if (spec.style === 'taxi') {
     taxiSign ??= makeTaxiSign();
     const signMat = cached('taxiSign', () => new THREE.MeshStandardMaterial({ map: taxiSign, emissive: 0xffffff, emissiveMap: taxiSign, emissiveIntensity: 0.5 }));
-    const sign = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.3, 0.9), [trim, trim, trim, trim, signMat, signMat]);
+    // Two draws, not six: a box's faces come as one group each (+x, -x, +y, -y, +z, -z), so the
+    // four plain sides become one group and the two lit faces the other.
+    const signGeo = new THREE.BoxGeometry(0.28, 0.3, 0.9);
+    signGeo.clearGroups();
+    signGeo.addGroup(0, 24, 0);
+    signGeo.addGroup(24, 12, 1);
+    const sign = new THREE.Mesh(signGeo, [trim, signMat]);
     sign.position.set((roofA[0] + roofB[0]) / 2, roofTopY + 0.15, 0);
     body.add(sign);
     // Checker stripe down each side.

@@ -78,11 +78,6 @@ export class DexScreen {
     return filterDex(ALL_SPECIES(), this.filter, this.data);
   }
 
-  setFilter(f: DexFilter): void {
-    Object.assign(this.filter, f);
-    if (this.isOpen) this.render();
-  }
-
   key(code: string): boolean {
     if (!this.isOpen) return false;
     if (code === 'Escape' || code === 'KeyN') {

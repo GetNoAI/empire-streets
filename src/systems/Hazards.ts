@@ -163,10 +163,6 @@ export class EnvHazards {
       if (!h.spent && m && Math.random() < dt * 0.3) m.opacity = 0.25;
     }
   }
-
-  get count(): number {
-    return this.list.length;
-  }
 }
 
 let signTex: THREE.CanvasTexture | null = null;

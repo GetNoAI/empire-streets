@@ -45,10 +45,6 @@ export function weightClassOf(massKg: number, armoured = false): WeightClass {
   return 'heavy';
 }
 
-export function classMultiplier(c: WeightClass): number {
-  return CLASS_MULT[c];
-}
-
 /** Fallback weight when a species has none: grows with the cube of height; Concrete is dense. */
 export function defaultWeightKg(height: number, types: readonly string[]): number {
   const base = 30 * height ** 3;

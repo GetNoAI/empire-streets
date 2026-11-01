@@ -919,11 +919,6 @@ export class HeistWorld {
     if (this.haulerBag) this.haulerBag.scale.setScalar(Math.min(1.8, 0.9 + haulerBags * 0.15));
   }
 
-  /** For the map: every job's planning spot and every lock-up. */
-  mapPoints(): { jobs: Array<{ t: HeistTarget; x: number; z: number }>; lockups: DropOff[] } {
-    return { jobs: [...this.sites.values()].map((s) => ({ t: s.target, x: s.target.location.plan.x, z: s.target.location.plan.z })), lockups: this.lockups.map((l) => l.d) };
-  }
-
   /** Which lock-ups are active for the getaway. */
   get activeDropOffs(): string[] {
     return this.escaping;

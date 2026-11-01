@@ -687,10 +687,6 @@ export function hasBuilder(id: string): boolean {
   return id in BUILDERS;
 }
 
-export function builderIds(): string[] {
-  return Object.keys(BUILDERS);
-}
-
 /** Builds a species' model (or its shiny variant). */
 export function buildCreatureModel(spec: SpeciesSpec, shiny = false): BuiltModel {
   const build = BUILDERS[spec.id];

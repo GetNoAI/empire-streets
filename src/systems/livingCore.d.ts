@@ -39,4 +39,3 @@ export function ambientHit(a: Fighter, b: Fighter, chart: Record<string, Record<
 export function isRival(a: readonly string[], b: readonly string[], rivalries: ReadonlyArray<readonly [string, string]> | string[][]): boolean;
 export function fillLine(line: string, vars: Record<string, string | number | undefined>): string;
 export function hasHoles(line: string): boolean;
-export function tierFor(distance: number, activeRadius: number): 'active' | 'lite';

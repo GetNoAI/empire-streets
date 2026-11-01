@@ -410,32 +410,6 @@ export interface SaveStore {
   clear(): void;
 }
 
-/** localStorage, failing quietly (private windows, blocked storage). */
-export const browserStore: SaveStore = {
-  read(): string | null {
-    try {
-      return localStorage.getItem(SAVE_KEY);
-    } catch {
-      return null;
-    }
-  },
-  write(text: string): boolean {
-    try {
-      localStorage.setItem(SAVE_KEY, text);
-      return true;
-    } catch {
-      return false;
-    }
-  },
-  clear(): void {
-    try {
-      localStorage.removeItem(SAVE_KEY);
-    } catch {
-      /* ignore */
-    }
-  },
-};
-
 /** One-line description of a save for the title screen. */
 export function describeSave(d: SaveData): string {
   const lead = d.party[0];

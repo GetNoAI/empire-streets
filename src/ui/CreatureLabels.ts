@@ -1,6 +1,16 @@
 import * as THREE from 'three';
-import { displayName, maxHp } from '../creatures/Creature';
-import type { Inspectable } from './CreatureTooltip';
+import { displayName, maxHp, type Creature } from '../creatures/Creature';
+
+/** A Streetmon that can be labelled: where it is, how tall, and whose it is. */
+export interface Inspectable {
+  creature: Creature;
+  x: number;
+  y: number;
+  z: number;
+  height: number;
+  /** "Wild", "Yours", "Dre's", "Police" ... */
+  owner: string;
+}
 
 /**
  * Name, level and health over every Streetmon you can actually see: within `range` metres of the
@@ -106,10 +116,5 @@ export class CreatureLabels {
       l.el.remove();
       this.labels.delete(id);
     }
-  }
-
-  clear(): void {
-    for (const l of this.labels.values()) l.el.remove();
-    this.labels.clear();
   }
 }

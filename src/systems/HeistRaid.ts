@@ -206,11 +206,6 @@ export class HeistRaid {
     this.grid = new RaidGrid(plan);
   }
 
-  /** Officers come in once you've been wanted (inside) for long enough. */
-  get started(): boolean {
-    return this.cops.length > 0;
-  }
-
   /**
    * One frame. `sight(ax, az, bx, bz)` says whether there's a clear line between two points
    * (at standing height); `stars` is the wanted level.

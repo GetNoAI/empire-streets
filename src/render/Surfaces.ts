@@ -58,16 +58,6 @@ function pump(): void {
   setTimeout(step, 0);
 }
 
-/** Generate every tile now (tests, tools). */
-export function generateSurfacesNow(): void {
-  while (pending.length) {
-    const kind = pending.shift()!;
-    const t = textures.get(kind)!;
-    (t.image.data as Uint8Array).set(surfaceTile(kind));
-    t.needsUpdate = true;
-  }
-}
-
 export function surfaceTexture(kind: SurfaceKind): THREE.DataTexture {
   let t = textures.get(kind);
   if (!t) {
@@ -250,16 +240,6 @@ export function withSurface<T extends THREE.MeshStandardMaterial>(mat: T, kind: 
 export function copySurface<T extends THREE.MeshStandardMaterial>(to: T, from: THREE.Material): T {
   const s = from.userData?.surface as { kind: SurfaceKind; options: SurfaceOptions } | undefined;
   return s ? withSurface(to, s.kind, s.options) : to;
-}
-
-/**
- * Re-applies surface detail to a cloned material (three.js copies userData but not the shader
- * hook). Safe to call on any material.
- */
-export function restoreSurface<T extends THREE.Material>(mat: T): T {
-  const s = mat.userData?.surface as { kind: SurfaceKind; options: SurfaceOptions } | undefined;
-  if (s && !surfaceUniforms.has(mat) && (mat as unknown as THREE.MeshStandardMaterial).isMeshStandardMaterial) withSurface(mat as unknown as THREE.MeshStandardMaterial, s.kind, s.options);
-  return mat;
 }
 
 /** The surface kind a material was given, if any. */

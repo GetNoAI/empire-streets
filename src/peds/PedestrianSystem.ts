@@ -784,15 +784,40 @@ export class PedestrianSystem {
   }
 
   /** Draws the crowd plus any seated drivers. */
-  render(drivers: Array<{ car: Car; look: HumanoidLook; passenger?: boolean }>): void {
+  private readonly sphere = new THREE.Sphere(new THREE.Vector3(), 4);
+
+  private viewTest(camera: THREE.Camera): (x: number, y: number, z: number) => boolean {
+    camera.updateMatrixWorld();
+    this.frustum.setFromProjectionMatrix(this.pv.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+    const cp = camera.position;
+    const r2 = RENDER_RANGE * RENDER_RANGE;
+    return (x, y, z) => {
+      const dx = x - cp.x;
+      const dz = z - cp.z;
+      if (dx * dx + dz * dz > r2) return false;
+      this.sphere.center.set(x, y + 0.9, z);
+      return this.frustum.intersectsSphere(this.sphere);
+    };
+  }
+
+  /**
+   * Fills the crowd's instance buffers. With a camera, only people in (or just outside) its view
+   * and within RENDER_RANGE are posed and drawn: posing costs about 60 matrices a person, and
+   * most of the crowd and the drivers are behind you or round a corner at any moment. (The margin
+   * keeps the shadows of people just off screen.)
+   */
+  render(drivers: Array<{ car: Car; look: HumanoidLook; passenger?: boolean }>, camera?: THREE.Camera): void {
     const c = this.crowd;
+    const seen = camera ? this.viewTest(camera) : null;
     c.begin();
     for (const p of this.peds) {
+      if (seen && !seen(p.x, p.y, p.z)) continue;
       const pose = p.state === 'dead' || p.state === 'down' ? 'lie' : p.state === 'fly' ? 'air' : 'walk';
       c.add(p.x, p.y, p.z, p.heading, p.look, pose, p.phase, p.blend, p.speed);
     }
     for (const d of drivers) {
       const root = d.car.visual.root;
+      if (seen && (!root.visible || !seen(root.position.x, root.position.y, root.position.z))) continue;
       root.updateMatrixWorld();
       const s = d.car.visual.seat;
       c.add(s.x, s.y, d.passenger ? -s.z : s.z, 0, d.look, 'sit', 0, 0, 0, root.matrixWorld);
@@ -800,6 +825,8 @@ export class PedestrianSystem {
     c.end();
   }
 }
+
+const RENDER_RANGE = 170;
 
 /** Ray vs sphere: nearest hit distance and hit height, or null. Direction must be normalised. */
 function raySphere(ox: number, oy: number, oz: number, dx: number, dy: number, dz: number, cx: number, cy: number, cz: number, r: number): { t: number; y: number } | null {

@@ -73,11 +73,6 @@ export function depthAt(lake: Rect, x: number, z: number): number {
   return depthUV((x - lake.x0) / (lake.x1 - lake.x0), (z - lake.z0) / (lake.z1 - lake.z0));
 }
 
-/** Height of the bed under a point. */
-export function bedY(lake: Rect, x: number, z: number): number {
-  return POND.surface - depthAt(lake, x, z);
-}
-
 /** The wave height at a point (the same sum the water shader draws). */
 export function waveY(x: number, z: number, t: number): number {
   let h = 0;

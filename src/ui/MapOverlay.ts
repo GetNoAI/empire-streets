@@ -471,11 +471,6 @@ export class MapOverlay {
     return this.open_;
   }
 
-  toggle(): void {
-    if (this.open_) this.close();
-    else this.open();
-  }
-
   open(): void {
     this.open_ = true;
     this.el.style.display = 'block';

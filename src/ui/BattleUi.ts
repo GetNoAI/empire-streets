@@ -75,10 +75,6 @@ export class BattleUi {
   /** Real-time: a move tapped on the bar (index 0-3); the game presses its number key. */
   onPickMove: ((i: number) => void) | null = null;
 
-  get visible(): boolean {
-    return this.root.style.display !== 'none';
-  }
-
   get awaiting(): boolean {
     return this.menuMode !== 'none';
   }
@@ -347,9 +343,5 @@ export class BattleUi {
       (platform.touch
         ? `<div class="b-rt-hint ${catchOdds !== null && catchOdds >= 0.3 ? 'catchable' : ''}">${commandKeys ? 'SWAP' : 'T for moves'}${this.battle.opts.wild ? ` · CUFF${catchOdds !== null ? ` <b>${Math.round(catchOdds * 100)}%</b>` : ''}` : ''}${this.battle.opts.canRun ? ' · FLEE' : ''} · SHOOT</div>`
         : `<div class="b-rt-hint ${catchOdds !== null && catchOdds >= 0.3 ? 'catchable' : ''}">${commandKeys ? '5 swap' : 'T for commands'}${this.battle.opts.wild ? ` · C catch${catchOdds !== null ? ` <b>${Math.round(catchOdds * 100)}%</b>` : ''}` : ''}${this.battle.opts.canRun ? ' · X flee' : ''} · LMB shoot</div>`);
-  }
-
-  static creatureLabel(cr: Creature): string {
-    return `${displayName(cr)} Lv ${cr.level}`;
   }
 }

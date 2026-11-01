@@ -306,5 +306,3 @@ function spotFor(L: CityLayout, t: TrainerSpec, walkable: (x: number, z: number)
   return { x, z };
 }
 
-/** Rooftop trainers' validation: ave/street still locate them; corner 'roof' is allowed. */
-export const ROOF_TRAINERS = (): TrainerSpec[] => TRAINERS.filter((t) => t.corner === 'roof');

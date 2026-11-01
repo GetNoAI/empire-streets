@@ -79,12 +79,6 @@ export class WallGrid {
     return this.solidCell(Math.floor(x / this.cell), Math.floor(z / this.cell));
   }
 
-  /** Forget everything (the world changed: a new sewer maze, a layer rebuilt). */
-  clear(): void {
-    this.chunks.clear();
-    this.stats.chunks = 0;
-  }
-
   resetStats(): void {
     this.stats.lookups = 0;
     this.stats.samples = 0;

@@ -21,7 +21,7 @@ export class Signals {
   private time = 0;
   private readonly offsets: number[];
 
-  constructor(private readonly graph: RoadGraph) {
+  constructor(graph: RoadGraph) {
     this.offsets = graph.nodes.map((n) => {
       // Downstream (north) junctions turn green later, by the travel time between them.
       const wave = -n.z / 13;
@@ -41,10 +41,6 @@ export class Signals {
   /** Pedestrians may start crossing a road of `axis` while the cross street has green. */
   walk(id: number, roadAxis: Axis): boolean {
     return this.light(id, roadAxis === 'ave' ? 'street' : 'ave') === 'green';
-  }
-
-  get nodeCount(): number {
-    return this.graph.nodes.length;
   }
 }
 

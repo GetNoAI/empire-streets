@@ -330,11 +330,6 @@ export class Kit {
     });
   }
 
-  /** Emissive accent shape (sphere). */
-  addEmissive(node: string, r: number, color: THREE.Color | string, o: PartOpts = {}): void {
-    this.sphere(node, r, color, { ...o, mat: 'glow' }, 6);
-  }
-
   // ------------------------------------------------------------------ build
 
   /**
@@ -844,7 +839,6 @@ export class Kit {
     return defaultPose(name, clip, t, dur, ctx);
   }
 }
-
 
 /**
  * Merges parts into one non-indexed geometry with flat normals, vertex colours and rigid skin weights.

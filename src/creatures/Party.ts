@@ -76,10 +76,6 @@ export class Party {
     return true;
   }
 
-  serialize(): { members: Creature[]; stash: Creature[] } {
-    return { members: this.members.map((c) => ({ ...c, ivs: { ...c.ivs }, moves: [...c.moves] })), stash: this.stash.map((c) => ({ ...c, ivs: { ...c.ivs }, moves: [...c.moves] })) };
-  }
-
   swap(i: number, j: number): void {
     const m = this.members;
     if (!m[i] || !m[j]) return;

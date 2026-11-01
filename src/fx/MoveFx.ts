@@ -566,9 +566,4 @@ export class MoveFx {
     }
     void this.tmp;
   }
-
-  /** Live meshes (tests, profiling). */
-  get liveCount(): number {
-    return this.live.length;
-  }
 }

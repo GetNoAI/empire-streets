@@ -94,10 +94,6 @@ export class StreetmonRiders {
     this.rides.set(car, ride);
   }
 
-  has(car: Car): boolean {
-    return this.rides.has(car);
-  }
-
   /** Every car with riders. */
   cars(): Car[] {
     return [...this.rides.keys()];
@@ -112,10 +108,6 @@ export class StreetmonRiders {
       m.pivot.removeFromParent();
     }
     this.rides.delete(car);
-  }
-
-  clearAll(): void {
-    for (const car of [...this.rides.keys()]) this.clear(car);
   }
 
   /** An ability fired: its rider acts it out. */

@@ -36,7 +36,7 @@ export class WorldLayers {
   /** Extra roof surfaces that aren't buildings (parking-garage decks). */
   private readonly extra: Array<{ rect: Rect; top: number }> = [];
 
-  constructor(private readonly layout: CityLayout) {
+  constructor(layout: CityLayout) {
     for (const b of layout.buildings) {
       const r = b.rect;
       for (let gx = Math.floor(r.x0 / LAYERS.cell); gx <= Math.floor(r.x1 / LAYERS.cell); gx++)
@@ -77,10 +77,6 @@ export class WorldLayers {
     const roof = this.roofAt(x, z);
     if (roof && y > roof.top - LAYERS.roofTolerance) return 'roof';
     return 'street';
-  }
-
-  get buildingCount(): number {
-    return this.layout.buildings.length;
   }
 }
 

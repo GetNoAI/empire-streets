@@ -60,10 +60,6 @@ export class Bubbles {
     return this.list.some((b) => b.key === key);
   }
 
-  clear(): void {
-    while (this.list.length) this.drop(0);
-  }
-
   private drop(i: number): void {
     this.list[i].el.remove();
     this.list.splice(i, 1);

@@ -1,3 +1,4 @@
+import { mergeStaticChildren } from '../render/StaticMerge';
 import RAPIER from '@dimforge/rapier3d-compat';
 import * as THREE from 'three';
 import { GROUP, groups } from '../config';
@@ -248,6 +249,9 @@ export function buildDocks(plans: readonly DockPlan[], world: RAPIER.World): Doc
   pilesMesh.castShadow = true;
   root.add(pilesMesh);
 
+  // Planks, posts, rails, bollards and containers never move (the boats are groups): one draw
+  // per material.
+  mergeStaticChildren(root);
   return {
     root,
     update(t) {

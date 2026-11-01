@@ -65,15 +65,6 @@ export class VehicleManager {
     return null;
   }
 
-  /** Spawns a specific model in a parking spot (used for the player's starter car). */
-  spawnAtSpot(index: number, spec: VehicleSpec): Car {
-    const s = this.layout.parking[index];
-    const car = this.spawn(spec, s.x, s.z, s.heading);
-    this.spotCar.set(index, car);
-    this.carSpot.set(car, index);
-    return car;
-  }
-
   remove(car: Car): void {
     if (car.disposed) return;
     this.owned.delete(car);
@@ -251,9 +242,5 @@ export class VehicleManager {
     const dz = Math.max(0, Math.abs(inv.z) - car.spec.width / 2);
     const dy = Math.max(0, Math.abs(inv.y) - car.spec.height);
     return Math.hypot(dx, dz, dy);
-  }
-
-  clear(): void {
-    for (const car of [...this.cars]) this.remove(car);
   }
 }

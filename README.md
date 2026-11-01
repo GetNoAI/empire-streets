@@ -2154,6 +2154,33 @@ during a getaway the waypoint points at the nearest open lock-up.
   counts as leaving the job (the escape / walk-away distance checks wait until you're outside).
 - The location line shows the building's name while you're in it.
 
+## Optimisation pass
+
+Measured in the browser at a busy street corner (1280x720, M1 Pro), CPU per frame went from about
+17.5 ms to 12 ms, draw calls from ~930 to ~760, the physics step from 2.4 ms to 1.1 ms and the
+scene-graph matrix update from 1.8 ms to 0.4 ms.
+
+- **Hidden subtrees skip their matrix update** (`src/render/MatrixUpdates.ts`, installed in
+  `main.ts`): the shop and heist interiors, the sewers and the other layer are two thirds of the
+  scene graph, and three.js recomputed all of it every frame. A hidden object marks itself stale
+  and catches up the frame it's shown. The bloom's glow pass no longer walks the whole graph a
+  second time either.
+- **Crowd**: each body part keeps its own instance count, a part nobody on screen wears isn't drawn,
+  small parts (eyes, badges, ties...) don't cast shadows, only the used part of each instance
+  buffer is uploaded, colours are parsed once, and only people in (or just outside) the view and
+  within 170 m are posed at all.
+- **Wild Streetmon** are frustum culled (skinned bounds padded 1.8x to cover the animation) and their
+  aura shells and glowing bits no longer cast shadows.
+- **Static merging** (`src/render/StaticMerge.ts`): the docks (272 meshes -> 18) and the heist rooms
+  (~170 -> ~13) draw one mesh per material. The taxi sign is 2 draws instead of 6.
+- **Colliders below ground** (tunnels, rooms under shops and banks) are held off by the collider
+  streamer while you're on the street, and follow the streamer while you're down there.
+- With bloom on (the default), the canvas isn't multisampled: the frame is drawn multisampled into
+  the composer's buffer and only a full-screen copy reaches the canvas.
+- **Dead code removed**: the old hover tooltip (`CreatureTooltip`, replaced by the always-on labels;
+  its type moved to `CreatureLabels`) and its CSS, ~15 unused exports and ~55 unused class members
+  across 40 files, and a few CSS rules nothing used.
+
 ## Zone music
 
 Every part of the city has its own free-roam track (`public/music/zone-*.mp3`, from the zone

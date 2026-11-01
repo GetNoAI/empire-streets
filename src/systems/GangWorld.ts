@@ -167,11 +167,6 @@ export class GangWorld {
     this.alvarez = { x: (b.x0 + b.x1) / 2, z: b.z0 + 2, model: null, heading: Math.PI / 2 };
   }
 
-  /** Where Alvarez is (for the map and the waypoint), while he's part of the story. */
-  get alvarezSpot(): { x: number; z: number } | null {
-    return this.alvarez && this.state.stage === 1 ? { x: this.alvarez.x, z: this.alvarez.z } : null;
-  }
-
   /** The quest marker: where to go next. */
   objective(): { x: number; z: number; label: string } | null {
     const s = this.state.stage;
@@ -875,12 +870,6 @@ export class GangWorld {
   /** Is anyone shooting at you right now (for the music and the HUD)? */
   get fighting(): boolean {
     return this.crews.some((c) => c.fightSince !== null && c.members.some((m) => this.alive(m)));
-  }
-
-  /** A battle with a member was refused or interrupted: let him try again later. */
-  release(m: GangMember): void {
-    m.battled = false;
-    if (this.engaged === m) this.engaged = null;
   }
 }
 

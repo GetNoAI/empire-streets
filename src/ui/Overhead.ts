@@ -70,15 +70,6 @@ export class SpeechBubbles {
     readonly opts: BubbleOptions,
   ) {}
 
-  get count(): number {
-    return this.bubbles.size;
-  }
-
-  /** Visible bubbles' text (tests, debugging). */
-  texts(): string[] {
-    return [...this.bubbles.values()].filter((b) => b.sprite.visible && (b.sprite.material as THREE.SpriteMaterial).opacity > 0.05).map((b) => b.text);
-  }
-
   /** Shows `text` over `anchor` for `seconds` (replaces that key's current bubble). */
   say(key: string | number, anchor: Anchor, text: string, seconds: number, style: BubbleStyle = 'talk'): void {
     const k = String(key);
@@ -212,10 +203,6 @@ export class HealthBars {
     private readonly scene: THREE.Scene,
     private readonly fade: { near: number; far: number },
   ) {}
-
-  get count(): number {
-    return this.bars.size;
-  }
 
   /** Shows / updates a bar (redraws only when the numbers change). */
   set(key: string | number, anchor: Anchor, hp: number, maxHp: number, level: number, accent = '#59b6ff'): void {

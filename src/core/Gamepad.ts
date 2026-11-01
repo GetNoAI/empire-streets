@@ -214,7 +214,6 @@ export class PadInput {
   private prev: boolean[] = [];
   private ctx: PadContext = 'ui';
   private heist = false;
-  private connected = false;
   private focused: HTMLElement | null = null;
   private held: { dir: keyof PadFrame['dirs'] | null; t: number } = { dir: null, t: 0 };
   private mouseL = false;
@@ -223,12 +222,7 @@ export class PadInput {
   stickNow: { x: number; y: number } = { x: 0, y: 0 };
   lookNow: { x: number; y: number } = { x: 0, y: 0 };
 
-  constructor(private readonly input: Input) {
-    if (typeof window === 'undefined') return;
-    window.addEventListener('gamepadconnected', () => {
-      this.connected = true;
-    });
-  }
+  constructor(private readonly input: Input) {}
 
   get context(): PadContext {
     return this.ctx;
@@ -260,7 +254,6 @@ export class PadInput {
       this.clearFocus();
       return;
     }
-    this.connected = true;
     if (ctx !== this.ctx && ctx !== 'ui') this.clearFocus();
     this.ctx = ctx;
     this.heist = !!o.heist;
@@ -290,10 +283,6 @@ export class PadInput {
     inp.brake = f.brake;
     inp.padLookDX += f.look.x * PAD.look * dt;
     inp.padLookDY += f.look.y * PAD.look * dt;
-  }
-
-  get hasPad(): boolean {
-    return this.connected && !!this.pad();
   }
 
   // ---- menus: a focus ring over the visible buttons

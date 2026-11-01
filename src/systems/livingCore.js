@@ -200,9 +200,3 @@ export function fillLine(line, vars) {
 /** True if a filled line still has a {placeholder} in it. @param {string} line */
 export const hasHoles = (line) => /\{[a-zA-Z]+\}/.test(line);
 
-/**
- * Which simulation tier something gets: full AI near the player, lightweight beyond.
- * @param {number} distance @param {number} activeRadius
- * @returns {'active' | 'lite'}
- */
-export const tierFor = (distance, activeRadius) => (distance <= activeRadius ? 'active' : 'lite');

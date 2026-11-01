@@ -129,14 +129,6 @@ class AudioEngine {
     return this.spot ?? this.master!;
   }
 
-  /** Metres from the listener (0 without the 3D layer or for a distance given as a number's own value). */
-  distanceTo(where: Where): number {
-    if (typeof where === 'number') return where;
-    if (!this.spatial) return 0;
-    const l = this.spatial.ears();
-    return Math.hypot(where.x - l.x, where.y - l.y, where.z - l.z);
-  }
-
   private noiseSource(loop: boolean): AudioBufferSourceNode {
     const s = this.ctx!.createBufferSource();
     s.buffer = this.noise;

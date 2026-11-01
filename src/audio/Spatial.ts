@@ -324,10 +324,4 @@ export class SpatialAudio implements SpatialBackend {
       v.key = null;
     }
   }
-
-  /** How many loop voices are sounding (for tests and the debug overlay). */
-  get busy(): { engines: number; sirens: number; oneShots: number } {
-    const now = this.ctx.currentTime;
-    return { engines: this.engines.filter((v) => v.key).length, sirens: this.sirens.filter((v) => v.key).length, oneShots: this.shots.filter((s) => s.until > now).length };
-  }
 }

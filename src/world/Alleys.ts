@@ -127,7 +127,3 @@ export function alleyAvoidPoints(heists: unknown, races: { tracks?: Array<{ orga
   return pts;
 }
 
-/** The alley (if any) containing a point. */
-export function alleyAt(layout: CityLayout, x: number, z: number): Alley | null {
-  return ((layout.alleys ?? []) as Alley[]).find((a) => x > a.rect.x0 && x < a.rect.x1 && z > a.rect.z0 && z < a.rect.z1) ?? null;
-}

@@ -37,6 +37,7 @@ class GlowBloomPass extends UnrealBloomPass {
   /** One glow buffer per scene buffer (the composer ping-pongs; each has its own depth). */
   private readonly glowTargets = new Map<THREE.WebGLRenderTarget, THREE.WebGLRenderTarget>();
   private readonly mask = new THREE.Layers();
+  private readonly clearTmp = new THREE.Color();
 
   constructor(
     private readonly scene: THREE.Scene,
@@ -68,9 +69,12 @@ class GlowBloomPass extends UnrealBloomPass {
     const oldEnv = this.scene.environment;
     const oldAuto = renderer.autoClear;
     const oldShadow = renderer.shadowMap.autoUpdate;
-    const oldClear = renderer.getClearColor(new THREE.Color());
+    const oldClear = renderer.getClearColor(this.clearTmp);
     const oldAlpha = renderer.getClearAlpha();
+    const oldMatrices = this.scene.matrixWorldAutoUpdate;
     cam.layers.mask = this.mask.mask;
+    // The scene pass just brought every matrix up to date: don't walk the whole graph again.
+    this.scene.matrixWorldAutoUpdate = false;
     this.scene.background = null;
     this.scene.environment = null;
     renderer.autoClear = false;
@@ -80,6 +84,7 @@ class GlowBloomPass extends UnrealBloomPass {
     renderer.clear(true, false, false); // keep the shared depth
     renderer.render(this.scene, cam);
     cam.layers.mask = oldMask;
+    this.scene.matrixWorldAutoUpdate = oldMatrices;
     this.scene.background = oldBg;
     this.scene.environment = oldEnv;
     renderer.shadowMap.autoUpdate = oldShadow;

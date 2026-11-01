@@ -813,39 +813,13 @@ body.touch .controls.tc td:first-child { white-space: normal; }
 .dex-icon { width: 64px; height: 64px; object-fit: contain; }
 .dex-no { font-size: 10px; color: #8a94a3; }
 .dex-name { font-size: 12px; font-weight: 800; }
-.dex-caught, .dex-seen { position: absolute; top: 4px; right: 7px; font-size: 12px; color: #ffd23f; }
-.dex-seen { color: #8a94a3; }
 .dex-info { font-size: 12px; color: #c8d0da; line-height: 1.45; }
 .dex-unknown { display: grid; justify-items: center; gap: 6px; padding: 20px 0; color: #9aa3b0; }
-.title-buttons, .pause-save, .pause-tips, .pause-opts { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-.pause-opts { max-width: 760px; }
 /* HUD size (pause menu option): the HUD, battle bars, tips, prompts and tooltips scale together. */
 :root { --hud-scale: 1; }
 .hud, .battle, .tut-card, .wp-guide { zoom: var(--hud-scale); }
 .save-info { color: #c8d0da; font-size: 14px; background: rgba(0, 0, 0, 0.45); padding: 6px 12px; border-radius: 8px; }
 .save-note { color: #8fe388; font-size: 13px; min-height: 18px; text-align: center; max-width: 520px; }
-.ctip {
-  position: fixed;
-  left: 0;
-  top: 0;
-  z-index: 7;
-  pointer-events: none;
-  min-width: 150px;
-  background: rgba(12, 15, 21, 0.86);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 8px;
-  padding: 6px 9px 7px;
-  color: #eef1f5;
-  font-size: 12px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
-}
-.ctip-name { font-weight: 800; font-size: 13px; }
-.ctip-name span { color: #aab3c0; font-weight: 600; font-size: 11px; }
-.ctip-sub { margin: 3px 0 5px; }
-.ctip-sub em { font-style: normal; color: #ffd23f; font-weight: 700; margin-right: 4px; }
-.ctip-hp { height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.14); overflow: hidden; }
-.ctip-hp i { display: block; height: 100%; }
-.ctip-num { margin-top: 3px; color: #c8d0da; font-size: 11px; font-variant-numeric: tabular-nums; }
 .dmgnums { position: fixed; inset: 0; pointer-events: none; z-index: 6; overflow: hidden; }
 .dmgnum {
   position: absolute;

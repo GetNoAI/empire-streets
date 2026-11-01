@@ -252,10 +252,6 @@ export class Music {
     this.ids = [...this.tracks.keys()];
   }
 
-  get track(): TrackId | null {
-    return this.director.current;
-  }
-
   /** Call from a user gesture (browsers block autoplay until then). */
   unlock(): void {
     this.unlocked = true;

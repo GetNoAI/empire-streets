@@ -239,10 +239,6 @@ export class Environment {
     this.fog.far = under ? 45 : Math.min(1900, platform.farFog);
   }
 
-  get currentLayer(): 'street' | 'roof' | 'sewer' {
-    return this.layer;
-  }
-
   /** Shadow map size (the quality governor halves it before it lowers the resolution). */
   setShadowSize(n: number): void {
     const sh = this.sun.shadow;

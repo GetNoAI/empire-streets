@@ -195,7 +195,6 @@ export class BattleController {
   kind: 'wild' | 'person' | 'trainer' | 'npc' | 'police' | 'raid' = 'wild';
   private playerAt = new THREE.Vector3();
 
-
   /** Your creature against a person in the street (a passer-by who fights back, or a police officer). */
   startVsPerson(party: Party, ped: Ped, person: Creature, playerPos: THREE.Vector3): void {
     this.kind = 'person';
@@ -406,12 +405,6 @@ export class BattleController {
   private spot(side: 0 | 1, slot: number): THREE.Vector3 {
     const p = spotOf(this.arena!, side, slot);
     return new THREE.Vector3(p.x, 0, p.z);
-  }
-
-  /** Where the fight is (the middle of the field), for effects and the camera. */
-  centre(out: THREE.Vector3): THREE.Vector3 {
-    const c = this.arena ? cameraOf(this.arena).look : { x: this.origin.x, z: this.origin.z };
-    return out.set(c.x, this.d.groundY(c.x, c.z), c.z);
   }
 
   /** Turn-based camera: side-on view of both creatures. */

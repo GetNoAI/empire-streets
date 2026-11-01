@@ -159,10 +159,6 @@ export class ShopMenu {
     });
   }
 
-  get isOpen(): boolean {
-    return this.el.style.display !== 'none';
-  }
-
   open(ctx: ShopContext): void {
     this.ctx = ctx;
     this.render();

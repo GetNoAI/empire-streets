@@ -1,3 +1,4 @@
+import { mergeStaticChildren } from '../render/StaticMerge';
 import RAPIER from '@dimforge/rapier3d-compat';
 import * as THREE from 'three';
 import { GROUP, groups } from '../config';
@@ -499,5 +500,7 @@ export function buildHeistInterior(plan: HeistInteriorPlan, world: RAPIER.World)
   sign.position.set(doorM.position.x - out.x * 0.05, Y + 2.7, doorM.position.z - out.z * 0.05);
   sign.rotation.y = doorM.rotation.y;
   root.add(sign);
+  // Walls, cover, posts and fittings never move: one draw per material (the glass lids lift).
+  mergeStaticChildren(root, new Set(openers.map((o) => o.obj)));
   return { root, beams, openers, doorBody };
 }

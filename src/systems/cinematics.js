@@ -283,11 +283,3 @@ export class CinematicPlayer {
   }
 }
 
-/**
- * Which cinematics a save has already played (so the act and boss ones only play once).
- * @param {unknown} raw @param {Set<string>} ids
- * @returns {string[]}
- */
-export function parseSeen(raw, ids) {
-  return Array.isArray(raw) ? [...new Set(raw.filter((x) => typeof x === 'string' && ids.has(x)))] : [];
-}

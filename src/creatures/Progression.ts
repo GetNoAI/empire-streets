@@ -1,5 +1,5 @@
 import { LEVEL_CAP, MAX_MOVES, calcStats, levelForXp, maxHp, magazine, xpForLevel, displayName, type Creature } from './Creature';
-import { move, species, type District, type Evolution, type TimeOfDay } from './Data';
+import { species, type District, type Evolution, type TimeOfDay } from './Data';
 
 /**
  * Levelling and evolution (engine-free, unit-tested).
@@ -133,6 +133,3 @@ export function evolve(c: Creature, to: string): ProgressEvent[] {
   return out;
 }
 
-export function moveName(id: string): string {
-  return move(id).name;
-}

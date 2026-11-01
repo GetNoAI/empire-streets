@@ -310,10 +310,6 @@ export class Player {
     return !!this.dodge.active;
   }
 
-  get climbing(): boolean {
-    return !!this.mantle;
-  }
-
   /** Launched by a jump pad: this velocity, with no air control until landing. */
   launch(vx: number, vy: number, vz: number): void {
     this.velocity.set(vx, vy, vz);

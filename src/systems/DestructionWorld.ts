@@ -432,16 +432,4 @@ export class DestructionWorld {
     }
     this.manager.update(dt, { x: player.x, z: player.z, visible: (x, z) => this.d.inView(x, 2, z) });
   }
-
-  /** Everything back as it was (a new game, a load): props repaired, debris and water gone. */
-  reset(): void {
-    this.manager.repairAll();
-    for (const dbr of this.debris) this.removeDebris(dbr);
-    this.debris.length = 0;
-    this.geysers.length = 0;
-  }
-
-  get debrisCount(): number {
-    return this.debris.length;
-  }
 }

@@ -1,5 +1,8 @@
 import './style.css';
 import { Game } from './core/Game';
+import { installHiddenMatrixSkip } from './render/MatrixUpdates';
+
+installHiddenMatrixSkip();
 
 const container = document.getElementById('app');
 if (!container) throw new Error('#app missing');

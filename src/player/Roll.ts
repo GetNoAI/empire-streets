@@ -141,12 +141,6 @@ export class Dodge {
     return !!a && a.t >= a.iStart && a.t <= a.iEnd;
   }
 
-  /** In the air (or tumbling): 0..1 through the move; null when not dodging. */
-  get progress(): number | null {
-    const a = this.active;
-    return a ? Math.min(1, a.t / a.dur) : null;
-  }
-
   /** Getting up after the move (no movement, no i-frames). */
   get recovering(): boolean {
     const a = this.active;

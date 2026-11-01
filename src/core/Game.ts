@@ -134,7 +134,7 @@ import { IMPACT, carCircleContact, defaultWeightKg, resolveImpact, weightClassOf
 import { CreatureLabels } from '../ui/CreatureLabels';
 import { HEIST_INTERIOR } from '../systems/HeistInterior';
 import { HeistRaid, type RaidCop } from '../systems/HeistRaid';
-import { CreatureTooltip, type Inspectable } from '../ui/CreatureTooltip';
+import type { Inspectable } from '../ui/CreatureLabels';
 import { pickSpecies, spawnTable } from '../creatures/SpawnRules';
 import type { CreatureTarget } from '../weapons/WeaponSystem';
 import type { Creature } from '../creatures/Creature';
@@ -490,7 +490,6 @@ export class Game {
   private dayCount = 0;
   /** Chase music keeps going from 2 stars until the heat is gone. */
   private chaseMusic = false;
-  private tooltip!: CreatureTooltip;
   private labels!: CreatureLabels;
   private dmgNums!: DamageNumbers;
   /** NPC hunters and chatter, wild territory fights and packs, the AI radius (see setupLivingWorld). */
@@ -528,7 +527,17 @@ export class Game {
 
   constructor(private readonly container: HTMLElement) {
     dexEntries(); // validate the Streetmondex text against the species list at startup
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    // With bloom on, the frame is drawn (multisampled) into the composer's own buffer and only a
+    // full-screen copy reaches the canvas, so a multisampled canvas would be pure waste: it's only
+    // asked for when the scene is drawn straight to the screen.
+    let bloomOff = false;
+    try {
+      bloomOff = localStorage.getItem('es.bloom') === '0';
+    } catch {
+      /* storage blocked: keep the default */
+    }
+    const composed = GRAPHICS.bloom.enabled && platform.bloom && !bloomOff;
+    this.renderer = new THREE.WebGLRenderer({ antialias: !composed, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, GRAPHICS.maxPixelRatio));
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -542,11 +551,7 @@ export class Game {
       try {
         this.bloom = new SelectiveBloom(this.renderer, this.scene, this.camera, GRAPHICS.bloom);
         // Off switch for slow machines: localStorage['es.bloom'] = '0'.
-        try {
-          if (localStorage.getItem('es.bloom') === '0') this.bloom.enabled = false;
-        } catch {
-          /* storage blocked: keep the default */
-        }
+        if (bloomOff) this.bloom.enabled = false;
       } catch (e) {
         console.warn('Bloom unavailable, rendering without it', e);
         this.bloom = null;
@@ -964,7 +969,6 @@ export class Game {
     this.dexScreen = new DexScreen(this.container, this.icons);
     this.catcher = new CatchVisuals(this.scene, this.effects);
     this.follower = new Follower(this.scene, this.creatureModels, (x, z) => this.groundAt(x, z), (x, z) => this.blockedAt(x, z));
-    this.tooltip = new CreatureTooltip(this.container);
     this.labels = new CreatureLabels(this.container);
     this.dmgNums = new DamageNumbers(this.container);
     this.moveFx = new MoveFx({
@@ -1577,8 +1581,9 @@ export class Game {
     this.signalView.update(dt);
     this.shops?.update(dt);
     const seated = [...this.traffic.seated(), ...this.police.seated(), ...(this.eventWorld?.seated() ?? [])];
-    this.peds.render(this.state === 'cinematic' ? seated.filter((x) => !this.cine.hides(x.car.visual)) : seated);
     this.updateCamera(dt);
+    // After the camera has moved: the crowd is only posed where this frame looks.
+    this.peds.render(this.state === 'cinematic' ? seated.filter((x) => !this.cine.hides(x.car.visual)) : seated, this.camera);
     this.env.update(dt, this.focus(), this.camera);
     this.effects.update(this.state === 'playing' ? dt : 0);
     this.moveFx.update(this.state === 'playing' ? dt : 0);
@@ -1879,10 +1884,7 @@ export class Game {
     const capText = (this.party.members.length ? (cap ? `${cap.name} x${this.bag.count(cap.id)}${platform.touch ? '  ·  THROW' : '  ·  C throw  V switch'}` : 'No capture items') : '') + (fxLine ? `\n${fxLine}` : '');
     if (this.captureEl.textContent !== capText) this.captureEl.textContent = capText;
     this.partyBar.update(this.party, !this.battles.locksPlayer);
-    const mouse = this.input.pointerLocked ? null : this.input.mouseX >= 0 ? { x: this.input.mouseX, y: this.input.mouseY } : null;
     this.dmgNums.update(dt, this.camera);
-    void mouse;
-    this.tooltip.hide();
     // Name, level and health over every Streetmon in sight (battles have their own bars).
     this.labels.visible = this.state === 'playing' && !this.battles.active && !this.evolution.active;
     this.labels.update(dt, this.camera, this.labels.visible ? this.inspectables().filter((i) => !this.battleViewOwner(i)) : [], (a, b) => this.lineOfSight(a, b));
@@ -3006,10 +3008,6 @@ export class Game {
     return true;
   }
 
-  get transitioning(): boolean {
-    return !!this.trans;
-  }
-
   private updateLayer(dt: number): void {
     this.roofView.update(this.gameTime);
     this.updateSewer(dt);
@@ -3095,6 +3093,7 @@ export class Game {
     this.env.setTime(this.hour);
     const under = b === 'sewer';
     this.sewerView.under.visible = under;
+    this.setUnderground(under);
     this.cityRoot.visible = !under;
     this.roofView.root.visible = !under;
     this.hud.setSewerMap(under ? this.mazeAt(this.player.position.x, this.player.position.z) : null);
@@ -5830,6 +5829,7 @@ export class Game {
       };
       byHandle.set(handle, sc);
       this.colliderStream.add(sc);
+      if (t.y < -5) this.underground.push(sc);
     });
     if (this.destruction)
       this.destruction.colliderControl = {
@@ -5846,6 +5846,26 @@ export class Game {
       };
     const f = this.focus();
     this.colliderStream.refresh(f.x, f.z);
+    this.undergroundOn = true;
+    this.setUnderground(this.layers.current === 'sewer');
+  }
+
+  /** Static colliders below ground: the tunnels and the rooms under the shops and banks. */
+  private readonly underground: StreamCollider[] = [];
+  private undergroundOn = true;
+
+  /**
+   * Below-ground colliders only take part in physics while you're down there (the street above
+   * never touches them, and Rapier's step pays for every enabled collider: ~1,400 of them). Held
+   * off by the streamer otherwise; released, they follow their map cell like everything else.
+   */
+  private setUnderground(on: boolean): void {
+    if (on === this.undergroundOn) return;
+    this.undergroundOn = on;
+    for (const sc of this.underground) {
+      if (on) this.colliderStream.release(sc);
+      else this.colliderStream.hold(sc);
+    }
   }
 
   /** What the weather does each frame: the sky and light, grip, sight, the crowd, wild Streetmon, the grass. */

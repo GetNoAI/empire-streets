@@ -596,9 +596,4 @@ export class Menus {
       (this.pause.querySelector('[data-act=resume]') as HTMLElement | null)?.focus({ preventScroll: true });
     }
   }
-
-  showError(msg: string): void {
-    this.loading.style.display = 'flex';
-    this.setLoadingMessage(msg);
-  }
 }

@@ -59,10 +59,6 @@ export class CatchVisuals {
     private readonly effects: Effects,
   ) {}
 
-  get busy(): boolean {
-    return this.run !== null;
-  }
-
   /** Item meshes (also used for icons). */
   makeItem(id: string): THREE.Group {
     const g = new THREE.Group();
