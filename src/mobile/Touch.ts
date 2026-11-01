@@ -1,19 +1,26 @@
 import type { Input } from '../core/Input';
+import { icon, iconFor, type IconName } from './Icons';
 
 /**
  * On-screen controls for phones and tablets. Everything goes through the same Input the keyboard
- * uses, so the game needs no touch-specific code:
+ * uses, plus a few gestures the game answers itself:
  *
- *  - a stick on the left (where you first touch) moves you on foot and steers the car;
- *  - dragging anywhere on the right looks around (the mouse);
- *  - buttons on the right for what the situation needs: on foot (jump, sprint, interact, fight,
- *    fire, aim, map), in a car (gas, brake, handbrake, horn, nitrous, out, map), in a battle the
- *    game's own menus are tapped directly;
- *  - a pause button top right;
- *  - a context button that names what E (or whichever key) would do right here ("Go into Sal's
- *    Corner Deli", "Climb out", "Open the vault box"): the game passes its prompt every frame;
- *  - pushing the stick all the way breaks into a sprint (no button needed), and buttons buzz
- *    lightly under the thumb where the phone allows it.
+ *  - a stick on the left (where you first touch) moves you on foot and drives the car: pushed
+ *    forward it's the gas, pulled back the brake and reverse, sideways the steering; pushed all
+ *    the way on foot you sprint, pushed a little you crouch;
+ *  - dragging anywhere on the right looks around;
+ *  - **tapping the world** is how you interact: tap a person, a wild Streetmon, a car or a spot on
+ *    the ground and you walk over and do the natural thing (talk, battle, get in); where there's a
+ *    choice, a few icons pop up over it. Tap yourself for your team, your Streetmon and the Dex,
+ *    your car for the way out, the horn and the camera; the minimap opens the map, the team bar
+ *    the quick wheel, the weapon panel switches weapons (`onTap` / `onLongPress` hand the screen
+ *    point to the game, which knows what's there);
+ *  - only a few buttons, each an icon: jump (swipe it to roll), attack, and aim and reload while
+ *    you hold a gun; handbrake and nitrous in the car; the battle ones in a battle; a pause button;
+ *  - an action button whose icon shows what E (or whichever key) would do right here: a door
+ *    for "Go into...", a speech bubble for "Talk", a ladder for "Climb out" (the game passes its
+ *    prompt every frame);
+ *  - buttons buzz lightly under the thumb where the phone allows it.
  *
  * `setMode` picks which buttons show; the game calls it every frame with what the player is doing.
  */
@@ -23,8 +30,8 @@ export type TouchMode = 'foot' | 'car' | 'battle' | 'menu' | 'hidden';
 interface Btn {
   el: HTMLButtonElement;
   code: string;
-  /** Hold: key held while touched. Tap: a key press on touch. Toggle: flips each tap. Mouse: a mouse button. */
-  kind: 'hold' | 'tap' | 'toggle' | 'mouseL' | 'mouseR';
+  /** Hold: key held while touched. Tap: a key press on touch. Mouse: a mouse button. Jump: tap jumps, a swipe rolls. */
+  kind: 'hold' | 'tap' | 'mouseL' | 'mouseR' | 'jump';
   modes: TouchMode[];
   cls: string;
   on?: boolean;
@@ -32,9 +39,25 @@ interface Btn {
   hidden?: boolean;
 }
 
+/** One of the icons that pop up over something you tapped. */
+export interface TouchChoice {
+  icon: IconName;
+  label: string;
+  run: () => void;
+}
+
+export interface TouchHooks {
+  /** A short tap with no drag at (x, y): the game does whatever is there. True if it used it. */
+  tap(x: number, y: number): boolean;
+  /** A press held still for a moment. True if it used it. */
+  longPress(x: number, y: number): boolean;
+}
+
 const LOOK_SPEED = 2.2;
 /** Stick pushed this far (0..1) on foot and you sprint. */
 const SPRINT_PUSH = 0.94;
+/** A tap: released within this long (ms), moved less than this (px). A long press: held this long. */
+export const GESTURE = { tapMs: 320, tapMove: 14, longMs: 520, swipe: 30 } as const;
 
 /** Which key a prompt's first word stands for (the HUD prompts read "E  Get in the Sedan"). */
 const PROMPT_KEYS: Record<string, string> = { E: 'KeyE', B: 'KeyB', C: 'KeyC', F: 'KeyF', R: 'KeyR', Space: 'Space', Y: 'KeyY' };
@@ -43,10 +66,12 @@ const PROMPT_KEYS: Record<string, string> = { E: 'KeyE', B: 'KeyB', C: 'KeyC', F
 const TOUCH_KEYS: Record<string, string> = {
   W: 'the stick', A: 'the stick', S: 'the stick', D: 'the stick',
   Mouse: 'a drag on the right', Shift: 'the stick pushed all the way', Alt: 'a light push on the stick',
-  Space: 'JUMP', E: 'the green button', F: 'the green button', B: 'FIGHT', C: 'THROW', Q: 'WPN', Tab: 'WPN',
-  M: 'MAP', I: 'TEAM', T: 'QUICK', H: 'HORN', V: 'CAM', Y: 'Y', R: 'RELOAD / FLIP', LMB: 'FIRE', RMB: 'AIM',
-  Esc: 'II', Enter: 'the button', Z: 'ROLL', X: 'FLEE', '5': 'SWAP',
-  '1': 'a move', '2': 'a move', '3': 'a move', '4': 'a move', '8': 'WPN',
+  Space: 'the jump button', E: 'the action button', F: 'the action button', Y: 'the action button', B: 'a tap on it',
+  C: 'your team bar, then an item', V: 'your team bar', Q: 'a tap on your weapon', Tab: 'a tap on your weapon', '8': 'a tap on your weapon',
+  M: 'a tap on the minimap', I: 'a tap on yourself', N: 'a tap on yourself', G: 'a tap on yourself', Backspace: 'a tap on yourself',
+  T: 'the keys button', H: 'a tap on your car', R: 'the reload button', LMB: 'the attack button', RMB: 'the aim button',
+  Esc: 'the pause button', Enter: 'the button', Z: 'a swipe on the jump button', X: 'the flee button', '5': 'the swap button',
+  '1': 'a move', '2': 'a move', '3': 'a move', '4': 'a move',
 };
 
 /**
@@ -92,6 +117,27 @@ export function contextFromPrompt(prompt: string): { code: string; label: string
   return { code: PROMPT_KEYS[m[1]], label };
 }
 
+/** The buttons: icon, key, kind, modes, class, what it's for (read out by screen readers). */
+const BUTTONS: Array<[IconName, string, Btn['kind'], TouchMode[], string, string]> = [
+  ['handbrake', 'Space', 'hold', ['car'], 'hb', 'Handbrake'],
+  ['nos', 'ShiftLeft', 'hold', ['car'], 'nos', 'Nitrous'],
+  ['jump', 'Space', 'jump', ['foot'], 'jump', 'Jump (swipe to roll)'],
+  ['fist', 'MouseL', 'mouseL', ['foot'], 'fire', 'Attack'],
+  ['aim', 'MouseR', 'mouseR', ['foot'], 'aim', 'Aim'],
+  ['reload', 'KeyR', 'tap', ['foot'], 'reload', 'Reload'],
+  ['keys', 'KeyZ', 'tap', ['foot', 'car'], 'jam', 'Jam the cameras'],
+  ['mask', 'KeyX', 'tap', ['foot', 'car'], 'smoke', 'Smoke the guards'],
+  ['fire', 'MouseL', 'mouseL', ['battle'], 'fire', 'Shoot'],
+  ['aim', 'MouseR', 'mouseR', ['battle'], 'aim', 'Aim'],
+  // (On foot too, for a real-time battle, where you keep moving.)
+  ['swap', 'Digit5', 'tap', ['battle', 'foot'], 'swap', 'Swap Streetmon'],
+  ['flee', 'KeyX', 'tap', ['battle', 'foot'], 'flee', 'Flee'],
+  ['capture', 'KeyC', 'tap', ['battle', 'foot'], 'cuff', 'Throw a capture item'],
+  ['keys', 'KeyT', 'tap', ['battle', 'foot'], 'tkeys', 'Number keys: moves or weapons'],
+];
+/** Buttons that only show when the game says so (aim and reload with a gun, nitrous on a car that has it...). */
+const SOMETIMES = new Set(['aim', 'reload', 'nos', 'jam', 'smoke', 'swap', 'flee', 'cuff', 'tkeys']);
+
 export class TouchControls {
   readonly el: HTMLDivElement;
   private readonly stickEl: HTMLDivElement;
@@ -106,11 +152,16 @@ export class TouchControls {
   private readonly ctxBtn: HTMLButtonElement;
   private ctx: { code: string; label: string } | null = null;
   private autoSprint = false;
+  /** Where and when each finger came down (for taps and long presses). */
+  private readonly downs = new Map<number, { x: number; y: number; t: number; moved: boolean; long: boolean; timer: number }>();
+  private readonly choiceEl: HTMLDivElement;
+  private choiceTimer = 0;
 
   constructor(
     parent: HTMLElement,
     private readonly input: Input,
     private readonly onPause: () => void,
+    private readonly hooks: TouchHooks = { tap: () => false, longPress: () => false },
   ) {
     this.el = document.createElement('div');
     this.el.className = 'touch';
@@ -123,7 +174,8 @@ export class TouchControls {
     this.el.appendChild(this.stickEl);
     const pause = document.createElement('button');
     pause.className = 'touch-btn touch-pause';
-    pause.textContent = 'II';
+    pause.innerHTML = icon('pause');
+    pause.setAttribute('aria-label', 'Pause');
     pause.addEventListener('pointerdown', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -138,110 +190,61 @@ export class TouchControls {
       e.stopPropagation();
       if (!this.ctx) return;
       this.buzz();
-      this.input.touch = true;
-      this.input.device = 'touch';
+      this.touched();
       this.input.press(this.ctx.code);
       this.ctxBtn.classList.add('down');
     });
     for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) this.ctxBtn.addEventListener(ev, () => this.ctxBtn.classList.remove('down'));
     this.el.appendChild(this.ctxBtn);
-    // Buttons: [label, code, kind, modes, class]
-    const defs: Array<[string, string, Btn['kind'], TouchMode[], string]> = [
-      ['GAS', 'KeyW', 'hold', ['car'], 'gas'],
-      ['BRAKE', 'KeyS', 'hold', ['car'], 'brake'],
-      ['HAND', 'Space', 'hold', ['car'], 'hb'],
-      ['NOS', 'ShiftLeft', 'hold', ['car'], 'nos'],
-      ['HORN', 'KeyH', 'hold', ['car'], 'horn'],
-      ['OUT', 'KeyF', 'tap', ['car'], 'out'],
-      ['CAM', 'KeyV', 'tap', ['car'], 'cam'],
-      ['RACE', 'KeyY', 'tap', ['car'], 'yes'],
-      ['JUMP', 'Space', 'tap', ['foot'], 'jump'],
-      ['RUN', 'ShiftLeft', 'toggle', ['foot'], 'run'],
-      ['USE', 'KeyE', 'tap', ['foot'], 'use'],
-      ['FIGHT', 'KeyB', 'tap', ['foot'], 'fight'],
-      ['FIRE', 'MouseL', 'mouseL', ['foot'], 'fire'],
-      ['AIM', 'MouseR', 'mouseR', ['foot'], 'aim'],
-      ['THROW', 'KeyC', 'tap', ['foot'], 'throw'],
-      ['TEAM', 'KeyI', 'tap', ['foot', 'car'], 'team'],
-      ['QUICK', 'KeyT', 'hold', ['foot', 'car'], 'quick'],
-      ['MAP', 'KeyM', 'tap', ['foot', 'car'], 'map'],
-      ['WPN', 'KeyQ', 'tap', ['foot'], 'wpn'],
-      ['RELOAD', 'KeyR', 'tap', ['foot'], 'reload'],
-      ['ROLL', 'KeyZ', 'tap', ['foot'], 'roll'],
-      ['FLIP', 'KeyR', 'tap', ['car'], 'reload'],
-      ['SHOOT', 'MouseL', 'mouseL', ['battle'], 'fire'],
-      ['AIM', 'MouseR', 'mouseR', ['battle'], 'aim'],
-      ['SWAP', 'Digit5', 'tap', ['battle'], 'swap'],
-      ['FLEE', 'KeyX', 'tap', ['battle'], 'flee'],
-      ['CUFF', 'KeyC', 'tap', ['battle'], 'cuff'],
-      ['T', 'KeyT', 'tap', ['battle'], 'tkeys'],
-    ];
-    for (const [label, code, kind, modes, cls] of defs) {
-      const b = document.createElement('button');
-      b.className = `touch-btn tb-${cls}`;
-      b.textContent = label;
-      const btn: Btn = { el: b, code, kind, modes, cls, hidden: cls === 'yes' };
-      b.addEventListener('pointerdown', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        this.input.touch = true;
-        this.input.device = 'touch';
-        this.buzz();
-        b.classList.add('down');
-        if (kind === 'hold') this.input.virtual.add(code);
-        else if (kind === 'tap') this.input.press(code);
-        else if (kind === 'toggle') {
-          btn.on = !btn.on;
-          if (btn.on) this.input.virtual.add(code);
-          else this.input.virtual.delete(code);
-          b.classList.toggle('on', !!btn.on);
-        } else if (kind === 'mouseL') this.input.mouseLeft = this.input.mouseDown = true;
-        else if (kind === 'mouseR') {
-          btn.on = !btn.on;
-          this.input.mouseRight = !!btn.on;
-          b.classList.toggle('on', !!btn.on);
-        }
-      });
-      const up = (e: Event): void => {
-        e.preventDefault();
-        b.classList.remove('down');
-        if (kind === 'hold') this.input.virtual.delete(code);
-        else if (kind === 'mouseL') this.input.mouseLeft = this.input.mouseDown = false;
-      };
-      b.addEventListener('pointerup', up);
-      b.addEventListener('pointercancel', up);
-      b.addEventListener('pointerleave', up);
-      this.el.appendChild(b);
-      this.buttons.push(btn);
-    }
-    // The stick and the look area: the empty parts of the overlay.
+    this.choiceEl = document.createElement('div');
+    this.choiceEl.className = 'tchoices';
+    this.choiceEl.style.display = 'none';
+    this.el.appendChild(this.choiceEl);
+    for (const [ic, code, kind, modes, cls, label] of BUTTONS) this.addButton(ic, code, kind, modes, cls, label);
+
+    // The stick, the look area and taps on the world: the empty parts of the overlay.
     this.el.addEventListener('pointerdown', (e) => {
       if ((e.target as HTMLElement).closest('button')) return;
       e.preventDefault();
-      this.input.touch = true;
+      this.touched();
+      this.hideChoices();
+      const id = e.pointerId;
       const left = e.clientX < window.innerWidth * 0.42;
-      if (left && this.stickId === null && this.mode !== 'battle') {
-        this.stickId = e.pointerId;
+      const stick = left && this.stickId === null && this.mode !== 'battle';
+      // A long press (not on the stick: a thumb resting there is just standing still).
+      const timer = stick
+        ? 0
+        : window.setTimeout(() => {
+            const d = this.downs.get(id);
+            if (!d || d.moved) return;
+            d.long = this.hooks.longPress(d.x, d.y);
+            if (d.long) this.buzz();
+          }, GESTURE.longMs);
+      this.downs.set(id, { x: e.clientX, y: e.clientY, t: performance.now(), moved: false, long: false, timer });
+      if (stick) {
+        this.stickId = id;
         this.stickOrigin = { x: e.clientX, y: e.clientY };
         this.stickEl.style.display = 'block';
         this.stickEl.style.left = `${e.clientX - this.radius}px`;
         this.stickEl.style.top = `${e.clientY - this.radius}px`;
         this.input.stick = { x: 0, y: 0 };
-        this.capture(e.pointerId);
+        this.capture(id);
       } else if (this.lookId === null) {
-        this.lookId = e.pointerId;
+        this.lookId = id;
         this.lookLast = { x: e.clientX, y: e.clientY };
-        this.capture(e.pointerId);
+        this.capture(id);
       }
     });
     this.el.addEventListener('pointermove', (e) => {
+      const d = this.downs.get(e.pointerId);
+      if (d && !d.moved && Math.hypot(e.clientX - d.x, e.clientY - d.y) > GESTURE.tapMove) d.moved = true;
       if (e.pointerId === this.stickId) {
         let dx = e.clientX - this.stickOrigin.x;
         let dy = e.clientY - this.stickOrigin.y;
-        const d = Math.hypot(dx, dy);
-        if (d > this.radius) {
-          dx *= this.radius / d;
-          dy *= this.radius / d;
+        const dd = Math.hypot(dx, dy);
+        if (dd > this.radius) {
+          dx *= this.radius / dd;
+          dy *= this.radius / dd;
         }
         this.knob.style.transform = `translate(${dx}px, ${dy}px)`;
         const dead = 0.12;
@@ -249,22 +252,20 @@ export class TouchControls {
         const ny = -dy / this.radius;
         const shape = (v: number): number => (Math.abs(v) < dead ? 0 : Math.sign(v) * ((Math.abs(v) - dead) / (1 - dead)));
         this.input.stick = { x: shape(nx), y: shape(ny) };
-        // On foot, the stick pushed right out is a sprint (unless RUN is already toggled on).
+        const m = Math.hypot(nx, ny);
         if (this.mode === 'foot') {
-          const full = Math.hypot(nx, ny) >= SPRINT_PUSH;
-          const toggled = this.buttons.some((b) => b.kind === 'toggle' && b.code === 'ShiftLeft' && b.on);
-          if (full && !this.autoSprint && !toggled) this.input.virtual.add('ShiftLeft');
-          if (!full && this.autoSprint && !toggled) this.input.virtual.delete('ShiftLeft');
+          // Pushed right out: sprint. Pushed a little: crouch (quiet and low), like holding Alt.
+          const full = m >= SPRINT_PUSH;
+          if (full && !this.autoSprint) this.input.virtual.add('ShiftLeft');
+          if (!full && this.autoSprint) this.input.virtual.delete('ShiftLeft');
           this.autoSprint = full;
-          // A light push is a crouch (quiet and low: wild Streetmon and heist guards notice you less), like holding Alt.
-          const m = Math.hypot(nx, ny);
           if (m > 0.15 && m < 0.5) this.input.virtual.add('AltLeft');
           else this.input.virtual.delete('AltLeft');
         }
-        // In a car the stick's forward half is the gas too (a thumb's natural push).
+        // In a car: forward is the gas, back the brake (and reverse), sideways steers.
         if (this.mode === 'car') {
-          if (ny > 0.5) this.input.virtual.add('KeyW');
-          else this.input.virtual.delete('KeyW');
+          this.setKey('KeyW', ny > 0.35);
+          this.setKey('KeyS', ny < -0.35);
         }
       } else if (e.pointerId === this.lookId) {
         this.input.touchLookDX += (e.clientX - this.lookLast.x) * LOOK_SPEED;
@@ -273,21 +274,99 @@ export class TouchControls {
       }
     });
     const end = (e: PointerEvent): void => {
+      const d = this.downs.get(e.pointerId);
+      if (d) {
+        window.clearTimeout(d.timer);
+        this.downs.delete(e.pointerId);
+      }
       if (e.pointerId === this.stickId) {
         this.stickId = null;
         this.stickEl.style.display = 'none';
         this.knob.style.transform = '';
         this.input.stick = null;
-        if (this.autoSprint && !this.buttons.some((b) => b.kind === 'toggle' && b.code === 'ShiftLeft' && b.on)) this.input.virtual.delete('ShiftLeft');
+        if (this.autoSprint) this.input.virtual.delete('ShiftLeft');
         this.autoSprint = false;
         this.input.virtual.delete('AltLeft');
-        if (this.mode === 'car' && !this.buttons.some((b) => b.code === 'KeyW' && b.el.classList.contains('down'))) this.input.virtual.delete('KeyW');
+        if (this.mode === 'car') {
+          this.setKey('KeyW', false);
+          this.setKey('KeyS', false);
+        }
       } else if (e.pointerId === this.lookId) this.lookId = null;
+      // A quick touch that didn't drag: a tap on whatever's there.
+      if (d && e.type === 'pointerup' && !d.moved && !d.long && performance.now() - d.t < GESTURE.tapMs) {
+        if (this.hooks.tap(e.clientX, e.clientY)) this.buzz();
+      }
     };
     this.el.addEventListener('pointerup', end);
     this.el.addEventListener('pointercancel', end);
     parent.appendChild(this.el);
     this.setMode('hidden');
+  }
+
+  private addButton(ic: IconName, code: string, kind: Btn['kind'], modes: TouchMode[], cls: string, label: string): void {
+    const b = document.createElement('button');
+    b.className = `touch-btn tb-${cls}`;
+    b.innerHTML = icon(ic);
+    b.setAttribute('aria-label', label);
+    b.title = label;
+    const btn: Btn = { el: b, code, kind, modes, cls, hidden: SOMETIMES.has(cls) };
+    let start: { x: number; y: number; swiped: boolean } | null = null;
+    b.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.touched();
+      this.hideChoices();
+      this.buzz();
+      b.classList.add('down');
+      if (kind === 'hold') this.input.virtual.add(code);
+      else if (kind === 'tap') this.input.press(code);
+      else if (kind === 'mouseL') this.input.mouseLeft = this.input.mouseDown = true;
+      else if (kind === 'mouseR') {
+        btn.on = !btn.on;
+        this.input.mouseRight = !!btn.on;
+        b.classList.toggle('on', !!btn.on);
+      } else if (kind === 'jump') {
+        start = { x: e.clientX, y: e.clientY, swiped: false };
+        try {
+          b.setPointerCapture(e.pointerId);
+        } catch {
+          /* gone */
+        }
+      }
+    });
+    if (kind === 'jump')
+      b.addEventListener('pointermove', (e) => {
+        // A swipe off the jump button is a roll (in the direction you're moving).
+        if (!start || start.swiped || Math.hypot(e.clientX - start.x, e.clientY - start.y) < GESTURE.swipe) return;
+        start.swiped = true;
+        this.input.press('TouchRoll');
+        this.buzz();
+      });
+    const up = (e: Event): void => {
+      e.preventDefault();
+      b.classList.remove('down');
+      if (kind === 'hold') this.input.virtual.delete(code);
+      else if (kind === 'mouseL') this.input.mouseLeft = this.input.mouseDown = false;
+      else if (kind === 'jump' && start) {
+        if (!start.swiped && e.type === 'pointerup') this.input.press(code);
+        start = null;
+      }
+    };
+    b.addEventListener('pointerup', up);
+    b.addEventListener('pointercancel', up);
+    if (kind !== 'jump') b.addEventListener('pointerleave', up);
+    this.el.appendChild(b);
+    this.buttons.push(btn);
+  }
+
+  private touched(): void {
+    this.input.touch = true;
+    this.input.device = 'touch';
+  }
+
+  private setKey(code: string, on: boolean): void {
+    if (on) this.input.virtual.add(code);
+    else this.input.virtual.delete(code);
   }
 
   private capture(id: number): void {
@@ -298,24 +377,87 @@ export class TouchControls {
     }
   }
 
-  /** Shows or hides one button by its class (RACE only while a race is on offer, say). */
+  /** Shows or hides one button by its class (aim and reload only with a gun, say). */
   setButtonShown(cls: string, on: boolean): void {
     for (const b of this.buttons) {
       if (b.cls !== cls) continue;
-      if (b.hidden === !on) return;
+      if (b.hidden === !on) continue;
       b.hidden = !on;
       b.el.style.display = !b.hidden && b.modes.includes(this.mode) ? '' : 'none';
+      // Hidden while held: let go of it.
+      if (b.hidden) {
+        if (b.kind === 'hold') this.input.virtual.delete(b.code);
+        if (b.kind === 'mouseR' && b.on) {
+          b.on = false;
+          this.input.mouseRight = false;
+          b.el.classList.remove('on');
+        }
+      }
     }
   }
 
-  /** The game's current prompt (or ''): shown as the context button while on foot or driving. */
+  /** Swaps a button's icon (the attack button is a fist with fists, a crosshair with a gun). */
+  setButtonIcon(cls: string, ic: IconName): void {
+    for (const b of this.buttons) if (b.cls === cls && b.el.dataset['icon'] !== ic && b.modes.includes('foot')) {
+      b.el.dataset['icon'] = ic;
+      b.el.innerHTML = icon(ic);
+    }
+  }
+
+  /** The game's current prompt (or ''): shown as the action button (an icon) on foot or driving. */
   setContext(prompt: string): void {
     const c = this.mode === 'foot' || this.mode === 'car' ? contextFromPrompt(prompt) : null;
     if (c?.code === this.ctx?.code && c?.label === this.ctx?.label) return;
     this.ctx = c;
     this.ctxBtn.style.display = c ? '' : 'none';
     document.body.classList.toggle('has-ctx', !!c);
-    if (c) this.ctxBtn.textContent = c.label;
+    if (c) {
+      this.ctxBtn.innerHTML = icon(iconFor(c.label, c.code));
+      this.ctxBtn.setAttribute('aria-label', c.label);
+      this.ctxBtn.title = c.label;
+    }
+  }
+
+  /**
+   * A few icons in a ring round a point on the screen (over the thing you tapped): tap one to do
+   * it. They go away after a few seconds, or when you touch anything else.
+   */
+  showChoices(x: number, y: number, choices: TouchChoice[]): void {
+    this.choiceEl.innerHTML = '';
+    const n = choices.length;
+    const R = n <= 1 ? 0 : 52;
+    choices.forEach((c, i) => {
+      const b = document.createElement('button');
+      b.className = 'tchoice';
+      b.innerHTML = icon(c.icon);
+      b.setAttribute('aria-label', c.label);
+      b.title = c.label;
+      // Fanned over the top: -150 deg .. -30 deg.
+      const a = n <= 1 ? -Math.PI / 2 : -Math.PI * (5 / 6) + ((Math.PI * 2) / 3) * (i / (n - 1));
+      b.style.left = `${Math.cos(a) * R}px`;
+      b.style.top = `${Math.sin(a) * R}px`;
+      b.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.buzz();
+        this.hideChoices();
+        c.run();
+      });
+      this.choiceEl.appendChild(b);
+    });
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    this.choiceEl.style.left = `${Math.max(70, Math.min(W - 70, x))}px`;
+    this.choiceEl.style.top = `${Math.max(90, Math.min(H - 40, y))}px`;
+    this.choiceEl.style.display = 'block';
+    window.clearTimeout(this.choiceTimer);
+    this.choiceTimer = window.setTimeout(() => this.hideChoices(), 4000);
+  }
+
+  hideChoices(): void {
+    if (this.choiceEl.style.display === 'none') return;
+    this.choiceEl.style.display = 'none';
+    window.clearTimeout(this.choiceTimer);
   }
 
   /** A short tick under the thumb (Android; ignored where vibration isn't available). */
@@ -333,11 +475,6 @@ export class TouchControls {
     for (const b of this.buttons) {
       if (!b.modes.includes(mode)) {
         if (b.kind === 'hold') this.input.virtual.delete(b.code);
-        if (b.kind === 'toggle' && b.on) {
-          b.on = false;
-          this.input.virtual.delete(b.code);
-          b.el.classList.remove('on');
-        }
         if (b.kind === 'mouseL') this.input.mouseLeft = this.input.mouseDown = false;
         if (b.kind === 'mouseR' && b.on) {
           b.on = false;
@@ -347,16 +484,21 @@ export class TouchControls {
       }
       b.el.style.display = b.modes.includes(mode) && !b.hidden ? '' : 'none';
     }
-    if (mode !== 'car') this.input.virtual.delete('KeyW');
+    if (mode !== 'car') {
+      this.input.virtual.delete('KeyW');
+      this.input.virtual.delete('KeyS');
+    }
     if (mode !== 'foot') {
       this.input.virtual.delete('AltLeft');
-      if (this.autoSprint && !this.buttons.some((b) => b.kind === 'toggle' && b.code === 'ShiftLeft' && b.on)) this.input.virtual.delete('ShiftLeft');
+      if (this.autoSprint) this.input.virtual.delete('ShiftLeft');
       this.autoSprint = false;
     }
+    this.hideChoices();
     this.mode = mode;
     this.el.classList.toggle('hidden', mode === 'hidden' || mode === 'menu');
     this.el.classList.toggle('battle', mode === 'battle');
     this.el.classList.toggle('car', mode === 'car');
+    document.body.classList.toggle('in-car', mode === 'car');
     // In a battle the stick isn't needed and would cover the move bar: the overlay only takes
     // the look drag and its own buttons.
     this.el.classList.toggle('passthrough', mode === 'battle');

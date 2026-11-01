@@ -154,6 +154,23 @@ export class QuickWheel {
     }
   }
 
+  /**
+   * A tap on the screen while the wheel is open (touch: the overlay sits above it): picks the slot
+   * under the finger, or closes the wheel if the tap missed them all.
+   */
+  pickAt(x: number, y: number): void {
+    const i = this.buttons.findIndex((b) => {
+      const r = b.getBoundingClientRect();
+      return x >= r.left - 6 && x <= r.right + 6 && y >= r.top - 6 && y <= r.bottom + 6;
+    });
+    if (i < 0) {
+      this.hide();
+      return;
+    }
+    this.select(i);
+    this.finish();
+  }
+
   /** Clicked or tapped: pick now. */
   private finish(): void {
     const e = this.entries[this.sel];

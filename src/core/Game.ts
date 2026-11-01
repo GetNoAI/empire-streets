@@ -82,7 +82,8 @@ import { DEALERSHIP, buildDealership, planDealership, type DealershipSpot } from
 import { GarageMenu } from '../ui/GarageMenu';
 import { platform } from '../mobile/Platform';
 import { ASSIST, assistTurn, pickAssist, type AssistTarget } from '../mobile/AimAssist';
-import { TouchControls } from '../mobile/Touch';
+import { TouchControls, type TouchChoice } from '../mobile/Touch';
+import { TAP, pickTapTarget, screenRadius, walkStuck, type TapCandidate, type WalkProgress } from '../mobile/TapTargets';
 import { VEHICLES } from '../vehicles/specs';
 import { MAX_LEVEL, NO_UPGRADES, classOf, performanceIndex, sanitizeUpgrades, upgradeEffect, upgradePrice, type CarClass, type UpgradeLevels, type UpgradePart } from '../vehicles/Performance';
 import { MODE_NAMES, modeOf } from '../systems/streetRaceManager.js';
@@ -562,10 +563,15 @@ export class Game {
     if (platform.touch) {
       this.input.touch = true;
       document.body.classList.add('touch');
-      this.touchUi = new TouchControls(container, this.input, () => {
-        if (this.state === 'playing') this.pause();
-        else if (this.state === 'paused') this.resume();
-      });
+      this.touchUi = new TouchControls(
+        container,
+        this.input,
+        () => {
+          if (this.state === 'playing') this.pause();
+          else if (this.state === 'paused') this.resume();
+        },
+        { tap: (x, y) => this.touchTap(x, y), longPress: (x, y) => this.touchLongPress(x, y) },
+      );
     }
     this.menus = new Menus(container, {
       onPlay: () => this.start('new'),
@@ -1605,6 +1611,7 @@ export class Game {
   }
 
   private handleFrameInput(dt = 1 / 60): void {
+    for (const code of this.nextPresses.splice(0)) this.input.press(code);
     const inp = this.input;
     const p = this.player;
     if (inp.wasPressed('KeyK')) audio.setEnabled(!audio.on);
@@ -1643,7 +1650,8 @@ export class Game {
     }
     if (inp.wasPressed('Space') && p.onFoot) this.jumpQueued = true;
     // Roll (Z): a dive instead while aiming a gun. (During a heist Z is the crew's ability.)
-    if (inp.wasPressed('KeyZ') && p.onFoot && !this.heists?.active) this.rollQueued = true;
+    // (TouchRoll: a swipe on the touch jump button, so it never sets off the Hacker's Z in a heist.)
+    if (inp.wasPressed('KeyZ', 'TouchRoll') && p.onFoot && !this.heists?.active) this.rollQueued = true;
     // T: the number keys switch between commanding your Streetmon and picking weapons (real-time battles).
     if (inp.wasPressed('KeyT')) {
       if (this.battles.active && this.battles.mode === 'realtime') {
@@ -1881,7 +1889,7 @@ export class Game {
     this.clockEl.textContent = `${clockText(this.hour)}  ${phase === 'day' ? 'Day' : phase === 'dusk' ? 'Dusk' : 'Night'} · ${this.weather.label}`;
     const cap = this.bag.currentCapture();
     const fxLine = effectsLine(this.itemFx);
-    const capText = (this.party.members.length ? (cap ? `${cap.name} x${this.bag.count(cap.id)}${platform.touch ? '  ·  THROW' : '  ·  C throw  V switch'}` : 'No capture items') : '') + (fxLine ? `\n${fxLine}` : '');
+    const capText = (this.party.members.length ? (cap ? `${cap.name} x${this.bag.count(cap.id)}${platform.touch ? '' : '  ·  C throw  V switch'}` : 'No capture items') : '') + (fxLine ? `\n${fxLine}` : '');
     if (this.captureEl.textContent !== capText) this.captureEl.textContent = capText;
     this.partyBar.update(this.party, !this.battles.locksPlayer);
     this.dmgNums.update(dt, this.camera);
@@ -2266,7 +2274,8 @@ export class Game {
       const t = inp.stick;
       if (Math.hypot(r.x, r.y) > 0.5) W.pointAt(r.x, r.y);
       else if (t && Math.hypot(t.x, t.y) > 0.5) W.pointAt(t.x, -t.y);
-    } else if (W.isOpen) {
+    } else if (W.isOpen && (!this.touchWheel || !can)) {
+      this.touchWheel = false;
       W.close(!can);
     }
   }
@@ -2306,7 +2315,7 @@ export class Game {
    * Throws the selected capture item at the wild Streetmon in front of you. From a car (the
    * quick-select wheel) it goes out of the window at the nearest one, wider and further.
    */
-  private overworldThrow(): void {
+  private overworldThrow(target?: WildCreature): void {
     const it = this.bag.currentCapture();
     if (!it) {
       this.hud.toast('No capture items. Buy Cuffs, Crates or Nets at a Corner Clinic.', 2500);
@@ -2319,9 +2328,11 @@ export class Game {
     const fz = -Math.sin(vh);
     const reach = car ? 26 : 16;
     const cone = car ? 1.25 : 0.45;
-    let best: WildCreature | null = null;
-    let bestScore = Infinity;
+    // One you tapped (on a touch screen) if it's in reach; otherwise the one you're facing.
+    let best: WildCreature | null = target && !target.removed && !target.pinned && Math.hypot(target.x - p.x, target.z - p.z) <= reach ? target : null;
+    let bestScore = best ? -Infinity : Infinity;
     for (const w of this.spawns.wild) {
+      if (best === target && target) break;
       if (w.removed || w.pinned) continue;
       const dx = w.x - p.x;
       const dz = w.z - p.z;
@@ -2886,6 +2897,300 @@ export class Game {
     this.music.setPaused(this.state === 'paused');
     this.music.setPlaceVolume(1);
     this.music.update(dt);
+  }
+
+  // ------------------------------------------------------------------ touch: tap the world
+
+  /** Tap-to-walk (touch): where you're heading, what to do on arrival. */
+  private tapGoal: (WalkProgress & { x: number; z: number; follow: (() => { x: number; z: number } | null) | null; reach: number; arrive: (() => void) | null }) | null = null;
+  private tapRing: THREE.Mesh | null = null;
+  /** The quick wheel was opened by a tap (it stays open until you pick or tap away). */
+  private touchWheel = false;
+  private readonly tapNdc = new THREE.Vector3();
+
+  /** A point in the world on the screen (px), and how far it is from the camera; null behind it. */
+  private toScreen(x: number, y: number, z: number): { sx: number; sy: number; depth: number } | null {
+    const v = this.tapNdc.set(x, y, z).project(this.camera);
+    if (v.z > 1 || v.z < -1) return null;
+    return { sx: (v.x * 0.5 + 0.5) * window.innerWidth, sy: (-v.y * 0.5 + 0.5) * window.innerHeight, depth: this.camera.position.distanceTo(this.tmp.set(x, y, z)) };
+  }
+
+  /** Everything a tap could mean right now, on the screen. */
+  private tapCandidates(): TapCandidate<unknown>[] {
+    const out: TapCandidate<unknown>[] = [];
+    const H = window.innerHeight;
+    const fov = this.camera.fov;
+    const add = (kind: TapCandidate['kind'], x: number, y: number, z: number, r: number, ref: unknown): void => {
+      const s = this.toScreen(x, y, z);
+      if (!s || s.depth > TAP.range[kind]) return;
+      out.push({ kind, sx: s.sx, sy: s.sy, depth: s.depth, r: screenRadius(r, s.depth, fov, H), ref });
+    };
+    const p = this.player;
+    if (p.vehicle) {
+      const c = p.vehicle.position;
+      add('mycar', c.x, c.y + 0.6, c.z, 2.2, p.vehicle);
+      return out;
+    }
+    add('me', p.position.x, p.feet.y + 1.0, p.position.z, 0.55, null);
+    const f = this.follower;
+    if (f.summoned) add('follower', f.x, f.y + 0.5, f.z, 0.7, null);
+    for (const w of this.spawns.wild) if (!w.removed && w.inst?.root.visible) add('wild', w.x, w.y + 0.5 + (w.alt ?? 0), w.z, 0.8, w);
+    for (const ped of this.peds.peds)
+      if (ped.state !== 'dead' && ped.state !== 'down' && ped.state !== 'fly') add('person', ped.x, ped.y + 1.0, ped.z, 0.5, ped);
+    for (const car of this.vehicles.cars) if (!car.disposed && !car.destroyed && car.visual.root.visible) add('car', car.position.x, car.position.y + 0.6, car.position.z, 2.0, car);
+    return out;
+  }
+
+  /** A tap on the screen that wasn't on a button (touch). True if it did something. */
+  private touchTap(x: number, y: number): boolean {
+    const ui = this.touchUi;
+    if (!ui || this.state !== 'playing' || this.trans || this.evolution.active || this.player.dead) return false;
+    if (this.battles.active) {
+      // A real-time battle: tap one of your moves along the bottom to use it.
+      const moves = [...this.container.querySelectorAll('.battle .b-rt-move')];
+      const i = moves.findIndex((m) => {
+        const r = m.getBoundingClientRect();
+        return r.width > 0 && x >= r.left - 4 && x <= r.right + 4 && y >= r.top - 6 && y <= r.bottom + 6;
+      });
+      if (i < 0) return false;
+      this.input.press(`Digit${i + 1}`);
+      return true;
+    }
+    if (this.quickWheel.isOpen) {
+      this.quickWheel.pickAt(x, y);
+      this.touchWheel = false;
+      return true;
+    }
+    // The HUD: the minimap is the map, the team bar the quick wheel, the weapon panel switches.
+    const on = (sel: string): boolean => {
+      const el = this.hud.el.querySelector(sel);
+      if (!el) return false;
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+    };
+    if (on('.minimap')) {
+      this.input.press('KeyM');
+      return true;
+    }
+    if (on('.party-bar')) return this.openTouchWheel();
+    const p = this.player;
+    if (p.onFoot && on('.weapon-panel')) {
+      this.weapons.inventory.cycle(1);
+      audio.ui();
+      this.tut?.action('weaponSwitch');
+      return true;
+    }
+    const hit = pickTapTarget(x, y, this.tapCandidates());
+    const press = (code: string) => () => this.input.press(code);
+    if (p.vehicle) {
+      if (hit?.kind !== 'mycar') return false;
+      const car = p.vehicle;
+      const choices: TouchChoice[] = [
+        { icon: 'exit', label: 'Get out', run: press('KeyF') },
+        { icon: 'horn', label: 'Horn', run: () => this.touchHold('KeyH', 600) },
+        { icon: 'camera', label: 'Camera', run: press('KeyV') },
+      ];
+      if (car.spec.style === 'police') choices.push({ icon: 'star', label: 'Siren', run: press('KeyG') });
+      ui.showChoices(hit.sx, hit.sy, choices);
+      return true;
+    }
+    if (!hit) return this.tapGround(x, y);
+    const choices: TouchChoice[] = [];
+    switch (hit.kind) {
+      case 'me':
+      case 'follower': {
+        choices.push({ icon: 'team', label: 'Team', run: press('KeyI') });
+        if (this.party.lead)
+          choices.push({
+            icon: 'paw',
+            label: this.follower.summoned ? 'Recall your Streetmon' : 'Bring out your Streetmon',
+            run: () => {
+              this.tut?.action('summon');
+              this.toggleFollower();
+            },
+          });
+        choices.push({ icon: 'info', label: 'Dex', run: press('KeyN') });
+        if (this.heists.active) choices.push({ icon: 'flee', label: 'Walk away from the job', run: press('Backspace') });
+        break;
+      }
+      case 'wild': {
+        const w = hit.ref as WildCreature;
+        const at = (): { x: number; z: number } | null => (w.removed ? null : { x: w.x, z: w.z });
+        if (this.party.canFight)
+          choices.push({
+            icon: 'battle',
+            label: `Battle ${w.spec.name}`,
+            run: () =>
+              this.walkTo(at, 6.5, () => {
+                if (this.raidWorld.isBoss(w) || this.raidWorld.canEngage()) this.nextPresses.push('KeyB');
+                else this.startWildBattle(w);
+              }),
+          });
+        if (this.bag.currentCapture())
+          choices.push({
+            icon: 'capture',
+            label: `Throw at ${w.spec.name}`,
+            run: () =>
+              this.walkTo(at, 8, () => {
+                this.tut?.action('throw');
+                this.overworldThrow(w);
+              }),
+          });
+        if (!choices.length) {
+          this.hud.toast("Your team can't fight right now, and you've no capture items.", 1800);
+          return true;
+        }
+        break;
+      }
+      case 'person': {
+        const ped = hit.ref as Ped;
+        const at = (): { x: number; z: number } | null => (ped.state === 'dead' || !this.peds.peds.includes(ped) ? null : { x: ped.x, z: ped.z });
+        if (ped.role !== 'cop') choices.push({ icon: 'talk', label: 'Talk', run: () => this.walkTo(at, 1.7, this.pressNext('KeyE')) });
+        if (this.party.canFight && this.party.lead) choices.push({ icon: 'battle', label: `Set ${displayName(this.party.lead)} on them (a crime)`, run: () => this.walkTo(at, 3.5, () => this.sicOnPerson(ped)) });
+        if (!choices.length) return this.tapGround(x, y);
+        break;
+      }
+      case 'car': {
+        const car = hit.ref as Car;
+        this.walkTo(() => (car.disposed ? null : { x: car.position.x, z: car.position.z }), 2.6, this.pressNext('KeyE'));
+        return true;
+      }
+      default:
+        return false;
+    }
+    // One thing to do: just do it. Several: icons over it to choose from.
+    if (choices.length === 1) choices[0].run();
+    else ui.showChoices(hit.sx, hit.sy, choices);
+    return true;
+  }
+
+  /** A press held still on the screen (touch): on the team bar, the team screen. */
+  private touchLongPress(x: number, y: number): boolean {
+    if (this.state !== 'playing' || this.battles.active) return false;
+    const el = this.hud.el.querySelector('.party-bar');
+    const r = el?.getBoundingClientRect();
+    if (r && r.width > 0 && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
+      this.input.press('KeyI');
+      return true;
+    }
+    return false;
+  }
+
+  /** Keys to press at the start of the next frame (a walk that arrived late in this one). */
+  private readonly nextPresses: string[] = [];
+
+  /** A key press for the next frame's input (presses made late in a frame would be cleared unread). */
+  private pressNext(code: string): () => void {
+    return () => {
+      this.nextPresses.push(code);
+    };
+  }
+
+  /** A key held for a moment (the horn from a tap). */
+  private touchHold(code: string, ms: number): void {
+    this.input.virtual.add(code);
+    window.setTimeout(() => this.input.virtual.delete(code), ms);
+  }
+
+  /** The quick wheel from a tap on the team bar: stays open until you tap a slot (or away). */
+  private openTouchWheel(): boolean {
+    const p = this.player;
+    if (this.battles.active || this.evolution.active || p.dead || this.throwing || this.weaponHud.wheelOpen) return false;
+    this.quickWheel.open(this.quickEntries());
+    this.touchWheel = true;
+    this.tut?.action('quickWheel');
+    return true;
+  }
+
+  /** A tap on open ground: walk there (if you can see it and it's not too far). */
+  private tapGround(x: number, y: number): boolean {
+    const p = this.player;
+    if (!p.onFoot || p.swimming) return false;
+    const ndc = new THREE.Vector2((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1);
+    const ray = new THREE.Raycaster();
+    ray.setFromCamera(ndc, this.camera);
+    const floor = p.feet.y;
+    const dy = ray.ray.direction.y;
+    if (dy > -0.02) return false;
+    const t = (floor - ray.ray.origin.y) / dy;
+    if (t <= 0) return false;
+    const gx = ray.ray.origin.x + ray.ray.direction.x * t;
+    const gz = ray.ray.origin.z + ray.ray.direction.z * t;
+    if (Math.hypot(gx - p.position.x, gz - p.position.z) > TAP.walkRange) return false;
+    // Not through a wall: the spot has to be in view.
+    const c = this.camera.position;
+    if (this.tuneWorld.sightBlocked(c.x, c.y, c.z, gx, floor + 0.3, gz)) return false;
+    this.walkTo(() => null, 0.6, null, gx, gz);
+    return true;
+  }
+
+  /**
+   * Walk (touch): head for a spot or something that moves (`follow`), and do `arrive` when within
+   * `reach`. Touching the stick takes over; getting stuck gives up.
+   */
+  private walkTo(follow: () => { x: number; z: number } | null, reach: number, arrive: (() => void) | null, x?: number, z?: number): void {
+    const p = this.player;
+    const at = follow() ?? (x !== undefined && z !== undefined ? { x, z } : null);
+    if (!at) return;
+    const d = Math.hypot(at.x - p.position.x, at.z - p.position.z);
+    const fixed = x !== undefined;
+    this.tapGoal = { x: at.x, z: at.z, follow: fixed ? null : follow, reach, arrive, best: d, since: 0 };
+    if (d <= reach) this.updateTapGoal(0);
+  }
+
+  /** Per frame (touch): the walk's target, arriving, giving up, and its marker on the ground. */
+  private updateTapGoal(dt: number): void {
+    const g = this.tapGoal;
+    const p = this.player;
+    if (g && (p.vehicle || p.dead || this.battles.active || this.trans || this.state !== 'playing')) this.tapGoal = null;
+    else if (g) {
+      if (g.follow) {
+        const at = g.follow();
+        if (!at) this.tapGoal = null;
+        else {
+          g.x = at.x;
+          g.z = at.z;
+        }
+      }
+      if (this.tapGoal) {
+        const d = Math.hypot(g.x - p.position.x, g.z - p.position.z);
+        if (d <= g.reach) {
+          this.tapGoal = null;
+          p.facing = Math.atan2(-(g.z - p.position.z), g.x - p.position.x);
+          g.arrive?.();
+        } else if (walkStuck(g, d, dt)) this.tapGoal = null;
+      }
+    }
+    const goal = this.tapGoal;
+    if (goal && !this.tapRing) {
+      this.tapRing = new THREE.Mesh(new THREE.RingGeometry(0.32, 0.46, 28), new THREE.MeshBasicMaterial({ color: 0xffd23f, transparent: true, opacity: 0.85, depthWrite: false }));
+      this.tapRing.rotation.x = -Math.PI / 2;
+      this.tapRing.renderOrder = 2;
+      this.scene.add(this.tapRing);
+    }
+    if (this.tapRing) {
+      this.tapRing.visible = !!goal;
+      if (goal) {
+        this.tapRing.position.set(goal.x, p.feet.y + 0.06, goal.z);
+        this.tapRing.scale.setScalar(1 + 0.12 * Math.sin(this.gameTime * 6));
+      }
+    }
+  }
+
+  /** The walk direction for this step (touch tap-to-walk), or null: the stick or keys take over. */
+  private tapSteer(fwd: number, strafe: number): { x: number; z: number } | null {
+    const g = this.tapGoal;
+    if (!g) return null;
+    if (Math.abs(fwd) + Math.abs(strafe) > 0.05) {
+      this.tapGoal = null;
+      return null;
+    }
+    const p = this.player;
+    const dx = g.x - p.position.x;
+    const dz = g.z - p.position.z;
+    const d = Math.hypot(dx, dz);
+    if (d < 0.05) return null;
+    return { x: dx / d, z: dz / d };
   }
 
   private toggleFollower(): void {
@@ -4466,8 +4771,14 @@ export class Game {
       const fwd = frozen ? 0 : inp.axis(['KeyS', 'ArrowDown'], ['KeyW', 'ArrowUp']) * slow;
       const strafe = frozen ? 0 : inp.axis(['KeyA', 'ArrowLeft'], ['KeyD', 'ArrowRight']) * slow;
       const b = this.rig.groundBasis();
-      const mx = b.fx * fwd + b.rx * strafe;
-      const mz = b.fz * fwd + b.rz * strafe;
+      let mx = b.fx * fwd + b.rx * strafe;
+      let mz = b.fz * fwd + b.rz * strafe;
+      // Touch: walking to something you tapped.
+      const steer = frozen ? null : this.tapSteer(fwd, strafe);
+      if (steer) {
+        mx = steer.x;
+        mz = steer.z;
+      }
       // In the pond: at the edge, heading out (or jumping) climbs onto the bank.
       if (!frozen && p.waterState !== 'dry' && !p.dead) {
         const e = this.waterEdge(p.position.x, p.position.z);
@@ -8607,8 +8918,27 @@ export class Game {
       prompt = this.wanted.stars > 0 ? "The Chop Shop won't open while the cops are on you" : 'E  Lower into the Underground Chop Shop';
     }
     if (this.touchUi) {
-      this.touchUi.setContext(prompt);
-      this.touchUi.setButtonShown('yes', this.races.state === 'PROMPT' && !this.races.offer?.accepted);
+      const ui = this.touchUi;
+      ui.setContext(prompt);
+      // Only the buttons that do something right now: aim and reload with a gun, nitrous on a car
+      // that has it, the crew's tricks during a heist.
+      const w = this.weapons.current;
+      const ranged = p.onFoot && isRanged(w);
+      const ammo = this.weapons.inventory.currentAmmo;
+      ui.setButtonShown('aim', ranged);
+      ui.setButtonShown('reload', ranged && ammo.mag < (w.magSize ?? 0) && ammo.reserve > 0);
+      ui.setButtonIcon('fire', ranged ? 'fire' : 'fist');
+      ui.setButtonShown('nos', !!car && car.nitro.capacity > 0);
+      const crew = this.heists.active ? this.heists.job?.crew : null;
+      ui.setButtonShown('jam', !!crew?.hacker);
+      ui.setButtonShown('smoke', !!crew?.smoke);
+      // A battle's buttons (real-time ones are fought on foot).
+      const fight = this.battles.active;
+      ui.setButtonShown('swap', fight && this.party.members.length > 1);
+      ui.setButtonShown('flee', fight);
+      ui.setButtonShown('cuff', fight && (this.battles.kind === 'wild' || this.battles.kind === 'raid') && !!this.bag.currentCapture());
+      ui.setButtonShown('tkeys', fight && this.battles.mode === 'realtime');
+      this.updateTapGoal(dt);
     }
     this.updateStaminaHud();
     this.hud.update({

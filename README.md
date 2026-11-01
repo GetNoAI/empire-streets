@@ -2154,6 +2154,34 @@ during a getaway the waypoint points at the nearest open lock-up.
   counts as leaving the job (the escape / walk-away distance checks wait until you're outside).
 - The location line shows the building's name while you're in it.
 
+## Touch controls: tap the world, icons not words
+
+On a phone or tablet you interact by tapping things, and the few buttons left are icons
+(`src/mobile/Touch.ts`, `Icons.ts`, `TapTargets.ts`).
+
+- **Tap the world.** A person: talk, or set your Streetmon on them. A wild Streetmon: battle it,
+  or throw a capture item. A car: you walk over and get in. A spot on the ground: you walk there,
+  and a yellow ring marks the spot. Where there's a choice, two or three icons fan out over the
+  thing you tapped; where there's one thing to do, it just happens. You walk there yourself, the
+  action happens when you arrive, and touching the stick takes over at any time.
+- **Tap yourself** for the team screen, bring out or recall your Streetmon, the Dex, and walking
+  away from a heist. **Tap your car** to get out, sound the horn, change the camera (and use the
+  siren in a police car).
+- **The HUD is tappable.** Tap the minimap to open the map. Tap the team bar for the quick wheel
+  (tap a slot to pick it; a long press opens the team screen). Tap the weapon panel to switch
+  weapons.
+- **Fewer buttons.** On foot there are only jump and attack. Swipe the jump button to roll. Aim
+  and reload appear only with a gun in hand, and the crew's jam and smoke only on a heist. In the
+  car there's only the handbrake, plus nitrous on a car that has it. The stick drives: push it
+  forward for gas, pull it back to brake and reverse, sideways to steer. The run, use, fight,
+  throw, team, map, quick, weapon, roll, gas, brake, horn, get-out, camera, race and flip buttons
+  are gone.
+- **The action button is an icon** for what it does: a door, a speech bubble, a ladder, a car,
+  crossed swords, a flag and so on. The prompt above it still says it in words.
+- **Real-time battles on touch:** tap a move along the bottom to use it. Swap, flee, capture and
+  the keys toggle sit top left.
+- The tips are reworded for touch ("Tap one, then the crossed swords, to battle it").
+
 ## Optimisation pass
 
 Measured in the browser at a busy street corner (1280x720, M1 Pro), CPU per frame went from about

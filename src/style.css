@@ -1205,27 +1205,20 @@ body.touch { touch-action: none; -webkit-user-select: none; user-select: none; o
 .touch-btn.down { background: rgba(255, 210, 63, 0.6); color: #0b0d12; }
 .touch-btn.on { border-color: #ffd23f; box-shadow: 0 0 0 2px rgba(255, 210, 63, 0.5) inset; }
 .touch-pause { right: 16px; top: 16px; width: 44px; height: 44px; font-size: 14px; }
-/* Driving cluster (right side, bottom): gas big, brake beside it, the rest above. */
-.tb-gas { right: 24px; bottom: 28px; width: 84px; height: 84px; background: rgba(75, 227, 122, 0.3); }
-.tb-brake { right: 120px; bottom: 28px; width: 72px; height: 72px; background: rgba(255, 90, 60, 0.3); }
-.tb-hb { right: 204px; bottom: 36px; }
-.tb-nos { right: 40px; bottom: 126px; background: rgba(63, 216, 255, 0.3); }
-.tb-horn { right: 120px; bottom: 116px; width: 54px; height: 54px; }
-.tb-out { right: 190px; bottom: 116px; width: 54px; height: 54px; }
-.tb-cam { right: 260px; bottom: 116px; width: 54px; height: 54px; }
-.tb-yes { right: 120px; bottom: 186px; width: 62px; height: 62px; font-size: 11px; background: rgba(255, 210, 63, 0.35); border-color: rgba(255, 210, 63, 0.7); }
-/* On foot: jump big, the rest around it. */
+/* Icons on the buttons (src/mobile/Icons.ts). */
+.touch-btn .ti, .tchoice .ti { width: 46%; height: 46%; display: block; margin: auto; pointer-events: none; }
+.touch-pause .ti { width: 52%; height: 52%; }
+/* Driving (right thumb; the stick on the left steers, and is the gas forward, the brake back). */
+.tb-hb { right: 24px; bottom: 28px; width: 84px; height: 84px; background: rgba(255, 90, 60, 0.28); }
+.tb-nos { right: 122px; bottom: 34px; width: 66px; height: 66px; background: rgba(63, 216, 255, 0.3); }
+/* On foot: jump big (swipe it to roll), attack beside it, aim and reload over them with a gun. */
 .tb-jump { right: 24px; bottom: 28px; width: 84px; height: 84px; }
-.tb-fire { right: 120px; bottom: 28px; width: 72px; height: 72px; background: rgba(255, 90, 60, 0.3); }
-.tb-aim { right: 204px; bottom: 36px; }
-.tb-use { right: 40px; bottom: 126px; background: rgba(75, 227, 122, 0.3); }
-.tb-fight { right: 120px; bottom: 116px; background: rgba(255, 63, 164, 0.3); }
-.tb-run { right: 200px; bottom: 116px; width: 54px; height: 54px; }
-.tb-throw { right: 270px; bottom: 116px; width: 54px; height: 54px; }
-.tb-wpn { right: 270px; bottom: 36px; width: 54px; height: 54px; }
-.tb-team { right: 72px; top: 16px; width: 44px; height: 44px; font-size: 11px; }
-.tb-map { right: 124px; top: 16px; width: 44px; height: 44px; font-size: 11px; }
-.tb-quick { right: 176px; top: 16px; width: 44px; height: 44px; font-size: 10px; }
+.tb-fire { right: 122px; bottom: 30px; width: 72px; height: 72px; background: rgba(255, 90, 60, 0.3); }
+.tb-aim { right: 132px; bottom: 116px; width: 56px; height: 56px; }
+.tb-reload { right: 36px; bottom: 126px; width: 56px; height: 56px; }
+/* A heist crew's tricks. */
+.tb-jam { right: 210px; bottom: 34px; width: 56px; height: 56px; background: rgba(63, 216, 255, 0.28); }
+.tb-smoke { right: 210px; bottom: 100px; width: 56px; height: 56px; background: rgba(170, 170, 190, 0.3); }
 /* In a battle the game's own move bar is tapped directly; the overlay keeps a few buttons on the
    right and lets taps through everywhere else. */
 .touch.passthrough { pointer-events: none; }
@@ -1233,23 +1226,36 @@ body.touch { touch-action: none; -webkit-user-select: none; user-select: none; o
 .tb-swap { right: 40px; bottom: 126px; width: 54px; height: 54px; }
 .tb-flee { right: 120px; bottom: 116px; width: 54px; height: 54px; background: rgba(255, 90, 60, 0.3); }
 .tb-cuff { right: 200px; bottom: 116px; width: 54px; height: 54px; background: rgba(255, 210, 63, 0.3); }
-.tb-tkeys { right: 270px; bottom: 116px; width: 44px; height: 44px; }
-/* The context button: says what it does ("Go into Sal's Corner Deli"); a pill low in the middle,
-   between the thumbs, where the desktop prompt would be. */
-.tb-ctx { left: 50%; bottom: 150px; transform: translateX(-50%); width: auto; min-width: 96px; max-width: min(300px, 46vw); height: 50px; border-radius: 25px; padding: 0 18px; background: rgba(75, 227, 122, 0.42); border-color: rgba(160, 255, 190, 0.7); font: 800 13px/1.15 system-ui, sans-serif; letter-spacing: 0.01em; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; animation: tbctx 0.25s ease-out; }
-@keyframes tbctx { from { transform: translateX(-50%) scale(0.85); opacity: 0; } to { transform: translateX(-50%); opacity: 1; } }
-/* Driving: above the speedometer. */
-.touch.car .tb-ctx { bottom: 210px; }
+.tb-tkeys { right: 270px; bottom: 116px; width: 48px; height: 48px; }
+/* A real-time battle on foot: the battle's buttons in a row top left, clear of the fighters'
+   cards on the right and the moves along the bottom. */
+.touch:not(.battle) .tb-swap, .touch:not(.battle) .tb-flee, .touch:not(.battle) .tb-cuff, .touch:not(.battle) .tb-tkeys { top: 96px; bottom: auto; right: auto; width: 50px; height: 50px; }
+.touch:not(.battle) .tb-swap { left: 16px; }
+.touch:not(.battle) .tb-flee { left: 74px; }
+.touch:not(.battle) .tb-cuff { left: 132px; }
+.touch:not(.battle) .tb-tkeys { left: 190px; }
+/* The moves along the bottom of a real-time battle are tapped (the game hit-tests them). */
+body.touch .b-rt-move { padding: 7px 10px; }
+.touch.battle .tb-fire { right: 24px; bottom: 28px; }
+.touch.battle .tb-aim { right: 112px; bottom: 36px; }
+/* The action button: an icon for what it does (a door, a speech bubble, a ladder), low in the
+   middle between the thumbs, under the prompt that says it in words. */
+.tb-ctx { left: 50%; bottom: 128px; margin-left: -36px; width: 72px; height: 72px; background: rgba(75, 227, 122, 0.45); border-color: rgba(160, 255, 190, 0.8); animation: tbctx 0.25s ease-out; }
+@keyframes tbctx { from { transform: scale(0.8); opacity: 0; } to { transform: none; opacity: 1; } }
+.touch.car .tb-ctx { bottom: 196px; }
+/* The icons that pop up over something you tapped (talk / battle, get out / horn / camera...). */
+.tchoices { position: absolute; width: 0; height: 0; pointer-events: none; }
+.tchoice { position: absolute; width: 58px; height: 58px; margin: -29px 0 0 -29px; border-radius: 50%; border: 2px solid rgba(255, 210, 63, 0.85); background: rgba(12, 15, 21, 0.78); color: #fff; padding: 0; pointer-events: auto; touch-action: none; -webkit-tap-highlight-color: transparent; animation: tchoice 0.18s ease-out; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45); }
+.tchoice:active { background: rgba(255, 210, 63, 0.7); color: #0b0d12; }
+@keyframes tchoice { from { transform: scale(0.5); opacity: 0; } to { transform: none; opacity: 1; } }
 /* Bigger targets on small phones held sideways. */
-@media (max-height: 460px) { .tb-jump, .tb-gas { width: 76px; height: 76px; } .tb-ctx { bottom: 140px; height: 44px; max-width: 240px; font-size: 12px; padding: 0 14px; } .touch.car .tb-ctx { bottom: 186px; } }
-/* Phones: tips sit top-centre, clear of both thumbs; the minimap shrinks on a short screen;
-   the centre prompt hides while the green context button says the same thing. */
+@media (max-height: 460px) { .tb-jump, .tb-hb { width: 76px; height: 76px; } .tb-ctx { bottom: 112px; width: 62px; height: 62px; margin-left: -31px; } .touch.car .tb-ctx { bottom: 176px; } }
+/* Phones: tips sit top-centre, clear of both thumbs; the minimap shrinks on a short screen. */
 body.touch .tut-card:not(.in-menu):not(.in-battle) { right: auto; left: 54%; top: 10px; transform: translateX(-50%); width: min(360px, 40vw); font-size: 12px; padding: 8px 12px; }
-body.touch.has-ctx .prompt { display: none; }
 @media (max-height: 520px) { body.touch .minimap { left: 12px; bottom: 34px; width: 132px; } body.touch .minimap canvas { width: 132px; height: 132px; } }
-.tb-reload { right: 200px; bottom: 186px; width: 54px; height: 54px; font-size: 10px; }
 /* The HUD keeps clear of the thumbs. */
-body.touch .prompt { bottom: 200px; }
+body.touch .prompt { bottom: 208px; }
+body.touch.in-car .prompt { bottom: 276px; }
 body.touch .speedo { right: auto; left: 50%; transform: translateX(-50%); bottom: 120px; }
 body.touch .tune-abilities { right: 320px; bottom: 28px; }
 body.touch .capture-hud { bottom: 210px; }

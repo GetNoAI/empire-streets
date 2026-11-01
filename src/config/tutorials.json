@@ -185,17 +185,17 @@
         {
           "text": "Hold {Shift} to sprint",
           "do": "sprint",
-          "touch": "Push the stick all the way out to sprint (RUN keeps you sprinting)"
+          "touch": "Push the stick all the way out to sprint"
         },
         {
           "text": "Press {Space} to jump",
           "do": "jump",
-          "touch": "Tap JUMP to jump"
+          "touch": "Tap the jump button to jump; swipe it to roll"
         },
         {
           "text": "Hold {Alt} to crouch: low and quiet, wild Streetmon and heist guards notice you less",
           "do": "walk",
-          "touch": "Push the stick only a little to walk quietly: wild Streetmon notice you less"
+          "touch": "Push the stick only a little to crouch: low and quiet, wild Streetmon and heist guards notice you less"
         }
       ]
     },
@@ -215,7 +215,7 @@
         {
           "text": "Walk up to any car and press {E} (or {F}) to get in",
           "do": "enterCar",
-          "touch": "Walk up to any car and tap the green button to get in"
+          "touch": "Tap any car: you walk over and get in"
         },
         {
           "text": "Someone at the wheel? You'll pull them out: that's carjacking, a crime if anyone sees it"
@@ -240,23 +240,28 @@
       "steps": [
         {
           "text": "{W} to accelerate, {S} to brake and reverse",
-          "do": "throttle"
+          "do": "throttle",
+          "touch": "Push the stick forward to accelerate, pull it back to brake and reverse"
         },
         {
           "text": "{A} {D} to steer",
-          "do": "steer"
+          "do": "steer",
+          "touch": "Push the stick sideways to steer"
         },
         {
           "text": "{Space} for the handbrake: slide round corners",
-          "do": "handbrake"
+          "do": "handbrake",
+          "touch": "Hold the handbrake button: slide round corners"
         },
         {
           "text": "{H} for the horn",
-          "do": "horn"
+          "do": "horn",
+          "touch": "Tap your car for the horn (and the camera)"
         },
         {
           "text": "{E} or {F} to get out",
-          "do": "exitCar"
+          "do": "exitCar",
+          "touch": "Tap your car, then the door, to get out"
         }
       ]
     },
@@ -281,7 +286,8 @@
       "steps": [
         {
           "text": "Press {M} for the city map",
-          "do": "map"
+          "do": "map",
+          "touch": "Tap the minimap for the city map"
         },
         {
           "text": "Click the M to set a waypoint: a route shows on the road and the minimap",
@@ -292,7 +298,8 @@
           "touch": "Drag to pan, pinch to zoom, tap a spot for a waypoint; Close shuts it"
         },
         {
-          "text": "Drive there and press {E} next to them to talk"
+          "text": "Drive there and press {E} next to them to talk",
+          "touch": "Go there and tap them to talk"
         }
       ]
     },
@@ -311,7 +318,8 @@
       "steps": [
         {
           "text": "Press {E} next to someone with an M over their head",
-          "do": "talk"
+          "do": "talk",
+          "touch": "Tap someone with an M over their head to talk"
         },
         {
           "text": "Answer with {1} to {4} (or click). Accepting starts the job"
@@ -360,7 +368,8 @@
           "text": "Getting busted or wasted on the way loses the cargo: the job fails"
         },
         {
-          "text": "Set a waypoint on the drop-off ({M}, click) for a route"
+          "text": "Set a waypoint on the drop-off ({M}, click) for a route",
+          "touch": "Set a waypoint on the drop-off (tap the minimap, then the spot) for a route"
         }
       ]
     },
@@ -379,7 +388,8 @@
       "steps": [
         {
           "text": "Walk up to one and press {B} to battle it with your lead Streetmon",
-          "do": "battle"
+          "do": "battle",
+          "touch": "Tap one, then the crossed swords, to battle it with your lead Streetmon"
         },
         {
           "text": "Point at a Streetmon to see its health bar and level"
@@ -418,7 +428,7 @@
         },
         {
           "text": "Prefer action? Pause ({Esc}) and switch Battles to Real-time",
-          "touch": "Prefer action? Pause (II) and switch Battles to Real-time"
+          "touch": "Prefer action? Pause and switch Battles to Real-time"
         }
       ]
     },
@@ -446,7 +456,7 @@
         },
         {
           "text": "{LMB} shoots or hits the foe with your weapon too",
-          "touch": "SHOOT fires at (or hits) the foe with your weapon too"
+          "touch": "The crosshair button fires at (or hits) the foe with your weapon too"
         },
         {
           "text": "{T} switches the number keys to your weapons (and back to commands)",
@@ -479,7 +489,8 @@
         },
         {
           "text": "{N} opens your Dex: it lists every species you've seen and caught",
-          "do": "dex"
+          "do": "dex",
+          "touch": "Tap yourself, then the i, for your Dex: it lists every species you've seen and caught"
         }
       ]
     },
@@ -498,7 +509,8 @@
           "text": "In a battle: {3} Bag, then pick an item. The lower its health, the better the chance"
         },
         {
-          "text": "Outside battles: face a wild Streetmon and press {C} to throw. {V} switches item"
+          "text": "Outside battles: face a wild Streetmon and press {C} to throw. {V} switches item",
+          "touch": "Outside battles: tap a wild Streetmon, then the capture ball, to throw. Tap your team bar to pick the item"
         },
         {
           "text": "Cuffs, Crates and Nets are sold at the Corner Clinic (green on the minimap)"
@@ -520,14 +532,16 @@
       "steps": [
         {
           "text": "{I} opens your team: up to 6 travel with you, the rest go to the stash",
-          "do": "team"
+          "do": "team",
+          "touch": "Tap yourself, then the team icon: up to 6 travel with you, the rest go to the stash"
         },
         {
           "text": "The first one is your lead: it fights first and follows you around"
         },
         {
           "text": "{G} summons or recalls your lead on foot",
-          "do": "summon"
+          "do": "summon",
+          "touch": "Tap yourself, then the paw, to bring out or recall your lead"
         },
         {
           "text": "Streetmon level up from battles, learn moves and can evolve"
@@ -547,7 +561,8 @@
           "text": "Your team is full (6), so new catches go to the stash"
         },
         {
-          "text": "Swap them in and out from the team screen ({I})"
+          "text": "Swap them in and out from the team screen ({I})",
+          "touch": "Swap them in and out from the team screen (tap yourself, then the team icon)"
         }
       ]
     },
@@ -637,7 +652,8 @@
       "priority": 30,
       "steps": [
         {
-          "text": "{B} next to a person sets your lead on them. It's a crime: witnesses call the police"
+          "text": "{B} next to a person sets your lead on them. It's a crime: witnesses call the police",
+          "touch": "Tap a person, then the crossed swords, to set your lead on them. It's a crime: witnesses call the police"
         },
         {
           "text": "Get busted after that and animal control takes the Streetmon to the impound"
@@ -656,25 +672,27 @@
         {
           "text": "Hold {RMB} to aim",
           "do": "aim",
-          "touch": "Tap AIM to raise the gun (tap again to lower it); the view eases onto targets near the crosshair"
+          "touch": "Tap the aim button to raise the gun (tap again to lower it); the view eases onto targets near the crosshair"
         },
         {
           "text": "{LMB} to fire (or swing, or throw)",
           "do": "fire",
-          "touch": "Hold FIRE to fire (or swing, or throw)"
+          "touch": "Hold the attack button to fire (or swing, or throw)"
         },
         {
           "text": "{R} to reload",
-          "do": "reload"
+          "do": "reload",
+          "touch": "The reload button reloads (it shows when the magazine is not full)"
         },
         {
           "text": "{1} to {8}, the mouse wheel or {Q} switch weapons",
-          "do": "weaponSwitch"
+          "do": "weaponSwitch",
+          "touch": "Tap your weapon (bottom middle) to switch weapons"
         },
         {
           "text": "Hold {Tab} for the weapon wheel",
           "do": "weaponWheel",
-          "touch": "WPN switches weapons; hold QUICK for the quick wheel"
+          "touch": "Tap your weapon to switch; tap your team bar for the quick wheel"
         }
       ]
     },
@@ -839,7 +857,8 @@
       "steps": [
         {
           "text": "Press {R} to flip the car back onto its wheels",
-          "do": "flip"
+          "do": "flip",
+          "touch": "Tap the action button to flip the car back onto its wheels"
         }
       ]
     },
@@ -854,7 +873,8 @@
       "steps": [
         {
           "text": "{G} turns the siren on and off",
-          "do": "siren"
+          "do": "siren",
+          "touch": "Tap your car, then the star, for the siren"
         },
         {
           "text": "Stealing one is a crime, and every cop knows the car"
@@ -873,7 +893,8 @@
       "steps": [
         {
           "text": "Press {B} to battle it",
-          "do": "battle"
+          "do": "battle",
+          "touch": "Tap it, then the crossed swords, to battle it"
         },
         {
           "text": "Or run far enough that it gives up"
@@ -902,7 +923,8 @@
           "text": "People hunt Streetmon too, and wild ones fight over turf"
         },
         {
-          "text": "{B} on a Streetmon someone else is battling takes it over. They won't be pleased"
+          "text": "{B} on a Streetmon someone else is battling takes it over. They won't be pleased",
+          "touch": "Tap a Streetmon someone else is battling, then the crossed swords, to take it over. They won't be pleased"
         },
         {
           "text": "Explosions and speeding cars scatter everything nearby"
@@ -1094,7 +1116,8 @@
       "priority": 80,
       "steps": [
         {
-          "text": "{Y} takes the race (and pays the entry fee), {Backspace} turns it down"
+          "text": "{Y} takes the race (and pays the entry fee), {Backspace} turns it down",
+          "touch": "The action button takes the race (and pays the entry fee); drive on to turn it down"
         },
         {
           "text": "Drive to the start line and stop on it to start"
@@ -1168,7 +1191,8 @@
           "text": "Get in, breach ({E}), grab the bags ({E}), then lose the cops and deliver to the green lock-up"
         },
         {
-          "text": "{Backspace} walks away from a job"
+          "text": "{Backspace} walks away from a job",
+          "touch": "Tap yourself, then the runner, to walk away from a job"
         }
       ]
     },
@@ -1189,7 +1213,8 @@
           "text": "Breacher: opens the vault or doors (no Breacher is slow)"
         },
         {
-          "text": "Hacker: {Z} jams the cameras and alarm. Smoke: {X} knocks out nearby guards. Hauler: carries loot bags for you"
+          "text": "Hacker: {Z} jams the cameras and alarm. Smoke: {X} knocks out nearby guards. Hauler: carries loot bags for you",
+          "touch": "Hacker: the keypad button jams the cameras and alarm. Smoke: the mask button knocks out nearby guards. Hauler: carries loot bags for you"
         }
       ]
     },
@@ -1279,7 +1304,8 @@
           "text": "Some types live in certain districts, the sewers or on the roofs; others only come out at night"
         },
         {
-          "text": "Your Dex ({N}) shows where you first saw each species"
+          "text": "Your Dex ({N}) shows where you first saw each species",
+          "touch": "Your Dex (tap yourself, then the i) shows where you first saw each species"
         }
       ]
     },
@@ -1334,7 +1360,7 @@
         },
         {
           "text": "{Esc} pauses: save, export a save file, turn sound, shadows and these tips on or off, or replay any tip",
-          "touch": "II pauses: save, export a save file, turn sound, shadows and these tips on or off, or replay any tip"
+          "touch": "The pause button (top right): save, export a save file, turn sound, shadows and these tips on or off, or replay any tip"
         },
         {
           "text": "{K} mutes the sound"
@@ -1366,7 +1392,8 @@
           "text": "Trainers nearby come running to help. Their Streetmon wear it down while you get close"
         },
         {
-          "text": "Walk up to it and press {B} to fight it with them. It's tough and attacks twice as often as anything else, so bring your best team"
+          "text": "Walk up to it and press {B} to fight it with them. It's tough and attacks twice as often as anything else, so bring your best team",
+          "touch": "Tap it, then the crossed swords, to fight it with them. It's tough and attacks twice as often as anything else, so bring your best team"
         },
         {
           "text": "Leave it too long and it moves on. The bar at the top shows its HP and how long you have"
@@ -1408,7 +1435,8 @@
           "text": "It's subdued, but only for a moment!"
         },
         {
-          "text": "Face it and throw a capture item with {C}. Your odds are better than usual right now"
+          "text": "Face it and throw a capture item with {C}. Your odds are better than usual right now",
+          "touch": "Tap it, then the capture ball, to throw. Your odds are better than usual right now"
         },
         {
           "text": "Keep throwing until the timer at the top runs out"

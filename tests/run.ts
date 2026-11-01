@@ -130,6 +130,8 @@ import { WEAPONS as WEAPON_LIST } from '../src/weapons/WeaponTypes';
 import { applyHeal, effectsLine, newEffects, spawnModifiers, tickEffects } from '../src/items/Items';
 import { ASSIST, assistTurn, headingTo, pickAssist } from '../src/mobile/AimAssist';
 import { contextFromPrompt, touchParts } from '../src/mobile/Touch';
+import { ICONS, icon, iconFor, type IconName } from '../src/mobile/Icons';
+import { TAP, pickTapTarget, screenRadius, walkStuck, type TapCandidate, type WalkProgress } from '../src/mobile/TapTargets';
 import { FLIGHT, SKY, deepLevelBonus, deepTable, flightTarget, skyTable } from '../src/creatures/SpawnRules';
 import { DOCKS, planDocks } from '../src/world/Docks';
 import { planDeepSewers, poolAt, poolEdge } from '../src/world/Sewers';
@@ -4685,8 +4687,28 @@ console.log('\n# phones: aim assist and the context button');
   ok(a?.code === 'KeyE' && a.label === "Go into Sal's Corner Deli" && b?.code === 'Space' && b.label === 'Climb out' && c?.label === 'Talk' && d?.label === 'Midtown Studio', 'prompts become labelled buttons (key, short label)');
   const tp = touchParts(['Walk with ', { key: 'W' }, ' ', { key: 'A' }, ' ', { key: 'S' }, ' ', { key: 'D' }, ', hold ', { key: 'Shift' }, ' to sprint, ', { key: 'N' }, ' for the Dex']);
   const txt = tp.map((p) => (typeof p === 'string' ? p : `[${p.key}]`)).join('');
-  ok(txt === 'Walk with [the stick], hold [the stick pushed all the way] to sprint, [N] for the Dex', `tips speak touch: "${txt}"`);
+  ok(txt === 'Walk with [the stick], hold [the stick pushed all the way] to sprint, [a tap on yourself] for the Dex', `tips speak touch: "${txt}"`);
   ok(contextFromPrompt('') === null && contextFromPrompt("The Chop Shop won't open while the cops are on you") === null, 'messages that are not actions make no button');
+  // Icons for the action button, from what the prompt says.
+  ok(iconFor("Go into Sal's Corner Deli", 'KeyE') === 'enter' && iconFor('Talk', 'KeyE') === 'talk' && iconFor('Climb out', 'Space') === 'ladder' && iconFor('Get in Sedan', 'KeyE') === 'car' && iconFor('Battle the wild Rebarb (Lv 5)', 'KeyB') === 'battle' && iconFor('Flip the car', 'KeyR') === 'flip' && iconFor('Race Harbour Loop ($200)', 'KeyY') === 'flag', 'the action button shows an icon for what it does (door, speech bubble, ladder, car, swords, flip, flag)');
+  ok(Object.keys(ICONS).every((k) => icon(k as IconName).startsWith('<svg')), `${Object.keys(ICONS).length} icons, all inline SVG`);
+  // Tapping the world: the thing under the finger, the nearer of two overlapping.
+  const cands: TapCandidate<string>[] = [
+    { kind: 'car', sx: 400, sy: 300, r: 90, depth: 12, ref: 'car' },
+    { kind: 'person', sx: 410, sy: 290, r: 32, depth: 8, ref: 'person' },
+    { kind: 'wild', sx: 700, sy: 320, r: 30, depth: 20, ref: 'wild' },
+    { kind: 'person', sx: 100, sy: 100, r: 30, depth: 50, ref: 'far' },
+  ];
+  ok(pickTapTarget(412, 292, cands)?.ref === 'person' && pickTapTarget(360, 340, cands)?.ref === 'car' && pickTapTarget(705, 330, cands)?.ref === 'wild', 'a tap goes to what it lands on (the person in front of the car, the car round them)');
+  ok(pickTapTarget(100, 100, cands) === null && pickTapTarget(600, 100, cands) === null, 'nothing too far away, nothing where there is nothing');
+  ok(screenRadius(0.5, 100, 60, 800) === TAP.minRadius && screenRadius(2, 5, 60, 800) > 200, 'a target is never smaller than a fingertip; a car up close is big');
+  const wp: WalkProgress = { best: 10, since: 0 };
+  let stuck = false;
+  for (let i = 0; i < 10 && !stuck; i++) stuck = walkStuck(wp, 10 - i * 0.5, 0.2);
+  const wq: WalkProgress = { best: 10, since: 0 };
+  let gaveUp = false;
+  for (let i = 0; i < 20 && !gaveUp; i++) gaveUp = walkStuck(wq, 9.9, 0.2);
+  ok(!stuck && gaveUp, 'a walk keeps going while it gets closer and gives up when stuck against something');
 }
 
 console.log('\n# s171: items');
