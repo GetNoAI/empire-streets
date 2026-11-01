@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "_comment": "Cinematics (src/systems/cinematics.js rules, src/cinematics/CinematicView.ts world side). Shots are offsets from an anchor: a fixed [x, z] below, or one the game supplies when it plays (player, mama, chop, bank, boss, raid). cam/look go from the first offset to the second (eased), or the camera orbits (degrees, 0 = +X; with orient, 0 = in front of the anchor). Actors are props for the shot: Streetmon (species, clip) and cars (spec, color, siren), moving from `from` to `to`. trigger: newGame, actStarted, questStarted, questCompleted, bossIntro, raidArrive. Captions may use {name} and {title}. music: 'intro' (Glass and Steel) or 'action' (Apex of the Chain); without it the game's own music carries on. Space, Enter or Esc skips.",
+  "_comment": "Cinematics (src/systems/cinematics.js rules, src/cinematics/CinematicView.ts world side). Shots are offsets from an anchor: a fixed [x, z] below, or one the game supplies when it plays (player, mama, chop, bank, boss, raid). cam/look go from the first offset to the second (eased), or the camera orbits (degrees, 0 = +X; with orient, 0 = in front of the anchor). Actors are props for the shot: Streetmon (species, clip) and cars (spec, color, siren), moving from `from` to `to`. trigger: newGame, actStarted, questStarted, questCompleted, bossIntro, bossDefeat, raidArrive. Captions may use {name} and {title}. music: 'intro' (Glass and Steel) or 'action' (Apex of the Chain); without it the game's own music carries on. Space, Enter or Esc skips.",
   "settings": {
     "letterbox": 0.11,
     "captionFade": 0.7,
@@ -900,6 +900,70 @@
           "caption": "{name}",
           "sub": "{title}",
           "captionAt": 0.6
+        }
+      ]
+    },
+    {
+      "id": "boss-defeat",
+      "title": "Boss Defeated",
+      "music": "action",
+      "trigger": {
+        "bossDefeat": true
+      },
+      "once": false,
+      "anchor": "boss",
+      "shots": [
+        {
+          "seconds": 3.2,
+          "fade": 0.4,
+          "orient": true,
+          "orbit": {
+            "radius": 3.6,
+            "height": 1.3,
+            "fromDeg": 30,
+            "toDeg": -10
+          },
+          "look": [
+            [
+              0,
+              0.6,
+              0
+            ],
+            [
+              0,
+              0.5,
+              0
+            ]
+          ],
+          "caption": "{name}",
+          "sub": "is beaten",
+          "captionAt": 0.3
+        },
+        {
+          "seconds": 3.4,
+          "fade": 0.5,
+          "orient": true,
+          "orbit": {
+            "radius": 7,
+            "height": 4.2,
+            "fromDeg": -20,
+            "toDeg": -70
+          },
+          "look": [
+            [
+              0,
+              0.4,
+              0
+            ],
+            [
+              0,
+              0.6,
+              0
+            ]
+          ],
+          "caption": "{title}",
+          "sub": "falls. The streets are talking.",
+          "captionAt": 0.25
         }
       ]
     },

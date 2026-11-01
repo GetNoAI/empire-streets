@@ -156,6 +156,10 @@ export class TouchControls {
   private readonly downs = new Map<number, { x: number; y: number; t: number; moved: boolean; long: boolean; timer: number }>();
   private readonly choiceEl: HTMLDivElement;
   private choiceTimer = 0;
+  /** The move wheel (real-time battles): your Streetmon's moves round the attack button. */
+  private readonly movesEl: HTMLDivElement;
+  private readonly readyEl: HTMLDivElement;
+  private movesKey = '';
 
   constructor(
     parent: HTMLElement,
@@ -200,6 +204,12 @@ export class TouchControls {
     this.choiceEl.className = 'tchoices';
     this.choiceEl.style.display = 'none';
     this.el.appendChild(this.choiceEl);
+    this.readyEl = document.createElement('div');
+    this.readyEl.className = 'tm-ready';
+    this.el.appendChild(this.readyEl);
+    this.movesEl = document.createElement('div');
+    this.movesEl.className = 'tmoves';
+    this.el.appendChild(this.movesEl);
     for (const [ic, code, kind, modes, cls, label] of BUTTONS) this.addButton(ic, code, kind, modes, cls, label);
 
     // The stick, the look area and taps on the world: the empty parts of the overlay.
@@ -458,6 +468,59 @@ export class TouchControls {
     if (this.choiceEl.style.display === 'none') return;
     this.choiceEl.style.display = 'none';
     window.clearTimeout(this.choiceTimer);
+  }
+
+  /**
+   * The move wheel for a real-time battle (null: none): up to four big buttons in an arc round
+   * the attack button, each in its move's type colour with its name, tapped to use the move.
+   * A ring round the attack button fills as your Streetmon gets ready to act, and the moves
+   * pulse when it is. Replaces the row of moves along the bottom of the screen.
+   */
+  setMoves(rt: { moves: ReadonlyArray<{ name: string; color: string; usable: boolean; queued: boolean; info: string }>; ready: number; commandKeys: boolean } | null): void {
+    const on = !!rt && rt.commandKeys && rt.moves.length > 0 && this.mode !== 'menu' && this.mode !== 'hidden';
+    this.el.classList.toggle('rt', on);
+    document.body.classList.toggle('rt-battle', on);
+    if (!on || !rt) {
+      if (this.movesKey) {
+        this.movesEl.innerHTML = '';
+        this.movesKey = '';
+      }
+      return;
+    }
+    const ready = rt.ready >= 0.999;
+    this.readyEl.style.setProperty('--ready', String(Math.max(0, Math.min(1, rt.ready))));
+    this.el.classList.toggle('rt-ready', ready);
+    const key = rt.moves.map((m) => `${m.name}|${m.usable ? 1 : 0}|${m.queued ? 1 : 0}|${m.info}`).join(';');
+    if (key === this.movesKey) return;
+    const fresh = !this.movesKey;
+    this.movesKey = key;
+    this.movesEl.innerHTML = '';
+    const n = rt.moves.length;
+    // From straight left of the attack button round to straight above it.
+    const R = 112;
+    rt.moves.forEach((m, i) => {
+      const a = Math.PI + (n === 1 ? Math.PI / 4 : (Math.PI / 2) * (i / (n - 1)));
+      const b = document.createElement('button');
+      b.className = `tm-move${m.usable ? '' : ' off'}${m.queued ? ' queued' : ''}${fresh ? ' pop' : ''}${m.name.length > 10 ? ' long' : ''}`;
+      b.style.setProperty('--tc', m.color);
+      b.style.setProperty('--dx', `${Math.round(Math.cos(a) * R)}px`);
+      b.style.setProperty('--dy', `${Math.round(Math.sin(a) * R)}px`);
+      b.style.animationDelay = fresh ? `${i * 60}ms` : '';
+      b.innerHTML = '<b></b><small></small>';
+      b.querySelector('b')!.textContent = m.name;
+      b.querySelector('small')!.textContent = m.info;
+      b.setAttribute('aria-label', `${m.name} (${m.info})`);
+      b.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.touched();
+        this.buzz();
+        this.input.press(`Digit${i + 1}`);
+        b.classList.add('down');
+      });
+      for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) b.addEventListener(ev, () => b.classList.remove('down'));
+      this.movesEl.appendChild(b);
+    });
   }
 
   /** A short tick under the thumb (Android; ignored where vibration isn't available). */

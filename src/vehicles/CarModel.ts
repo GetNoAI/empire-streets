@@ -482,9 +482,19 @@ export function buildCarVisual(spec: VehicleSpec, color: string): CarVisual {
     wheels.push({ pivot, spinner });
   }
 
-  // Seat cushion: a seated 1.8 m driver is ~1.05 m from cushion to crown, so keep that under the roof.
-  const cushion = Math.min(0.34, H * 0.96 - 1.08);
-  const seat = new THREE.Vector3(-0.15, groundY + cushion, -W * 0.22);
+  // The driver's seat, under the cabin roof (not the car's middle: a pickup's cab and a van's are
+  // well forward, a bus driver sits right at the front). A seated driver is ~1.0 m from cushion to
+  // crown, so the cushion sits that far under the roof, higher in tall vans and buses (whose
+  // floors are high) and low in a supercar, where you lie back.
+  const roofY = Math.max(roofA[1], roofB[1]);
+  const cushion = Math.max(-0.1, Math.min(0.95, roofY - 1.1));
+  // The legs reach ~1 m forward of the seat: keep the feet behind the windscreen's foot.
+  const kneeY = cushion + 0.25;
+  const wa = cabin[2];
+  const wb = cabin[3];
+  const windX = kneeY <= wb[1] ? wb[0] : wa[0] + ((wb[0] - wa[0]) * (wa[1] - kneeY)) / Math.max(0.01, wa[1] - wb[1]);
+  const seatX = Math.min(Math.max(roofA[0] + (roofB[0] - roofA[0]) * 0.55 - 0.1, roofB[0] - 1.1), windX - 1.05);
+  const seat = new THREE.Vector3(seatX, groundY + cushion, -W * 0.22);
   return { root, body, wheels, paint, tail, head, lightbar, seat };
 }
 

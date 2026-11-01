@@ -446,13 +446,15 @@
       "priority": 95,
       "steps": [
         {
-          "text": "{1} to {4}: use a move (your Streetmon acts when its bar fills)"
+          "text": "{1} to {4}: use a move (your Streetmon acts when its bar fills)",
+          "touch": "Tap a move on the wheel (bottom right) to use it: your Streetmon acts when the ring round the attack button fills"
         },
         {
           "text": "Keep moving: you're free to walk around and dodge"
         },
         {
-          "text": "{5} swaps your Streetmon, {X} flees, {C} throws a capture item"
+          "text": "{5} swaps your Streetmon, {X} flees, {C} throws a capture item",
+          "touch": "Top left: swap your Streetmon, flee, throw a capture item"
         },
         {
           "text": "{LMB} shoots or hits the foe with your weapon too",
@@ -460,7 +462,8 @@
         },
         {
           "text": "{T} switches the number keys to your weapons (and back to commands)",
-          "do": "toggleKeys"
+          "do": "toggleKeys",
+          "touch": "The keys button swaps the wheel for your weapons (and back)"
         }
       ]
     },

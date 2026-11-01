@@ -34,6 +34,8 @@ interface Figure {
   z: number;
   heading: number;
   bob: number;
+  /** Sat on the ground: how far below the feet the model's lowest point is (measured once). */
+  seatDrop?: number;
 }
 
 const ICON_COLORS: Record<IconKind, string> = { offer: '#ffd23f', turnIn: '#4be37a', boss: '#ff4b3a', active: '#9aa3ad' };
@@ -186,7 +188,15 @@ export class CampaignWorld {
     return n.kind === 'boss' ? `E  Challenge ${n.name}` : `E  Talk to ${n.name}`;
   }
 
-  update(dt: number, markers: QuestMarker[], hideBeacon = false): void {
+  /** Bosses beaten just now: kept on the ground (by id) until this time. */
+  private readonly beaten = new Map<string, number>();
+
+  /** A boss has been beaten: they stay where they fell for `seconds` (for the defeat cinematic). */
+  bossDefeated(id: string, seconds = 20): void {
+    this.beaten.set(id, this.time + seconds);
+  }
+
+  update(dt: number, markers: QuestMarker[], hideBeacon = false, hideIcons = false): void {
     this.time += dt;
     const Q = this.d.quests;
     const p = this.d.player();
@@ -206,6 +216,11 @@ export class CampaignWorld {
         if (o?.boss) want.set(`boss:${o.boss}`, { kind: 'boss', id: o.boss, icon: 'boss' });
       }
     }
+    // A boss you've just beaten stays down where they fell for a while (their defeat cinematic).
+    for (const [id, until] of this.beaten) {
+      if (this.time > until) this.beaten.delete(id);
+      else if (p.layer === 'street') want.set(`boss:${id}`, { kind: 'boss', id, icon: 'boss' });
+    }
     for (const [key, f] of this.figures) {
       const w = want.get(key);
       if (!w || Math.hypot(f.x - p.x, f.z - p.z) > show + 20) {
@@ -221,7 +236,8 @@ export class CampaignWorld {
       if (this.figures.has(key)) continue;
       const def = w.kind === 'npc' ? Q.npc(w.id) : Q.boss(w.id);
       if (!def || Math.hypot(def.at.x - p.x, def.at.z - p.z) > show) continue;
-      const model = new Humanoid({ ...def.look, scale: w.kind === 'boss' ? 1.08 : 1 });
+      // Bosses stand a head taller than the crowd (their own `scale` if the data gives one).
+      const model = new Humanoid({ ...def.look, scale: def.look.scale ?? (w.kind === 'boss' ? 1.12 : 1) });
       const icon = new THREE.Sprite(this.icons[w.icon]);
       icon.scale.setScalar(0.9);
       icon.renderOrder = 21;
@@ -240,9 +256,21 @@ export class CampaignWorld {
       let dh = want - f.model.root.rotation.y;
       while (dh > Math.PI) dh -= Math.PI * 2;
       while (dh < -Math.PI) dh += Math.PI * 2;
-      f.model.root.rotation.y += dh * Math.min(1, dt * 4);
-      f.model.update(dt, 0, true);
+      const down = f.kind === 'boss' && this.beaten.has(f.id);
+      if (!down) f.model.root.rotation.y += dh * Math.min(1, dt * 4);
+      if (down) {
+        // Beaten: down on the ground, no icon over them.
+        f.model.sit(true);
+        if (f.seatDrop === undefined) {
+          // Measure the seated pose once and rest its lowest point (seat and heels) on the ground.
+          f.model.root.position.y = 0;
+          f.model.root.updateMatrixWorld(true);
+          f.seatDrop = new THREE.Box3().setFromObject(f.model.root).min.y - (f.model.root.parent ? f.model.root.parent.getWorldPosition(new THREE.Vector3()).y : 0);
+        }
+        f.model.root.position.y = y - f.seatDrop + 0.02;
+      } else f.model.update(dt, 0, true);
       f.icon.position.set(f.x, y + 2.55 + Math.sin(this.time * 2.4 + f.bob) * 0.08, f.z);
+      f.icon.visible = !hideIcons && !down;
     }
     // The tracked objective's beacon (a REACH_MARKER boundary, or the objective's spot).
     const target = markers.find((m) => m.tracked && m.kind === 'boundary') ?? markers.find((m) => m.tracked && (m.kind === 'objective' || m.kind === 'boss'));

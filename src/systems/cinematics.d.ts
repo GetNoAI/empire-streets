@@ -83,9 +83,10 @@ export type CinematicTrigger =
   | { questStarted: string }
   | { questCompleted: string }
   | { bossIntro: true | string }
+  | { bossDefeat: true | string }
   | { raidArrive: true | string };
 
-export const TRIGGERS: readonly ['newGame', 'actStarted', 'questStarted', 'questCompleted', 'bossIntro', 'raidArrive'];
+export const TRIGGERS: readonly ['newGame', 'actStarted', 'questStarted', 'questCompleted', 'bossIntro', 'bossDefeat', 'raidArrive'];
 export function cinematicFor(c: CinematicConfig, ev: Record<string, string | true>, seen: Set<string>): CinematicDef | null;
 export const MUSIC_CUES: readonly ['intro', 'action'];
 export const EASES: readonly ['linear', 'in', 'out', 'inOut'];

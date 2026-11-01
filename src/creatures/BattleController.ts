@@ -549,9 +549,17 @@ export class BattleController {
   }
 
   /** Real-time skirmish: foe creatures the player can shoot or hit (positions in the world). */
+  /** Can the player's own weapons hit the foe here? Only in wild and raid battles. */
+  get weaponsAllowed(): boolean {
+    return this.kind === 'wild' || this.kind === 'raid';
+  }
+
   foeTargets(): Array<{ c: Combatant; x: number; y: number; z: number; height: number }> {
     const b = this.battle;
     if (!b || b.over || this.mode !== 'realtime' || this.post !== null) return [];
+    // Your weapons only join in against a wild Streetmon (or a raid's legendary): a trainer's,
+    // a crew boss's or a police Streetmon is fought Streetmon to Streetmon.
+    if (!this.weaponsAllowed) return [];
     const out: Array<{ c: Combatant; x: number; y: number; z: number; height: number }> = [];
     for (const c of b.sides[1].active) {
       const v = this.views.get(c);
@@ -677,7 +685,7 @@ export class BattleController {
     const total = me ? this.cooldownFor(me) : 1;
     const foe = b.opts.wild ? b.sides[1].active[0] : undefined;
     const odds = foe && foe.creature.hp > 0 ? (this.d.quickCaptureOdds?.(foe) ?? null) : null;
-    this.d.ui.renderRealtime(me, me ? 1 - Math.max(0, this.cd.get(me) ?? 0) / total : 0, this.queued, this.commandKeys, odds);
+    this.d.ui.renderRealtime(me, me ? 1 - Math.max(0, this.cd.get(me) ?? 0) / total : 0, this.queued, this.commandKeys, odds, this.weaponsAllowed);
   }
 
   // ------------------------------------------------------------------ playback

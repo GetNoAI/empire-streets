@@ -83,6 +83,16 @@ export interface Look {
   hairStyle?: 'short' | 'long' | 'bun' | 'ponytail' | 'bald';
   skirt?: boolean;
   apron?: string;
+  /** Bosses dress the part: what they wear over the top, headwear, shades, facial hair, a bag, height. */
+  outfit?: 'tee' | 'hoodie' | 'jacket' | 'coat' | 'suit' | 'uniform' | 'swat';
+  outer?: string;
+  hat?: 'none' | 'cap' | 'beanie' | 'fedora';
+  hatColor?: string;
+  glasses?: boolean;
+  facialHair?: 'none' | 'moustache' | 'goatee' | 'beard';
+  bag?: 'none' | 'backpack' | 'duffel' | 'briefcase';
+  bagColor?: string;
+  scale?: number;
 }
 
 export interface NpcDef {

@@ -94,6 +94,7 @@ export class BattleUi {
   hide(): void {
     this.root.style.display = 'none';
     this.battle = null;
+    this.rt = null;
     this.hideMenu();
   }
 
@@ -180,7 +181,10 @@ export class BattleUi {
   setRealtime(on: boolean): void {
     this.realtime = on;
     this.root.classList.toggle('realtime', on);
-    if (!on) this.rtBar.innerHTML = '';
+    if (!on) {
+      this.rtBar.innerHTML = '';
+      this.rt = null;
+    }
   }
 
   /** "X wants to learn Y but knows 4 moves": pick one to forget (slot) or -1 to skip. */
@@ -324,12 +328,25 @@ export class BattleUi {
    * `catchOdds` (0..1) is the chance of the quick capture item against the foe right now; it's shown
    * next to "C catch", and the hint lights up once the foe is weak enough to be worth a throw.
    */
-  renderRealtime(c: Combatant | null, ready: number, queued: string | null, commandKeys = true, catchOdds: number | null = null): void {
+  /**
+   * The real-time battle's moves as data, for the touch move wheel (which replaces the bar of
+   * moves along the bottom on a touch screen): null outside a real-time battle.
+   */
+  rt: { moves: Array<{ name: string; color: string; usable: boolean; queued: boolean; info: string }>; ready: number; commandKeys: boolean; catchOdds: number | null } | null = null;
+
+  renderRealtime(c: Combatant | null, ready: number, queued: string | null, commandKeys = true, catchOdds: number | null = null, weapons = true): void {
     if (!c || !this.battle) {
       this.rtBar.innerHTML = '';
+      this.rt = null;
       return;
     }
     const opts = this.battle.options(c);
+    this.rt = {
+      moves: opts.map((o) => ({ name: o.move.name, color: typeInfo(o.move.type).color, usable: o.usable, queued: queued === o.move.id, info: o.reason ?? (o.move.power > 0 ? `Pow ${o.move.power}` : 'Status') })),
+      ready,
+      commandKeys,
+      catchOdds,
+    };
     this.rtBar.classList.toggle('weapons', !commandKeys);
     this.rtBar.innerHTML =
       `<div class="b-rt-ready"><div style="width:${(ready * 100).toFixed(0)}%"></div></div>` +
@@ -341,7 +358,7 @@ export class BattleUi {
         .join('') +
       `<div class="b-rt-keys ${commandKeys ? 'cmd' : 'wpn'}" title="T switches the number keys"><kbd>T</kbd><b>${commandKeys ? 'Commands' : 'Weapons'}</b></div>` +
       (platform.touch
-        ? `<div class="b-rt-hint ${catchOdds !== null && catchOdds >= 0.3 ? 'catchable' : ''}">${commandKeys ? 'SWAP' : 'T for moves'}${this.battle.opts.wild ? ` · CUFF${catchOdds !== null ? ` <b>${Math.round(catchOdds * 100)}%</b>` : ''}` : ''}${this.battle.opts.canRun ? ' · FLEE' : ''} · SHOOT</div>`
-        : `<div class="b-rt-hint ${catchOdds !== null && catchOdds >= 0.3 ? 'catchable' : ''}">${commandKeys ? '5 swap' : 'T for commands'}${this.battle.opts.wild ? ` · C catch${catchOdds !== null ? ` <b>${Math.round(catchOdds * 100)}%</b>` : ''}` : ''}${this.battle.opts.canRun ? ' · X flee' : ''} · LMB shoot</div>`);
+        ? `<div class="b-rt-hint ${catchOdds !== null && catchOdds >= 0.3 ? 'catchable' : ''}">${commandKeys ? 'SWAP' : 'T for moves'}${this.battle.opts.wild ? ` · CUFF${catchOdds !== null ? ` <b>${Math.round(catchOdds * 100)}%</b>` : ''}` : ''}${this.battle.opts.canRun ? ' · FLEE' : ''}${weapons ? ' · SHOOT' : ''}</div>`
+        : `<div class="b-rt-hint ${catchOdds !== null && catchOdds >= 0.3 ? 'catchable' : ''}">${commandKeys ? '5 swap' : 'T for commands'}${this.battle.opts.wild ? ` · C catch${catchOdds !== null ? ` <b>${Math.round(catchOdds * 100)}%</b>` : ''}` : ''}${this.battle.opts.canRun ? ' · X flee' : ''}${weapons ? ' · LMB shoot' : ''}</div>`);
   }
 }

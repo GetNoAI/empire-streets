@@ -177,16 +177,34 @@ export class Environment {
     this.base.exposure = this.renderer.toneMappingExposure;
     this.base.fog.copy(this.fog.color);
     this.base.hemiCol.copy(this.hemi.color);
-    if (this.layer === 'sewer') {
-      // Underground: no sun or sky, a dim cold fill, close murky fog (the flashlight does the rest).
-      this.sun.intensity = 0;
-      this.hemi.intensity = 0.22;
-      this.hemi.color.set(0x8fa39a);
-      this.hemi.groundColor.set(0x1a1f17);
-      this.scene.environmentIntensity = 0.12;
-      this.fog.color.copy(this.sewerFog);
-      this.renderer.toneMappingExposure = 1.05;
-    }
+    if (this.layer === 'sewer') this.applySewerDepth();
+  }
+
+  /** How far down you are in the sewers (1 under the street .. 3 the bottom level). */
+  private sewerDepth = 1;
+
+  /**
+   * Underground: no sun or sky, a dim cold fill and close murky fog, darker the deeper you go:
+   * the top level is gloomy, the second dark, the bottom nearly black but for the flashlight and
+   * the odd caged lamp.
+   */
+  setSewerDepth(level: number): void {
+    const l = Math.max(1, Math.min(3, Math.round(level)));
+    if (l === this.sewerDepth) return;
+    this.sewerDepth = l;
+    if (this.layer === 'sewer') this.applySewerDepth();
+  }
+
+  private applySewerDepth(): void {
+    const k = this.sewerDepth - 1;
+    this.sun.intensity = 0;
+    this.hemi.intensity = [0.2, 0.09, 0.035][k];
+    this.hemi.color.set(0x8fa39a);
+    this.hemi.groundColor.set(0x1a1f17);
+    this.scene.environmentIntensity = [0.1, 0.05, 0.02][k];
+    this.fog.color.copy(this.sewerFog).multiplyScalar([1, 0.6, 0.35][k]);
+    this.fog.far = [45, 34, 24][k];
+    this.renderer.toneMappingExposure = [1.0, 0.92, 0.85][k];
   }
 
   /**

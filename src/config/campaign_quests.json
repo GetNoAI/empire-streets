@@ -204,10 +204,18 @@
       "heading": 0,
       "look": {
         "skin": "#d9a679",
-        "hair": "#8a5a2b",
+        "hair": "#b0743a",
         "top": "#5a6470",
         "legs": "#2b2f36",
-        "shoes": "#3a2a1a"
+        "shoes": "#3a2a1a",
+        "outfit": "coat",
+        "outer": "#1f2a3a",
+        "hat": "beanie",
+        "hatColor": "#2f4a5a",
+        "facialHair": "beard",
+        "bag": "duffel",
+        "bagColor": "#5a4a30",
+        "scale": 1.18
       },
       "team": [
         [
@@ -235,13 +243,17 @@
       "heading": 3.1416,
       "look": {
         "skin": "#b07a52",
-        "hair": "#d8d8d8",
+        "hair": "#e6e6e6",
         "top": "#4b3b6b",
         "legs": "#1e1e24",
         "shoes": "#a58bd8",
         "build": "f",
         "hairStyle": "long",
-        "skirt": true
+        "skirt": true,
+        "outfit": "coat",
+        "outer": "#5b2f8a",
+        "glasses": true,
+        "scale": 1.1
       },
       "team": [
         [
@@ -276,7 +288,14 @@
         "hair": "#141414",
         "top": "#2f7bff",
         "legs": "#111111",
-        "shoes": "#ffd23f"
+        "shoes": "#ffd23f",
+        "outfit": "jacket",
+        "outer": "#ffd23f",
+        "hat": "cap",
+        "hatColor": "#111111",
+        "glasses": true,
+        "facialHair": "goatee",
+        "scale": 1.14
       },
       "team": [
         [
@@ -315,7 +334,10 @@
         "hair": "#2a2a2a",
         "top": "#1f3a6b",
         "legs": "#16233d",
-        "shoes": "#0d0d0d"
+        "shoes": "#0d0d0d",
+        "outfit": "swat",
+        "outer": "#1c2a44",
+        "scale": 1.16
       },
       "team": [
         [
@@ -354,7 +376,15 @@
         "hair": "#e0e0e0",
         "top": "#ffd23f",
         "legs": "#1a1a1a",
-        "shoes": "#1a1a1a"
+        "shoes": "#1a1a1a",
+        "outfit": "suit",
+        "outer": "#1a1a1a",
+        "hat": "fedora",
+        "hatColor": "#2a2a2a",
+        "facialHair": "moustache",
+        "bag": "briefcase",
+        "bagColor": "#3a2a1a",
+        "scale": 1.12
       },
       "team": [
         [

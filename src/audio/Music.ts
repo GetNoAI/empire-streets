@@ -80,7 +80,7 @@ export const INTENSITY: Record<TrackId, number> = {
 };
 
 export const MUSIC = {
-  volume: 0.42,
+  volume: 0.38,
   /** Crossfade times (s): to a more intense track, to a calmer one, into and out of a cinematic. */
   fadeUp: 0.9,
   fadeDown: 2.6,

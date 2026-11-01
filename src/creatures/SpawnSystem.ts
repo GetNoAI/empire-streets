@@ -116,6 +116,8 @@ export interface WildCreature {
   lite?: boolean;
   /** Hurt by you recently (performance.now() until which it fights back anywhere). */
   provokedUntil?: number;
+  /** Holds on to a chase much longer (Drainlings, and the aggressive ones on the bottom level). */
+  tenacious?: boolean;
   /** A raid legendary (RaidWorld drives it; nothing else can scare, knock or faint it). */
   boss?: boolean;
   /** Chasing / biting the player: seconds without seeing them, last place seen, next bite. */
@@ -174,6 +176,16 @@ const TAU = Math.PI * 2;
 
 /** Animation step for far-off wild Streetmon (s): 15 fps. */
 const FAR_ANIM_STEP = 1 / 15;
+
+/** Species that are always aggressive and hold on to a chase (the Drainling). */
+export const TENACIOUS_SPECIES: ReadonlySet<string> = new Set(['drainling']);
+
+/**
+ * The sewers' bottom level: this share of what spawns there turns aggressive, and the aggressive
+ * ones (with the Drainlings) chase much further and keep hunting longer out of sight before they
+ * give up (`SpawnSystem.aggro` has the usual numbers).
+ */
+export const DEEP_AGGRO = { share: 0.8, giveUpDistance: 70, hideSeconds: 12 } as const;
 
 export class SpawnSystem {
   /** Time banked for creatures animated at the reduced far rate. */
@@ -455,7 +467,11 @@ export class SpawnSystem {
       const spec = this.pick(table, this.rand());
       if (!spec) return;
       if (this.wild.some((w) => w.spec.id === spec.id && Math.hypot(w.x - p.x, w.z - p.z) < 15)) continue;
-      this.spawn(spec, Math.min(70, this.rollLevelFor(spec) + deepLevelBonus(lvl)), p.x, p.z, p.district, this.rand() < SPAWN.shinyChance * this.shinyMult * lvl, biome, p.y);
+      const w = this.spawn(spec, Math.min(70, this.rollLevelFor(spec) + deepLevelBonus(lvl)), p.x, p.z, p.district, this.rand() < SPAWN.shinyChance * this.shinyMult * lvl, biome, p.y);
+      // The bottom level is hostile ground: most of what lives there comes for you, and keeps
+      // coming (see `tenacious`).
+      if (biome === 'sewer' && lvl >= 3 && w.temperament !== 'aggro' && this.rand() < DEEP_AGGRO.share) w.temperament = 'aggro';
+      if (biome === 'sewer' && lvl >= 3 && w.temperament === 'aggro') w.tenacious = true;
       return;
     }
   }
@@ -467,7 +483,9 @@ export class SpawnSystem {
       id: this.nextId++,
       creature,
       spec,
-      temperament: spec.spawn.temperament,
+      // Drainlings always go for you, and don't let go.
+      temperament: TENACIOUS_SPECIES.has(spec.id) ? 'aggro' : spec.spawn.temperament,
+      tenacious: TENACIOUS_SPECIES.has(spec.id),
       district,
       biome,
       x,
@@ -958,7 +976,8 @@ export class SpawnSystem {
       ch.lastX = ctx.player.x;
       ch.lastZ = ctx.player.z;
     } else ch.unseen += dt;
-    const why = dist > this.aggro.giveUpDistance ? 'far' : ch.unseen >= this.aggro.hideSeconds ? 'hidden' : null;
+    const hold = w.tenacious ? DEEP_AGGRO : null;
+    const why = dist > (hold?.giveUpDistance ?? this.aggro.giveUpDistance) ? 'far' : ch.unseen >= (hold?.hideSeconds ?? this.aggro.hideSeconds) ? 'hidden' : null;
     if (!why) return false;
     this.endChase(w);
     w.calmUntil = ctx.now + this.aggro.calmAfterSeconds;

@@ -23,7 +23,7 @@ export const EASES = /** @type {const} */ (['linear', 'in', 'out', 'inOut']);
 /** Background music a cinematic can ask for: the opening's theme, or the high-octane one (without: the game's music carries on). */
 export const MUSIC_CUES = /** @type {const} */ (['intro', 'action']);
 /** What can start a cinematic (see Game.playCinematicFor). */
-export const TRIGGERS = /** @type {const} */ (['newGame', 'actStarted', 'questStarted', 'questCompleted', 'bossIntro', 'raidArrive']);
+export const TRIGGERS = /** @type {const} */ (['newGame', 'actStarted', 'questStarted', 'questCompleted', 'bossIntro', 'bossDefeat', 'raidArrive']);
 
 /**
  * The cinematic for a game event, if any (and not already seen, when it plays once).

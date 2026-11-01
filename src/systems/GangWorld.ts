@@ -438,7 +438,7 @@ export class GangWorld {
 
   private spawnMember(crew: Crew, x: number, z: number, i: number, weapon: GangMember['weapon'], floorY?: number, extra: Partial<GangMember> = {}): GangMember {
     const look = { skin: ['#c68e5f', '#7d4a2b', '#e0ac7d', '#a26b42', '#5a3420'][i % 5], hair: '#151210', top: GANG.top, legs: GANG.legs, shoes: '#111111', scale: 0.98 + (i % 3) * 0.02 };
-    const ped = this.d.peds.spawnScripted(x, z, look, Math.random() * Math.PI * 2, 'gang', `gang:${crew.id}`, floorY);
+    const ped = this.d.peds.spawnScripted(x, z, extra.boss ? BOSS.look : look, Math.random() * Math.PI * 2, 'gang', `gang:${crew.id}`, floorY);
     const stage = this.state.stage;
     const n = extra.boss ? 0 : i % 3 === 0 ? 1 : 0;
     const team: Creature[] = extra.boss ? BOSS.team.map(([id, lv]) => createCreature(id, lv)) : Array.from({ length: n }, (_, k) => createCreature(ROSTER[(i * 3 + k) % ROSTER.length], memberLevel(stage, this.d.bestLevel(), i)));

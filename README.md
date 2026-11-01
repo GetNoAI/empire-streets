@@ -2182,6 +2182,27 @@ On a phone or tablet you interact by tapping things, and the few buttons left ar
   the keys toggle sit top left.
 - The tips are reworded for touch ("Tap one, then the crossed swords, to battle it").
 
+## Touch: a lighter HUD and the move wheel
+
+On a touch screen (and in the Android app) the HUD keeps only what you need at a glance:
+
+- **Always shown:** the minimap and health bars, the objective pill, the cash beside the pause
+  button, and the team bar as a row of portraits with a health line.
+- **Shown only when it matters:**
+  - the stars, only with a wanted level;
+  - the weapon panel, only when you carry more than one weapon;
+  - the job panel, for a few seconds when the objective changes, or when you tap the objective pill.
+- **Hidden:** the clock and weather, the street name, the fps counter and the capture-item line
+  (the quick wheel has your items).
+- **Messages** sit top middle, two at a time.
+
+**The move wheel (real-time battles):** your Streetmon's moves are big round buttons in an arc
+around the attack button. Each one is in its move's type colour with its name. Tap one to use it.
+A ring around the attack button fills as your Streetmon gets ready, and the moves pulse when it
+is. The wheel replaces the bar of moves along the bottom; jump steps aside for it. The first
+battle explains it in a message, and the tips say it too. Your Streetmon's card moves top right
+in place of the team bar.
+
 ## Optimisation pass
 
 Measured in the browser at a busy street corner (1280x720, M1 Pro), CPU per frame went from about
@@ -2208,6 +2229,22 @@ scene-graph matrix update from 1.8 ms to 0.4 ms.
 - **Dead code removed**: the old hover tooltip (`CreatureTooltip`, replaced by the always-on labels;
   its type moved to `CreatureLabels`) and its CSS, ~15 unused exports and ~55 unused class members
   across 40 files, and a few CSS rules nothing used.
+
+## Bug-fix pass: sewers, economy, bosses
+
+- **Weapon caches in the sewers.** Caches already existed (dead ends on every level: cash, pods, cages). Now they can also hold guns, more often the deeper you go: level 1 a 30% chance of a pistol, level 2 60% of a revolver, shotgun or SMG, level 3 always a rifle, sniper, SMG or shotgun. Guns come with a small amount of ammo (60% of the gun's starting reserve; a full reserve on level 3). The toast lists the gun (`Game.openCache`).
+- **Darker the deeper.** Ambient light, fog distance and exposure drop with each level (`Environment.setSewerDepth`: hemi 0.2 / 0.09 / 0.035, fog far 45 / 34 / 24 m). The flashlight is now a narrow spot aimed about 10 m ahead of where you face, and the glow around the player is reduced to a 2.5 m lantern.
+- **Sewer people everywhere.** Besides the Under-Station community, every tunnel system on every level has drifters (4 / 3 / 2 per maze by level) with names, looks and level-specific advice (`npc/Dwellers.ts`, deterministic per tunnel). Talking and streaming now check height, so people on another level don't answer.
+- **Gang hideout always on the bottom floor.** The Kings' door is placed in a level-3 maze (downtown first, then the others).
+- **Aggressive deep sewers.** Drainlings are always aggressive. On level 3, 80% of Streetmon are aggressive, and those plus Drainlings are *tenacious*: they chase to 70 m and only give up after you've been out of sight for 12 s (`DEEP_AGGRO`; the default is 36 m / 3 s).
+- **Can't get stuck in water.** A watchdog tracks time swimming: with no bank in reach for 3 s, or after 30 s in the water, you're hauled out onto the nearest bank (or the last dry ground you stood on, if it's within 80 m). After 8 s, Space climbs out ("Space Climb out").
+- **Boss defeats.** Beating a campaign boss plays a short `boss-defeat` cinematic (orbit on the boss, their name, then their title) and leaves them sitting on the ground for 20 s. Each boss has their own look: Dockside Dutch (navy coat, beanie, beard, duffel), Haze (purple coat, shades, silver hair), Subwoofer Sal (yellow jacket, cap, shades, goatee), Captain Hale (SWAT kit), Commissioner Varga (suit, fedora, moustache, briefcase), and the Kings' boss (burgundy coat, fedora, shades, beard). Bosses are slightly taller than other people.
+- **HUD.** The campaign tracker moved to the lower left (above the minimap) so it no longer covers the team list, and it hides during races.
+- **Guns and ammo.** Guns cost 3x as much (pistol $1,200 to sniper $15,000), ammo costs 2.5x as much, and ammo packs, reserve caps and starting reserves are halved. Cops drop 4 to 9 pistol rounds. Guns do double damage to legendaries (40% of normal damage, up from 20%).
+- **Shooting only in wild battles and raids.** In trainer, boss, gang, police and person battles you can't shoot the Streetmon: no shoot targets, no SHOOT hint, no weapon keys (`BattleController.weaponsAllowed`).
+- **Race navigation.** During a race, quest beacons, quest icons and markers are hidden. The route, waypoint and top banner follow the race instead ("Checkpoint n/N", then "Finish").
+- **Drivers in cars.** The seat is placed from each car's cabin (under the roof, behind the windscreen), so heads no longer come through roofs and van/bus drivers sit at the front. Headroom is 0.16 m on most cars, checked for all 15 vehicles.
+- **Music** is 10% quieter (0.42 to 0.38).
 
 ## Zone music
 

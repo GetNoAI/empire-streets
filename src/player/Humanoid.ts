@@ -183,7 +183,8 @@ export function gaitFrequency(speed: number): number {
 export interface CharacterModel {
   readonly root: THREE.Object3D;
   update(dt: number, speed: number, grounded: boolean): void;
-  sit(): void;
+  /** Seated pose; `ground` sits on the floor with legs straight out (else on a seat). */
+  sit(ground?: boolean): void;
   lieDown(): void;
   standUp(): void;
   /** Puts an object in the right hand (null to empty it). Optional for imported models. */
@@ -716,16 +717,20 @@ export class Humanoid implements CharacterModel {
   }
 
   /** Seated driving pose: pelvis on the seat cushion, hands forward on the wheel. */
-  sit(): void {
+  sit(ground = false): void {
     this.blend = 0;
     this.hips.position.z = 0;
     this.hips.rotation.set(0, 0, 0);
     this.head.rotation.set(0, 0, 0);
     this.root.rotation.z = 0;
-    this.legL.upper.rotation.set(0, 0, 1.45);
-    this.legR.upper.rotation.set(0, 0, 1.45);
-    this.legL.lower.rotation.set(0, 0, -1.35);
-    this.legR.lower.rotation.set(0, 0, -1.35);
+    // On a seat: thighs nearly level, shins angled down to the pedals (not straight down through
+    // the car's floor). On the ground: legs straight out in front.
+    const thigh = ground ? 1.57 : 1.45;
+    const shin = ground ? 0 : -0.4;
+    this.legL.upper.rotation.set(0, 0, thigh);
+    this.legR.upper.rotation.set(0, 0, thigh);
+    this.legL.lower.rotation.set(0, 0, shin);
+    this.legR.lower.rotation.set(0, 0, shin);
     this.armL.upper.rotation.set(0, 0, 1.0);
     this.armR.upper.rotation.set(0, 0, 1.0);
     this.armL.lower.rotation.set(0, 0, 0.5);

@@ -188,6 +188,8 @@ export const MEMBER_NAMES = ['Knuckles', 'Spider', 'Lil Dime', 'Boots', 'Rico', 
 /** King Rook's team: three, the last his favourite. */
 export const BOSS = {
   name: 'King Rook',
+  /** Rook dresses the part: a long burgundy coat, a black fedora, shades and a beard, a head taller than his crew. */
+  look: { skin: '#7d4a2b', hair: '#151210', top: '#1a1a1a', legs: '#141414', shoes: '#0d0d0d', scale: 1.18, outfit: 'coat' as const, outer: '#5a0f14', hat: 'fedora' as const, hatColor: '#111111', glasses: true, facialHair: 'beard' as const },
   team: [
     ['clogger', 33],
     ['holster', 34],

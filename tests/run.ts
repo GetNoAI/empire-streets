@@ -101,6 +101,8 @@ import { FX_SOUNDS, FX_STYLES, impactFor, planMoveFx, statusKind, validateMoveFx
 import moveFxJson from '../src/config/move_fx.json';
 import { CinematicPlayer, cinematicFor, ease, validateCinematics, type CinematicConfig } from '../src/systems/cinematics.js';
 import cinematicsJson from '../src/config/cinematics.json';
+import { sewerDweller } from '../src/npc/Dwellers';
+import { DEEP_AGGRO, TENACIOUS_SPECIES } from '../src/creatures/SpawnSystem';
 import { cryParams } from '../src/audio/Cries';
 import { routeAhead, trimRoute } from '../src/fx/WaypointGuide';
 import { ACCESS_SPACING } from '../src/world/Rooftops';
@@ -379,7 +381,7 @@ for (const seed of [1903, 1, 42, 777]) {
   ok(inv.currentId === 'fists' && inv.has('fists'), 'start unarmed');
   inv.give('pistol');
   inv.select('pistol');
-  ok(inv.currentAmmo.mag === 12 && inv.currentAmmo.reserve === 24, `pistol arrives loaded 12 + 24 (${inv.currentAmmo.mag}+${inv.currentAmmo.reserve})`);
+  ok(inv.currentAmmo.mag === 12 && inv.currentAmmo.reserve === 6, `pistol arrives loaded 12 + 6 (${inv.currentAmmo.mag}+${inv.currentAmmo.reserve})`);
   inv.update(1);
   ok(run(inv, 3, true) === 1, 'semi-auto: holding the trigger fires once');
   // Click repeatedly: rate limited by fireInterval, auto reload after the mag runs dry.
@@ -392,7 +394,7 @@ for (const seed of [1903, 1, 42, 777]) {
   ok(shots === 11, `clicking empties the remaining 11 rounds (${shots})`);
   ok(inv.isReloading, 'empty mag starts a reload');
   inv.update(2);
-  ok(inv.currentAmmo.mag === 12 && inv.currentAmmo.reserve === 12, `reload moves 12 from reserve (${inv.currentAmmo.mag}+${inv.currentAmmo.reserve})`);
+  ok(inv.currentAmmo.mag === 6 && inv.currentAmmo.reserve === 0, `reload moves the last 6 from reserve (${inv.currentAmmo.mag}+${inv.currentAmmo.reserve})`);
   // SMG: automatic, ~15 rounds/s.
   inv.give('smg');
   inv.select('smg');
@@ -403,7 +405,7 @@ for (const seed of [1903, 1, 42, 777]) {
   inv.update(1);
   ok(inv.spread(true, false) < inv.spread(false, false) && inv.spread(false, true) > inv.spread(false, false), 'aiming tightens, moving widens spread');
   // Shotgun reloads shell by shell and can fire mid-reload.
-  inv.give('shotgun');
+  inv.give('shotgun', 12);
   inv.select('shotgun');
   inv.trigger(false);
   inv.update(1);
@@ -5245,6 +5247,27 @@ console.log('\n# s187: campaign playthrough and balance');
   hidden.visible = true;
   scene.updateMatrixWorld();
   ok(stale === 0 && child.matrixWorld.elements[12] === 3, 'hidden subtrees skip the matrix update and catch up when shown');
+}
+
+{
+  // ---- Bug-fix pass: sewers, economy, bosses.
+  const a = sewerDweller('downtown:3:0', 'downtown' as never, 3);
+  const b = sewerDweller('downtown:3:0', 'downtown' as never, 3);
+  ok(JSON.stringify(a) === JSON.stringify(b), 'sewer drifters are deterministic from their key');
+  let allNamed = true;
+  for (let i = 0; i < 300; i++) {
+    const d = sewerDweller(`k${i}:${i % 3}`, 'midtown' as never, 1 + (i % 3));
+    if (!d.name || !d.look.top || !d.look.legs || !d.look.hair) allNamed = false;
+  }
+  ok(allNamed, 'every drifter gets a name and a full look (300 keys)');
+  ok(TENACIOUS_SPECIES.has('drainling') && DEEP_AGGRO.share >= 0.75 && DEEP_AGGRO.giveUpDistance > 36 && DEEP_AGGRO.hideSeconds > 3, 'Drainlings and deep-sewer Streetmon hold aggro longer than the default');
+  const C = cinematicsJson as never as Parameters<typeof cinematicFor>[0];
+  const bd = cinematicFor(C, { bossDefeat: 'sal' }, new Set(['boss-defeat']));
+  ok(!!bd && bd.id === 'boss-defeat' && (bd as { anchor?: string }).anchor === 'boss', 'every boss win has a defeat cinematic (anchored on the boss, replays)');
+  const W = JSON.parse(fs.readFileSync('src/data/weapons.json', 'utf8')) as { weapons: Array<{ id: string; price: number; ammoPack?: number; reserveMax?: number }> };
+  const pistol = W.weapons.find((w) => w.id === 'pistol')!;
+  const rifle = W.weapons.find((w) => w.id === 'rifle')!;
+  ok(pistol.price >= 1200 && rifle.price >= 9000 && (rifle.reserveMax ?? 0) <= 135, 'guns are expensive and ammo is scarce');
 }
 
 console.log(fails ? `\n${fails} FAILED` : '\nALL PASSED');

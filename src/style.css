@@ -1046,7 +1046,8 @@ body.touch .controls.tc td:first-child { white-space: normal; }
 }
 
 /* Campaign tracker (top right, under the party badge). */
-.quest-panel { position: fixed; right: 16px; top: 196px; z-index: 5; display: none; pointer-events: none; width: 250px; background: rgba(12, 15, 21, 0.82); border-left: 4px solid #ffd23f; border-radius: 6px; padding: 8px 12px; color: #eef1f5; font-size: 12px; }
+/* Left side above the minimap: the right side is the cash and the team bar. */
+.quest-panel { position: fixed; left: 22px; bottom: 316px; z-index: 5; display: none; pointer-events: none; width: 250px; background: rgba(12, 15, 21, 0.82); border-left: 4px solid #ffd23f; border-radius: 6px; padding: 8px 12px; color: #eef1f5; font-size: 12px; }
 .quest-panel.boss { border-left-color: #ff4b3a; }
 .quest-panel .qp-act { color: #ffd23f; font-weight: 800; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
 .quest-panel.boss .qp-act { color: #ff8a7a; }
@@ -1266,12 +1267,11 @@ body.touch kbd { display: none; }
 body.touch .tut-card kbd:not(.keyonly) { display: inline-block; }
 .tut-card b.tkey { font-weight: 800; color: #ffd23f; }
 @media (max-width: 760px) {
-  body.touch .party-bar { transform: scale(0.8); transform-origin: top right; }
   body.touch .race-panel { top: 70px; }
 }
 /* Phones: the job panel sits top-left (the right side is the thumb cluster), without the league
    line; tips keep left of the team bar; the autosave spinner goes under the compass. */
-body.touch .quest-panel { right: auto; left: 12px; top: 10px; width: 210px; font-size: 11px; padding: 6px 10px; }
+body.touch .quest-panel { right: auto; left: 12px; top: 10px; bottom: auto; width: 210px; font-size: 11px; padding: 6px 10px; }
 body.touch .quest-panel .qp-title { font-size: 13px; margin: 1px 0 3px; }
 body.touch .quest-panel .qp-obj { font-size: 11.5px; }
 body.touch .quest-panel .qp-league { display: none; }
@@ -1612,3 +1612,61 @@ body.touch .mm-hint { display: none; }
 .dialogue.floating .dlg-choices button:hover { border-color: #c98a00; background: rgba(255, 210, 63, 0.18); }
 .dialogue.next .dlg-text { animation: dlg-next 0.18s ease-out; }
 @keyframes dlg-next { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* ---- Touch screens (and the Android app): a lighter HUD. Only what you need at a glance stays;
+   the rest shows when it matters. */
+body.touch .fps, body.touch .clock, body.touch .location, body.touch .capture-hud { display: none !important; }
+/* The stars only with a wanted level; the weapon only when there's more than one to switch to. */
+body.touch:not(.wanted) .stars { display: none; }
+body.touch:not(.armed) .weapon-panel { display: none; }
+body.touch .money { font-size: 20px; }
+/* No stars showing: the cash moves up beside the pause button. */
+body.touch:not(.wanted) .money { top: 22px; right: 72px; }
+/* The job panel tucks away: the objective pill at the top says where to go; tap it (or a new
+   objective arrives) and the panel shows for a few seconds. */
+body.touch:not(.quest-peek) .quest-panel { display: none !important; }
+body.touch .wp-guide { pointer-events: none; }
+/* The team bar: portraits with a health line, in a row under the cash (tap it for the quick wheel). */
+body.touch .party-bar { top: 64px; right: 12px; width: auto; display: flex; gap: 4px; }
+body.touch .pb-row { padding: 2px; border-left-width: 1px; border-bottom: 3px solid var(--tc); display: grid; gap: 2px; width: 40px; }
+body.touch .pb-icon { width: 34px; height: 34px; }
+body.touch .pb-name, body.touch .pb-xp, body.touch .pb-ammo { display: none; }
+body.touch .pb-main { display: block; }
+body.touch .pb-hp { height: 4px; }
+body.touch.wanted .party-bar { top: 112px; }
+
+/* ---- The move wheel (touch, real-time battles): your Streetmon's moves round the attack button. */
+.touch.rt .tb-jump { display: none !important; }
+.touch.rt .tb-fire { right: 24px; bottom: 28px; width: 84px; height: 84px; z-index: 2; }
+.tm-ready { display: none; position: absolute; right: 14px; bottom: 18px; width: 104px; height: 104px; border-radius: 50%; pointer-events: none;
+  background: conic-gradient(#ffd23f calc(var(--ready, 0) * 360deg), rgba(255, 255, 255, 0.14) 0); -webkit-mask: radial-gradient(circle, transparent 46px, #000 47px); mask: radial-gradient(circle, transparent 46px, #000 47px); }
+.touch.rt .tm-ready { display: block; }
+.touch.rt-ready .tm-ready { animation: tmready 0.9s ease-in-out infinite; }
+@keyframes tmready { 50% { filter: drop-shadow(0 0 10px #ffd23f); } }
+.tmoves { position: absolute; right: 66px; bottom: 70px; width: 0; height: 0; }
+.tm-move { position: absolute; left: var(--dx); top: var(--dy); width: 74px; height: 74px; margin: -37px 0 0 -37px; border-radius: 50%; padding: 6px; touch-action: none; -webkit-tap-highlight-color: transparent;
+  border: 3px solid rgba(255, 255, 255, 0.9); color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--tc) 70%, #fff) 0, var(--tc) 55%, color-mix(in srgb, var(--tc) 60%, #000) 100%);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 0 3px color-mix(in srgb, var(--tc) 40%, transparent);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; line-height: 1.05; }
+.tm-move b { font: 900 11px/1.05 system-ui, sans-serif; letter-spacing: 0.01em; max-width: 64px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.tm-move small { font: 700 9px/1 system-ui, sans-serif; opacity: 0.85; }
+.tm-move.long b { font-size: 9.5px; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.tm-move.off { filter: grayscale(0.85) brightness(0.6); }
+.tm-move.queued { border-color: #ffd23f; box-shadow: 0 0 0 4px rgba(255, 210, 63, 0.75), 0 0 18px rgba(255, 210, 63, 0.8); }
+.tm-move.down { transform: scale(0.9); }
+.tm-move.pop { animation: tmpop 0.35s cubic-bezier(0.2, 1.6, 0.4, 1) backwards; }
+@keyframes tmpop { from { transform: scale(0.2); opacity: 0; } }
+.touch.rt-ready .tm-move:not(.off) { animation: tmpulse 1.1s ease-in-out infinite; }
+@keyframes tmpulse { 50% { box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 0 6px color-mix(in srgb, var(--tc) 55%, transparent), 0 0 22px var(--tc); } }
+/* The moves along the bottom are the wheel's job on a touch screen; the battle log keeps to two lines. */
+body.touch .battle.realtime .b-rt { display: none; }
+body.touch .battle.realtime .b-msg { max-height: 38px; overflow: hidden; font-size: 12px; }
+body.touch .battle.realtime .b-bottom { bottom: 12px; left: 50%; width: min(380px, 46vw); }
+/* Real-time battle on a phone: your Streetmon's card goes top right (where the team bar was), clear of the wheel. */
+body.touch.rt-battle .party-bar { display: none; }
+body.touch .battle.realtime .b-mine { top: 64px; bottom: auto; right: 12px; transform: scale(0.85); transform-origin: top right; }
+/* Messages: top middle under the objective pill, narrower, at most two at a time (the corners are taken). */
+body.touch .toasts { top: 54px; left: 50%; transform: translateX(-50%); width: min(400px, 48vw); align-items: center; }
+body.touch .toast { font-size: 12px; padding: 6px 10px; text-align: center; }
+body.touch .toast:nth-last-child(n + 3) { display: none; }
