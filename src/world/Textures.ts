@@ -602,9 +602,11 @@ export function makeRoof(): SurfaceSet {
       const grain = pfbm(u, v, 64, 42, 3);
       const seam = sm(0.012, 0.0, Math.abs(((v * 4) % 1) - 0.5) - 0.48) ;
       const pool = sm(0.6, 0.85, pfbm(u, v, 3, 43, 3));
-      let l = 0.24 + 0.06 * (grain - 0.5) + 0.22 * gravel - 0.08 * pool;
+      // (Lighter and lower-contrast than it was: from above, bright gravel clumps and dark pools
+      // on a 6 m tile read as a polka-dot grid. The finishes are tinted per building.)
+      let l = 0.56 + 0.06 * (grain - 0.5) + 0.08 * gravel - 0.04 * pool;
       let h = 0.4 + 0.5 * gravel + 0.05 * (grain - 0.5) - 0.3 * seam;
-      l = mix(l, 0.1, seam);
+      l = mix(l, 0.22, seam);
       return { r: l, g: l, b: l * 0.96, h, rough: 0.9 - 0.3 * pool, metal: 0 };
     },
     2.5,

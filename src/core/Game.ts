@@ -157,7 +157,7 @@ import { CITY, generateLayout, rectContains, type CityLayout } from '../world/Ci
 import { Environment } from '../world/Environment';
 import { Input } from './Input';
 import { SelectiveBloom } from '../render/SelectiveBloom';
-import { withSurface } from '../render/Surfaces';
+import { SURFACE_DETAIL, withSurface } from '../render/Surfaces';
 
 type State = 'loading' | 'title' | 'playing' | 'paused' | 'shop' | 'starter' | 'menu' | 'cinematic';
 
@@ -563,7 +563,16 @@ export class Game {
         audio.setEnabled(!audio.on);
         return audio.on;
       },
+      soundOn: () => audio.on,
       onToggleShadows: () => this.toggleShadows(),
+      shadowsOn: () => this.renderer.shadowMap.enabled,
+      summary: () => {
+        try {
+          return describeSave(this.buildSave());
+        } catch {
+          return '';
+        }
+      },
       onToggleBattleMode: () => {
         if (!this.battles?.active) {
           BATTLE.mode = BATTLE.mode === 'turn' ? 'realtime' : 'turn';
@@ -599,8 +608,8 @@ export class Game {
         this.playCinematic(d, {}, 'intro');
       },
       optionLabel: (k) => optionLabel(this.options, k as keyof Options),
-      onCycleOption: (k) => {
-        this.options = cycleOption(this.options, k as keyof Options);
+      onCycleOption: (k, dir) => {
+        this.options = cycleOption(this.options, k as keyof Options, dir ?? 1);
         saveOptions(this.options);
         this.applyOptions();
         return optionLabel(this.options, k as keyof Options);
@@ -621,6 +630,8 @@ export class Game {
   }
 
   async init(): Promise<void> {
+    // Anti-tiling map lookups cost two reads per map: desktop only.
+    SURFACE_DETAIL.antiTile = !platform.touch;
     const t0 = performance.now();
     this.menus.setLoadingMessage('Starting physics…');
     await RAPIER.init();
@@ -1057,6 +1068,7 @@ export class Game {
     this.setupHeists();
     this.setupStreetEvents();
     this.setupLivingWorld();
+    this.applyOptions();
     this.setupRaids();
     this.setupGangs();
     this.setupHazards();
@@ -1480,7 +1492,8 @@ export class Game {
     if (this.state === 'cinematic') this.cineTick(dt);
     else this.cine.update(dt);
     if (this.state !== 'playing') this.guide.hide();
-    if (this.state === 'paused' && this.input.wasPressed('Escape', 'KeyP')) {
+    if (this.state === 'title' && this.input.wasPressed('Escape')) this.menus.back();
+    if (this.state === 'paused' && this.input.wasPressed('Escape', 'KeyP') && !this.menus.back()) {
       this.resume();
       // Consume the key so the gameplay input below doesn't immediately pause again.
       this.input.endFrame();
@@ -2032,6 +2045,29 @@ export class Game {
     else if (this.state === 'playing' && !this.input.pointerLocked) this.input.requestPointerLock();
   }
 
+  // ------------------------------------------------------------------ your Streetmon's own fights
+
+  /** Your Streetmon out with you saw off (or backed off from) a wild one by itself. */
+  private onSkirmish(outcome: 'won' | 'retreat' | 'broken', w: WildCreature, ours: Creature, why: string): void {
+    this.saveDirty = true;
+    const name = displayName(ours);
+    if (outcome === 'won') {
+      const ctx = { timeOfDay: phaseAt(this.hour), district: districtAt(this.layout, this.player.position.x, this.player.position.z) };
+      const share = this.living.skirmish.cfg.xpShare;
+      const ev = this.party.members.includes(ours) && ours.hp > 0 ? gainXp(ours, Math.max(1, Math.floor(xpYield(w.creature, ours.level, false) * share)), ctx) : [];
+      const xp = ev.reduce((n, e) => n + (e.kind === 'xp' ? e.amount : 0), 0);
+      const lv = ev.find((e) => e.kind === 'level');
+      for (const e of ev) if (e.kind === 'evolve') this.evoQueue.push({ creature: e.creature, to: e.to });
+      const ran = w.creature.hp > 0 ? `The ${w.spec.name} limps off, worn down: an easy catch now.` : `The ${w.spec.name} is out cold.`;
+      this.hud.toast(`${name} saw off a wild ${w.spec.name}! +${xp} XP${lv ? `, up to Lv ${ours.level}` : ''}. ${ran}`, 3600);
+      if (this.evoQueue.length && !this.evolution.active) window.setTimeout(() => this.nextEvolution(), 900);
+    } else if (outcome === 'retreat') {
+      this.hud.toast(`${name} took a beating from the ${w.spec.name} and backs off. Heal up at a clinic.`, 3200);
+    } else if (why === 'far') {
+      this.hud.toast(`${name} breaks off the fight to keep up with you.`, 2000);
+    }
+  }
+
   // ------------------------------------------------------------------ levelling and evolution
 
   /** XP for every foe beaten (or caught), split between the creatures that fought it. */
@@ -2549,6 +2585,10 @@ export class Game {
     audio.setVolume(o.effects);
     this.music.userVolume = o.music;
     document.documentElement.style.setProperty('--hud-scale', String(o.hudSize));
+    if (this.living) {
+      this.living.skirmish.cfg.enabled = o.petFights;
+      if (!o.petFights) this.living.skirmish.end('broken', 'off');
+    }
   }
 
   private autosave(): void {
@@ -5659,6 +5699,8 @@ export class Game {
           return { x: f.x, y: p.vehicle ? p.vehicle.position.y : p.feet.y, z: f.z, inCar: !!p.vehicle, layer: this.layers.current };
         },
         enabled: () => this.state === 'playing' && !this.player.dead && !this.battles.locksPlayer && !this.races.active && !this.heists.active,
+        follower: this.follower,
+        onSkirmish: (outcome, w, ours, why) => this.onSkirmish(outcome, w, ours, why),
         now: () => this.gameTime,
         time: () => phaseAt(this.hour),
         lore: {

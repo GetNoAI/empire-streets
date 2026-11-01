@@ -26,6 +26,10 @@ export class Follower {
   goal: { x: number; z: number } | null = null;
   /** At the goal: play the attack clip (working on a door) instead of idling. */
   work = false;
+  /** Something to turn toward when standing (a wild one it's fighting). */
+  faceAt: { x: number; z: number } | null = null;
+  /** Game-clock seconds left on a one-off clip (attack, hurt) before it goes back to walk/idle. */
+  private clipFor = 0;
 
   constructor(
     private readonly scene: THREE.Scene,
@@ -36,6 +40,13 @@ export class Follower {
 
   get visible(): boolean {
     return !!this.inst && this.inst.root.visible;
+  }
+
+  /** Plays a one-off clip (attack, hurt) over the walk/idle for a moment. */
+  playOnce(clip: 'attack' | 'hurt', seconds = 0.6): void {
+    if (!this.inst) return;
+    this.inst.play(clip, 0.05);
+    this.clipFor = seconds;
   }
 
   get height(): number {
@@ -113,7 +124,7 @@ export class Follower {
       this.z = tz;
       this.speed = 0;
     } else if (d > 0.35) {
-      const want = Math.min(this.goal ? 6 : 9, d * 2.6);
+      const want = Math.min(this.goal ? 7 : 9, d * 2.6);
       this.speed += (want - this.speed) * Math.min(1, dt * 6);
       const step = Math.min(d, this.speed * dt);
       const nx = this.x + (dx / d) * step;
@@ -128,8 +139,8 @@ export class Follower {
       this.heading = Math.atan2(dx, dz);
     } else {
       this.speed *= Math.max(0, 1 - dt * 8);
-      // Face the way you're facing when standing.
-      const want = Math.atan2(fx, fz);
+      // Face the way you're facing when standing (or whatever it's squaring up to).
+      const want = this.faceAt ? Math.atan2(this.faceAt.x - this.x, this.faceAt.z - this.z) : Math.atan2(fx, fz);
       let a = want - this.heading;
       while (a > Math.PI) a -= Math.PI * 2;
       while (a < -Math.PI) a += Math.PI * 2;
@@ -140,7 +151,8 @@ export class Follower {
     if (!inst) return;
     inst.root.position.set(this.x, this.y, this.z);
     inst.root.rotation.y = this.heading;
-    inst.play(this.speed > 0.4 ? 'walk' : this.work ? 'attack' : 'idle');
+    this.clipFor = Math.max(0, this.clipFor - dt);
+    if (this.clipFor <= 0) inst.play(this.speed > 0.4 ? 'walk' : this.work ? 'attack' : 'idle');
     const walk = inst.clips.get('walk');
     const a = walk ? inst.mixer.existingAction(walk) : null;
     if (a) a.timeScale = Math.max(0.7, this.speed / Math.max(0.6, this.height * 1.4));

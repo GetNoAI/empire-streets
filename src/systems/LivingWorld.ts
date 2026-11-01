@@ -18,6 +18,8 @@ import type { CityLayout } from '../world/CityLayout';
 import { clamp, pick, rangeInt, type AmbientHit, type Fighter } from './livingCore.js';
 import { NpcLifeManager, type HunterMon, type NpcLifeConfig, type Person, type Topic, type WildView } from './npcLife.js';
 import { WildInteractionManager, type WildConfig, type WildMon } from './wildInteractions.js';
+import { FollowerSkirmish, SKIRMISH_DEFAULTS, SKIRMISH_TAG, type SkirmishConfig, type SkirmishOutcome } from './FollowerSkirmish';
+import type { Follower } from '../creatures/Follower';
 
 /**
  * The living world in the game: binds the NPC hunters / chatter (npcLife.js) and the wild
@@ -45,6 +47,8 @@ export interface LivingWorldConfig extends NpcLifeConfig, WildConfig {
     calmAfterSeconds: number;
     knockBack: number;
   };
+  /** Your Streetmon fighting wild ones on its own (FollowerSkirmish). */
+  followerFights?: Partial<SkirmishConfig>;
 }
 
 export interface LivingWorldDeps {
@@ -73,6 +77,10 @@ export interface LivingWorldDeps {
   time(): TimeOfDay;
   /** Chatter extras: race tracks, racers, crews. */
   lore: { tracks: string[]; racers: string[]; crews: string[] };
+  /** Your Streetmon out walking with you (it fights nearby wild ones on its own). */
+  follower?: Follower;
+  /** A fight of yours ended: `ours` is your Streetmon, `wild` the one it fought. */
+  onSkirmish?(outcome: SkirmishOutcome, wild: WildCreature, ours: Creature, why: string): void;
 }
 
 interface MonView {
@@ -121,6 +129,7 @@ export class LivingWorld {
   readonly wildAi: WildInteractionManager;
   readonly bubbles: SpeechBubbles;
   readonly bars: HealthBars;
+  readonly skirmish: FollowerSkirmish;
   /** What's simulated where (last frame) and what it cost. */
   readonly stats = { pedsActive: 0, pedsLite: 0, wildActive: 0, wildLite: 0, hunters: 0, duels: 0, conversations: 0, packs: 0, ms: 0 };
   private readonly pedIds = new WeakMap<Ped, number>();
@@ -166,6 +175,7 @@ export class LivingWorld {
     });
     this.npc = new NpcLifeManager({ config: cfg, chart: this.chart, adapter: this.npcAdapter() });
     this.wildAi = new WildInteractionManager({ config: cfg, chart: this.chart, adapter: this.wildAdapter() });
+    this.skirmish = new FollowerSkirmish({ ...SKIRMISH_DEFAULTS, ...(cfg.followerFights ?? {}) }, this.skirmishAdapter(), this.chart);
   }
 
   // ------------------------------------------------------------------ hooks from the game
@@ -194,6 +204,7 @@ export class LivingWorld {
 
   /** Ends everything (leaving the street, loading a save). */
   clear(): void {
+    this.skirmish.end('broken', 'cleared');
     this.npc.clear();
     this.wildAi.clear();
     for (const id of [...this.mons.keys()]) this.dropMon(id, false);
@@ -270,6 +281,7 @@ export class LivingWorld {
     }
     const n = this.npc.update(dt, { people, wild: wildViews, player: P, camera: { x: cam.x, z: cam.z }, activeRadius: R, enabled });
     const w = this.wildAi.update(dt, { wild: wildMons, cars, player: P, playerInCar: P.inCar, activeRadius: R, enabled });
+    this.skirmish.update(dt, { follower: this.followerView(), player: { x: P.x, z: P.z, onFoot: !P.inCar }, wild: wildMons, enabled });
     this.animate(dt);
     this.bubbles.update(dt, this.d.camera);
     this.bars.update(this.d.camera);
@@ -353,6 +365,126 @@ export class LivingWorld {
 
   private wildBar(w: WildCreature): void {
     this.bars.set(`w${w.id}`, this.wildTop(w.id), w.creature.hp, maxHp(w.creature), w.creature.level, typeInfo(w.spec.types[0]).color);
+  }
+
+  // ------------------------------------------------------------------ your Streetmon's own fights
+
+  private followerView(): { x: number; z: number; hp: number; maxHp: number; fighter: Fighter; ready: boolean } | null {
+    const f = this.d.follower;
+    const c = f?.creature;
+    if (!f || !f.summoned || !c) return null;
+    return { x: f.x, z: f.z, hp: c.hp, maxHp: maxHp(c), fighter: this.fighter(c), ready: f.visible && c.hp > 0 && !f.work };
+  }
+
+  private followerTop(): () => { x: number; y: number; z: number } | null {
+    return () => {
+      const f = this.d.follower;
+      return f && f.visible ? { x: f.x, y: f.y + f.height + 0.35, z: f.z } : null;
+    };
+  }
+
+  private followerBar(): void {
+    const f = this.d.follower;
+    const c = f?.creature;
+    if (!c) return;
+    this.bars.set('yours', this.followerTop(), c.hp, maxHp(c), c.level, '#7dff9a');
+  }
+
+  private skirmishAdapter(): ConstructorParameters<typeof FollowerSkirmish>[1] {
+    const get = (id: number): WildCreature | null => {
+      const w = this.wildById.get(id);
+      return w && !w.removed ? w : null;
+    };
+    const mid = (x: number, y: number, z: number, h: number): THREE.Vector3 => new THREE.Vector3(x, y + Math.min(0.8, h * 0.5), z);
+    return {
+      hold: (id, tag) => {
+        const w = get(id);
+        if (!w) return tag === null;
+        if (tag === null) {
+          if (w.heldBy === SKIRMISH_TAG) {
+            w.heldBy = null;
+            w.script = null;
+            w.faceAt = null;
+          }
+          return true;
+        }
+        if (w.pinned || w.state === 'engaged' || w.inPod || w.heldBy || w.eventTag !== undefined) return false;
+        w.heldBy = tag;
+        w.script = null;
+        w.faceAt = null;
+        return true;
+      },
+      lineOfSight: (ax, az, bx, bz) => {
+        const n = Math.floor(Math.hypot(bx - ax, bz - az));
+        for (let k = 1; k < n; k++) if (this.d.peds.blocked(ax + ((bx - ax) * k) / n, az + ((bz - az) * k) / n)) return false;
+        return true;
+      },
+      followerGoTo: (x, z) => {
+        const f = this.d.follower;
+        if (f) f.goal = { x, z };
+      },
+      followerFollow: () => {
+        const f = this.d.follower;
+        if (!f) return;
+        f.goal = null;
+        f.faceAt = null;
+        this.barLinger.push({ key: 'yours', id: -1, t: 1.5 });
+      },
+      face: (id, fx, fz) => {
+        const w = get(id);
+        const f = this.d.follower;
+        if (w) w.faceAt = { x: fx, z: fz };
+        if (w && f) f.faceAt = { x: w.x, z: w.z };
+      },
+      wildGoTo: (id, x, z) => {
+        const w = get(id);
+        if (w) w.script = { x, z, run: false };
+      },
+      hitWild: (id, hit) => {
+        const w = get(id);
+        const f = this.d.follower;
+        if (!w || !f) return 0;
+        w.creature.hp = Math.max(0, w.creature.hp - hit.damage);
+        f.playOnce('attack', 0.6);
+        this.attackFx(hit, mid(f.x, f.y, f.z, f.height), mid(w.x, w.y, w.z, w.spec.model.height), () => {
+          if (!w.removed) {
+            w.inst?.play(w.creature.hp > 0 ? 'hurt' : 'faint', 0.05);
+            w.animLock = performance.now() + 450;
+          }
+        });
+        this.wildBar(w);
+        this.followerBar();
+        return w.creature.hp;
+      },
+      hitFollower: (id, hit) => {
+        const w = get(id);
+        const f = this.d.follower;
+        const c = f?.creature;
+        if (!w || !f || !c) return 0;
+        c.hp = Math.max(0, c.hp - hit.damage);
+        w.inst?.play('attack', 0.05);
+        w.animLock = performance.now() + 600;
+        this.attackFx(hit, mid(w.x, w.y, w.z, w.spec.model.height), mid(f.x, f.y, f.z, f.height), () => f.playOnce('hurt', 0.45));
+        this.wildBar(w);
+        this.followerBar();
+        return c.hp;
+      },
+      started: (id) => {
+        const w = get(id);
+        if (w) this.wildBar(w);
+        this.followerBar();
+      },
+      ended: (id, outcome, why) => {
+        const w = get(id);
+        const f = this.d.follower;
+        if (w) this.barLinger.push({ key: `w${id}`, id, t: 1.5 });
+        if (w && f) {
+          if (outcome === 'won' && w.creature.hp > 0) this.d.spawns.flee(w, f.x, f.z, 8);
+          if (outcome === 'retreat') w.calmUntil = this.d.now() + 30;
+        }
+        if (w && f?.creature) this.d.onSkirmish?.(outcome, w, f.creature, why);
+      },
+    };
   }
 
   // ------------------------------------------------------------------ NPC adapter

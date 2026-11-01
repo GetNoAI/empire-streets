@@ -192,7 +192,7 @@ export function buildCity(layout: CityLayout, world: RAPIER.World): BuiltCity {
   for (const r of groundPieces) groundGeo.top(r, 0, 10);
   const ground = new THREE.Mesh(
     groundGeo.build(),
-    withSurface(pbr(asphalt), 'asphalt', { tone: 0.4, bump: 0.3, fade: [18, 55] }), // close-up grain on top of the 10 m tile
+    withSurface(pbr(asphalt), 'asphalt', { tone: 0.4, bump: 0.3, fade: [18, 55], antiTile: {}, macro: 0.1 }), // close-up grain on top of the 10 m tile
   );
   ground.receiveShadow = true;
   ground.name = 'ground';
@@ -218,7 +218,7 @@ export function buildCity(layout: CityLayout, world: RAPIER.World): BuiltCity {
     walk.boxWalls(r, 0, CURB, 3, 3);
     rectCollider(r, 0, CURB);
   }
-  const sidewalk = new THREE.Mesh(walk.build(), withSurface(pbr(makeSidewalk()), 'concrete', { tone: 0.5, bump: 0.6, fade: [15, 45] }));
+  const sidewalk = new THREE.Mesh(walk.build(), withSurface(pbr(makeSidewalk()), 'concrete', { tone: 0.5, bump: 0.6, fade: [15, 45], antiTile: { step: [0.5, 0.5] }, macro: 0.08 }));
   sidewalk.receiveShadow = true;
   sidewalk.castShadow = false;
   sidewalk.name = 'sidewalk';
@@ -236,12 +236,16 @@ export function buildCity(layout: CityLayout, world: RAPIER.World): BuiltCity {
   // of brick isn't the same brick over and over.
   const VARIANTS = 3;
   const walls = new Map<string, GeoBuilder>(FACADES.flatMap((f) => Array.from({ length: VARIANTS }, (_, v) => [`${f}:${v}`, new GeoBuilder()] as [string, GeoBuilder])));
-  const roofs = new GeoBuilder();
+  // Roofs in three finishes (grey gravel, warm tar, pale membrane), picked per building, so a
+  // view over the rooftops isn't one tile repeated.
+  const ROOF_FINISHES = 3;
+  const roofSets = Array.from({ length: ROOF_FINISHES }, () => new GeoBuilder());
   const spires: Array<{ x: number; y: number; z: number; h: number; r: number }> = [];
   const tanks: Array<{ x: number; y: number; z: number }> = [];
   for (const b of layout.buildings) {
     const vi = Math.abs(Math.floor(Math.sin(b.rect.x0 * 12.9898 + b.rect.z0 * 78.233) * 43758.5453)) % VARIANTS;
     const wb = walls.get(`${b.facade}:${vi}`)!;
+    const roofs = roofSets[Math.abs(Math.floor(Math.sin(b.rect.x0 * 39.346 + b.rect.z0 * 11.135) * 24634.6345)) % ROOF_FINISHES];
     const off = rng.range(0, FACADE_TILE_W);
     wb.boxWalls(b.rect, CURB, b.height, FACADE_TILE_W, FACADE_TILE_H, off);
     roofs.top(b.rect, b.height, 6);
@@ -287,7 +291,8 @@ export function buildCity(layout: CityLayout, world: RAPIER.World): BuiltCity {
           color: TINTS[v],
         }),
         FACADE_SURFACE[f],
-        { tone: 0.35, bump: 0.5, fade: [20, 60] },
+        // (No anti-tiling here: it would shift the window grid. Soft weathering patches instead.)
+        { tone: 0.35, bump: 0.5, fade: [20, 60], macro: f === 'glass' || f === 'darkglass' ? 0.04 : 0.09 },
       ),
     );
     mesh.castShadow = true;
@@ -296,10 +301,19 @@ export function buildCity(layout: CityLayout, world: RAPIER.World): BuiltCity {
     root.add(mesh);
    }
   }
-  const roofMesh = new THREE.Mesh(roofs.build(), withSurface(pbr(makeRoof()), 'gravel', { tone: 0.4, bump: 0.6 }));
-  roofMesh.receiveShadow = true;
-  roofMesh.castShadow = true;
-  root.add(roofMesh);
+  const roofTex = makeRoof();
+  // Silver-coated, weathered grey gravel, dark tar.
+  const ROOF_TINTS = [0xffffff, 0xbdb5ab, 0x6a625c];
+  roofSets.forEach((rb, i) => {
+    if (rb.empty) return;
+    const mat = withSurface(pbr(roofTex), 'gravel', { tone: 0.4, bump: 0.6, antiTile: { step: [0, 0.25] }, macro: 0.16 });
+    mat.color.setHex(ROOF_TINTS[i]);
+    const roofMesh = new THREE.Mesh(rb.build(), mat);
+    roofMesh.receiveShadow = true;
+    roofMesh.castShadow = true;
+    roofMesh.name = `roof-${i}`;
+    root.add(roofMesh);
+  });
 
   root.add(buildSpires(spires));
   root.add(buildWaterTowers(tanks));
@@ -343,7 +357,7 @@ function buildPark(layout: CityLayout, root: THREE.Group, world: RAPIER.World, r
     );
   }
   g.boxWalls(park, 0, CURB, 6, 6);
-  const grass = new THREE.Mesh(g.build(), withSurface(pbr(grassTex), 'foliage', { tone: 0.4, bump: 0.5, tile: 0.5 }));
+  const grass = new THREE.Mesh(g.build(), withSurface(pbr(grassTex), 'foliage', { tone: 0.4, bump: 0.5, tile: 0.5, antiTile: {}, macro: 0.12 }));
   grass.receiveShadow = true;
   root.add(grass);
 

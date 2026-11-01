@@ -1968,6 +1968,56 @@ colours are a little darker and less saturated.
 slowly) now drives the ground: asphalt goes dark and glossy (roughness 1 → 0.4) so it reflects
 the sky and the street lamps, the pavement less so, and the paint on the markings sheens up.
 
+### Characters, trees and street clutter
+
+The second pass (same day) took the remaining assets up to the renders' level: the people, the
+trees and the mess of a real kerb. Still no model files, still one draw call per crowd part.
+
+**People** (`src/player/Humanoid.ts`, `src/peds/CrowdRenderer.ts`). The rig has a proper body
+now: shoulders, jaw, ears, eyes and brows, a waistband, soled shoes, sleeves with cuffs. On top
+of it a `HumanoidLook` picks an **outfit** (`tee`, `hoodie`, `jacket`, `coat`, `suit`, `uniform`,
+`swat`) and the parts that come with it: a hood (down as a roll at the collar, or up over the
+head), a kangaroo pocket, a zipped jacket shell with collar, a long coat with lapels and tie,
+a duty belt with pouches and holster, badge and radio, a police cap, helmet and visor, a plate
+vest and knee pads, and a **bag** (`backpack`, `duffel`, `briefcase`). Hats (`cap`, `beanie`,
+`fedora`, `glasses`) and facial hair are parts too. `partsFor(look)` says which pieces a look
+wears and `roleColor(look, role)` what colour each role is, so the crowd renderer builds one
+instanced mesh per part for the whole crowd and collapses the parts a pedestrian doesn't wear.
+`randomLook()` dresses civilians by district (tees, hoodies with the hood up, jackets, long
+coats, the odd suit with a briefcase); `copLook()` is the navy NYPD uniform with cap, belt and
+badge; `swatLook()` (four stars and up, `PoliceSystem`) is the tactical unit in helmet, visor
+and vest; the sewer's `weatheredLook()` layers coats and hoods.
+
+**Trees** (`CityBuilder.buildTrees`, `StreetClutter.canopyGeometry`). A trunk that flares at the
+root and forks into two limbs under the crown, and a crown made of three overlapping, lumpy
+icosahedra with flat per-facet normals and a per-facet shade, tinted olive-to-khaki per tree
+(`vertexColors`, instance colour). Only a whisper of surface detail, so the facets read as clean
+planes the way they do in the render.
+
+**Kerb clutter** (`src/world/StreetClutter.ts`). Instanced, no colliders, placed from the layout
+seed clear of the street furniture: bin bags piled at the kerb for collection (lumpy, black,
+slightly glossy), litter on the pavements and in the gutters (per-instance colour), storm-drain
+grates at the block corners and manhole covers in the road. Density halves on touch devices.
+
+### Breaking up the tiling
+
+Big flat surfaces used to show their tile from a distance (roofs most of all: a polka-dot grid
+from above). `withSurface(..., { antiTile, macro })` (`src/render/Surfaces.ts`) now fixes that
+for any material:
+
+- **`antiTile`**: the material's own maps (colour, normal, roughness, metalness) are looked up
+  through `surfTex`, which blends between two randomly shifted copies of the tile, the shift
+  changing smoothly every couple of tiles (Inigo Quilez's "texture repetition", method 3).
+  `step` snaps the shifts to a grid so pavement joints and roof seams stay lined up. Two reads
+  per map, so it's off on phones (`SURFACE_DETAIL.antiTile`).
+- **`macro`**: soft light/dark weathering patches in world space (two octaves of value noise at
+  ~23 m and ~6.5 m) that never repeat. Facades get this only (shifting them would break the
+  window grid).
+
+Used on the roads (free shifts), pavements (snapped to the slab), grass, and roofs (snapped to the
+seams). Roofs also come in three finishes picked per building (silver-coated, grey gravel, dark
+tar), and the roof texture is lighter and lower-contrast.
+
 ## Better-looking models
 
 Everything is generated in code. To raise the visual quality, drop licensed `.glb` models into
@@ -2014,6 +2064,42 @@ missing from the reference cards, accessibility) found and fixed these:
   rather than "C throw V switch", battle hints name the buttons (SWAP · CUFF 25% · FLEE · SHOOT),
   the race button is labelled RACE and only shows while a race is on offer, the job panel hides
   during a battle (the foe's bar takes that corner), and BLACKED OUT / BUSTED fit the screen.
+
+## Your Streetmon fights on its own
+
+With your lead out walking with you (G), it takes on wild Streetmon that come near by itself
+(`src/systems/FollowerSkirmish.ts`, engine-free and unit-tested; wired in `LivingWorld`):
+
+- It picks anything wandering within 9 m of it and you, and first of all anything coming for
+  you. Never a legendary, nothing more than 8 levels above it, nothing already beaten down.
+- It runs over, the two trade blows with the same ambient formula and type chart as the wild
+  turf fights (attack FX, HP bars over both), and:
+  - the wild one worn below 30% runs off, beaten up (an easy catch), and yours gets half a
+    normal battle's XP (it can level up and evolve);
+  - yours worn below 35% backs off to your side; the wild one keeps its ground.
+- Walking 22 m off, getting in a car, starting a battle or anything else taking the wild one
+  breaks it up. A 6 s pause between fights, and it won't start one below half HP. Damage
+  carries over: heal at a clinic.
+- Switch it off in Settings → Gameplay → "Streetmon fights on its own" (`Options.petFights`).
+
+Tuning: `SKIRMISH_DEFAULTS`, or `followerFights` in `src/config/living_world.json`.
+
+## Menus
+
+The title screen and pause menu (`src/ui/Menus.ts`) are laid out like most console games: a
+column of menu items on the left, and a panel on the right for what's picked.
+
+- **Title**: Continue (with the save summary), New game / Play, Settings, Controls.
+- **Pause**: Resume, Settings, Controls, Tips & tutorials, Character, Save & load, Quit to title,
+  with a one-line summary of the game under the heading.
+- **Settings** has tabs (Gameplay, Audio, Display, Controls), one row per setting with a short
+  explanation and ‹ value › to change it (click, or ← → on the keyboard, either way round).
+- **Controls** is a set of cards by topic with keycaps, keyboard or touch.
+- Keyboard: ↑ ↓ (or W S) along the column, Enter or → into a panel, ← or Esc back out; Esc
+  with no panel open resumes. A pad's focus ring works over the same buttons. On a short phone
+  screen the column tightens up; on a narrow one the panel takes the screen.
+
+The class prefix is `mm-` (the garage menu already uses `gm-`).
 
 ## Saving
 

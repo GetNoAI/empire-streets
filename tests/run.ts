@@ -43,6 +43,7 @@ import livingJson from '../src/config/living_world.json';
 import { SpatialGrid, ambientHit, fillLine, hasHoles, isRival, typeMult } from '../src/systems/livingCore.js';
 import { HUNTER_STATES, NpcLifeManager, TOPICS, type NpcLifeAdapter, type NpcLifeConfig, type Person, type WildView } from '../src/systems/npcLife.js';
 import { WildInteractionManager, type WildAdapter, type WildConfig, type WildMon } from '../src/systems/wildInteractions.js';
+import { FollowerSkirmish, SKIRMISH_DEFAULTS, type SkirmishAdapter, type SkirmishFollower } from '../src/systems/FollowerSkirmish';
 import { SpawnSystem as LiveSpawnSystem } from '../src/creatures/SpawnSystem';
 import { wrapText } from '../src/ui/Overhead';
 import campaignJson from '../src/config/campaign_quests.json';
@@ -5001,6 +5002,104 @@ console.log('\n# s187: campaign playthrough and balance');
   // The first heist is a gentle one.
   const qc = (heistsJson as unknown as { targets: Array<{ id: string; security: { suspicionRate: number }; escape: { stars: number } }> }).targets.find((t) => t.id === 'quik-cash')!;
   ok(qc.security.suspicionRate <= 0.35 && qc.escape.stars === 1, 'Quik Cash: a careful first job can stay quiet, and the getaway starts at one star');
+}
+
+
+// ---- Your Streetmon fights wild ones on its own.
+{
+  const chart = DATA.chart as unknown as Record<string, Record<string, number>>;
+  const fz = (types: string[], level: number, speed = 50) => ({ level, attack: 60, defense: 50, speed, types, moves: [{ name: 'Hit', type: types[0], power: 60 }] });
+  const mons = new Map<number, WildMon>();
+  const mk = (id: number, x: number, z: number, over: Partial<WildMon> = {}): WildMon => {
+    const m: WildMon = { id, x, z, layer: 'street', speciesId: `w${id}`, temperament: 'wander', rarity: 'common', state: 'wander', hp: 60, maxHp: 60, fighter: fz(['grind'], 10), free: true, calm: false, heldBy: null, ...over };
+    mons.set(id, m);
+    return m;
+  };
+  const F: SkirmishFollower = { x: 1, z: 0, hp: 80, maxHp: 80, fighter: fz(['gun'], 12, 60), ready: true };
+  const log: string[] = [];
+  const ad: SkirmishAdapter = {
+    hold: (id, tag) => {
+      const m = mons.get(id);
+      if (!m) return tag === null;
+      if (tag && m.heldBy) return false;
+      m.heldBy = tag;
+      return true;
+    },
+    lineOfSight: () => true,
+    followerGoTo: (x, z) => {
+      const d = Math.hypot(x - F.x, z - F.z) || 1;
+      const st = Math.min(d, 0.7);
+      F.x += ((x - F.x) / d) * st;
+      F.z += ((z - F.z) / d) * st;
+    },
+    followerFollow: () => log.push('follow'),
+    face: () => undefined,
+    wildGoTo: () => undefined,
+    hitWild: (id, h) => {
+      const m = mons.get(id)!;
+      m.hp = Math.max(0, m.hp - h.damage);
+      log.push('hitW');
+      return m.hp;
+    },
+    hitFollower: (_id, h) => {
+      F.hp = Math.max(0, F.hp - h.damage);
+      log.push('hitF');
+      return F.hp;
+    },
+    ended: (id, o, why) => log.push(`end ${id} ${o} ${why}`),
+  };
+  const S = new FollowerSkirmish({ ...SKIRMISH_DEFAULTS }, ad, chart, () => 0.5);
+  const ctx = (over: Record<string, unknown> = {}) => ({ follower: { ...F }, player: { x: 0, z: 0, onFoot: true }, wild: [...mons.values()].map((m) => ({ ...m })), enabled: true, ...over });
+  mk(1, 30, 0);
+  S.update(0.6, ctx());
+  ok(!S.fight, 'a wild one 30 m off is left alone');
+  mk(2, 7, 0);
+  mk(3, 5, 4, { rarity: 'legendary' });
+  S.update(0.6, ctx());
+  ok(S.fight?.wild === 2 && mons.get(2)!.heldBy === 'follower', 'it squares up to a wild one wandering within 9 m (never a legendary)');
+  for (let i = 0; i < 600 && S.fight; i++) S.update(0.1, ctx());
+  ok(log.some((l) => l === 'end 2 won fled' || l === 'end 2 won fainted') && log.includes('hitW') && mons.get(2)!.heldBy === null && mons.get(2)!.hp / 60 <= 0.3, 'a type-advantaged Gun wears it down and it runs, let go');
+  ok(S.cooldown > 0 && !S.update(0.1, ctx()), 'a short cooldown before the next fight');
+  // Something coming for you comes first, even if a wanderer is closer.
+  log.length = 0;
+  S.cooldown = 0;
+  mons.clear();
+  F.x = 1; F.z = 0; F.hp = 80;
+  mk(10, 3, 0);
+  mk(11, 8, 0, { state: 'approach', temperament: 'aggro' });
+  S.update(0.6, ctx());
+  ok(S.fight?.wild === 11, 'one coming for you is taken on first');
+  // Walking off breaks it up; getting in a car too.
+  for (let i = 0; i < 5; i++) S.update(0.1, ctx({ player: { x: 40, z: 0, onFoot: true } }));
+  ok(!S.fight && log.includes('end 11 broken far') && mons.get(11)!.heldBy === null, 'walking off (22 m) breaks the fight up and lets it go');
+  S.cooldown = 0;
+  S.start(10);
+  S.update(0.1, ctx({ player: { x: 0, z: 0, onFoot: false } }));
+  ok(!S.fight && log.includes('end 10 broken car'), 'getting in a car breaks it up');
+  // A tough foe: yours backs off when hurt; a hurt one won't start; too strong ones are ignored.
+  log.length = 0;
+  mons.clear();
+  S.cooldown = 0;
+  F.x = 1; F.z = 0; F.hp = 80;
+  mk(20, 4, 0, { fighter: { level: 18, attack: 120, defense: 90, speed: 90, types: ['concrete'], moves: [{ name: 'Slam', type: 'concrete', power: 90 }] }, hp: 400, maxHp: 400 });
+  S.update(0.6, ctx());
+  for (let i = 0; i < 600 && S.fight; i++) S.update(0.1, ctx());
+  ok(log.includes('end 20 retreat hurt') && F.hp > 0 && F.hp / 80 <= 0.3, 'losing, yours backs off before it faints');
+  S.cooldown = 0;
+  mons.get(20)!.heldBy = null;
+  S.update(0.6, ctx());
+  ok(!S.fight, 'a hurt Streetmon doesn\'t pick another fight');
+  F.hp = 80;
+  mk(21, 3, 1, { fighter: fz(['grind'], 25) });
+  mons.delete(20);
+  S.update(0.6, ctx());
+  ok(!S.fight, 'it leaves wild ones far above its level alone');
+  // Off in options, and not while it's put away.
+  mk(22, 3, 1);
+  const off = new FollowerSkirmish({ ...SKIRMISH_DEFAULTS, enabled: false }, ad, chart, () => 0.5);
+  off.update(0.6, ctx());
+  S.update(0.6, ctx({ follower: { ...F, ready: false } }));
+  ok(!off.fight && !S.fight, 'switched off in the options, or put away: no fights');
 }
 
 console.log(fails ? `\n${fails} FAILED` : '\nALL PASSED');

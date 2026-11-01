@@ -1396,3 +1396,184 @@ body.touch .dc-name { font-size: 22px; }
 @keyframes stdodge { 0% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(-14px); } }
 .tb-roll { right: 270px; bottom: 186px; width: 54px; height: 54px; font-size: 11px; background: rgba(63, 216, 255, 0.25); }
 @media (max-height: 460px) { body.touch .stamina { left: 12px; bottom: 20px; width: 132px; } }
+
+/* ---------- title screen and pause menu (Menus.ts): a menu column on the left, a panel on the right */
+.overlay.mm {
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: clamp(16px, 3vw, 48px);
+  padding: 0 clamp(16px, 4vw, 64px) 0 0;
+  overflow: hidden;
+}
+.overlay.mm > :first-child, .overlay.mm > :last-child { margin: 0; }
+.overlay.mm.title { background: linear-gradient(90deg, rgba(5, 8, 12, 0.92) 0%, rgba(5, 8, 12, 0.7) 30%, rgba(5, 8, 12, 0.1) 62%, rgba(5, 8, 12, 0) 100%); }
+.overlay.mm.pause { background: linear-gradient(90deg, rgba(5, 8, 12, 0.94) 0%, rgba(5, 8, 12, 0.78) 34%, rgba(5, 8, 12, 0.45) 100%); backdrop-filter: blur(3px); }
+.mm-side {
+  flex: none;
+  width: clamp(280px, 30vw, 420px);
+  display: flex;
+  flex-direction: column;
+  justify-content: safe center;
+  gap: 28px;
+  padding: 32px 0 32px clamp(20px, 5vw, 72px);
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+.mm-brand .logo { font-size: clamp(40px, 5.4vw, 76px); line-height: 0.92; }
+.mm.title .mm-brand .logo span { display: block; }
+.mm-brand .logo.small { font-size: clamp(34px, 3.6vw, 52px); letter-spacing: 0.08em; }
+.mm-brand .sub { font-size: 15px; margin: 10px 0 0; opacity: 0.75; }
+.mm-summary { margin-top: 8px; font-size: 13px; color: #9aa6b4; line-height: 1.4; }
+.mm-nav { display: flex; flex-direction: column; gap: 2px; }
+.mm-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 11px 16px 11px 22px;
+  background: none;
+  border: 0;
+  border-radius: 0 6px 6px 0;
+  color: rgba(255, 255, 255, 0.72);
+  font: 800 clamp(17px, 1.6vw, 22px) var(--ui-font);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.12s, background 0.12s, padding-left 0.12s;
+}
+.mm-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 4px;
+  border-radius: 2px;
+  background: var(--yellow);
+  transform: scaleY(0);
+  transition: transform 0.12s;
+}
+.mm-item:hover, .mm-item:focus-visible, .mm-item.on, .mm-item.pad-focus {
+  color: #fff;
+  background: linear-gradient(90deg, rgba(243, 183, 18, 0.16), rgba(243, 183, 18, 0));
+  padding-left: 28px;
+  outline: none;
+}
+.mm-item:hover::before, .mm-item:focus-visible::before, .mm-item.on::before, .mm-item.pad-focus::before { transform: scaleY(1); }
+.mm-item.primary { color: var(--yellow); }
+.mm-item.quit { margin-top: 10px; font-size: clamp(14px, 1.2vw, 16px); color: rgba(255, 255, 255, 0.5); }
+.mm-item.quit:hover, .mm-item.quit:focus-visible { color: #ff8a7a; }
+.mm-item small { font: 500 12px var(--ui-font); letter-spacing: 0.02em; text-transform: none; color: #9aa6b4; }
+.mm-item .save-info:empty { display: none; }
+.mm .credit { text-align: left; max-width: 300px; }
+.mm-hint { font-size: 12px; color: #7d8794; }
+body.touch .mm-hint { display: none; }
+.mm kbd, .mm-key kbd {
+  display: inline-block;
+  min-width: 1.5em;
+  padding: 1px 6px;
+  border: 1px solid #4a5260;
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: #222831;
+  color: #fff;
+  font: 700 12px var(--ui-font);
+  text-align: center;
+  line-height: 1.5;
+}
+.mm-panel {
+  align-self: center;
+  flex: 1 1 auto;
+  max-width: 820px;
+  max-height: min(86vh, 760px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 24px 22px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  background: rgba(14, 17, 23, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  animation: mm-in 0.16s ease-out;
+}
+.mm-panel[hidden] { display: none; }
+@keyframes mm-in { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+.mm-panel header { display: flex; align-items: center; justify-content: space-between; }
+.mm-panel h2 { margin: 0; font-size: 22px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
+.mm-x { width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.18); background: rgba(255, 255, 255, 0.04); color: #c8d0da; font-size: 15px; cursor: pointer; }
+.mm-x:hover, .mm-x:focus-visible { border-color: var(--yellow); color: #fff; outline: none; }
+.mm-tabs { display: flex; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 12px; }
+.mm-tabs button {
+  padding: 7px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: none;
+  color: #c8d0da;
+  font: 700 13px var(--ui-font);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.mm-tabs button:hover, .mm-tabs button:focus-visible { border-color: rgba(243, 183, 18, 0.7); color: #fff; outline: none; }
+.mm-tabs button.on { background: var(--yellow); border-color: var(--yellow); color: #111; }
+.mm-rows { display: flex; flex-direction: column; gap: 6px; }
+.mm-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.mm-row:hover, .mm-row:focus-visible { background: rgba(255, 255, 255, 0.08); border-color: rgba(243, 183, 18, 0.55); outline: none; }
+.mm-row-l { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.mm-row-l b { font-size: 15px; }
+.mm-row-l small { font-size: 12.5px; color: #8f9aa8; }
+.mm-val { flex: none; display: flex; align-items: center; gap: 10px; font-weight: 800; }
+.mm-val em { font-style: normal; min-width: 92px; text-align: center; color: var(--yellow); font-size: 15px; }
+.mm-val i { font-style: normal; font-size: 20px; color: #7d8794; padding: 0 4px; line-height: 1; }
+.mm-row:hover .mm-val i, .mm-row:focus-visible .mm-val i { color: #fff; }
+.mm-row.bump .mm-val em { animation: mm-bump 0.18s ease-out; }
+@keyframes mm-bump { 50% { transform: scale(1.15); } }
+.mm-cards { columns: 2 280px; column-gap: 14px; }
+.mm-card { break-inside: avoid; margin: 0 0 14px; padding: 12px 14px 10px; border-radius: 10px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.06); }
+.mm-card h3 { margin: 0 0 8px; color: var(--yellow); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; }
+.mm-key { display: grid; grid-template-columns: minmax(110px, auto) 1fr; gap: 10px; align-items: baseline; padding: 4px 0; font-size: 13px; color: #d9dee5; border-top: 1px solid rgba(255, 255, 255, 0.04); }
+.mm-key:first-of-type { border-top: 0; }
+.mm-key .caps { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.mm-key .caps i { font-style: normal; color: #69727f; font-size: 11px; }
+.mm-key .caps small { color: #8f9aa8; font-size: 11px; }
+.mm-foot { margin: 0; font-size: 12px; color: #7d8794; }
+.mm-panel .tut-list { display: block; width: auto; max-height: none; background: none; padding: 0; }
+.mm-panel .save-note { text-align: left; max-width: none; }
+.mm .pad-focus { outline-offset: 0; }
+/* Narrow screens (phones): the panel takes the screen over the menu. */
+@media (max-width: 760px) {
+  .overlay.mm { padding: 0; }
+  .mm-side { width: 100%; padding: 24px 20px; }
+  .overlay.mm.has-panel .mm-side { display: none; }
+  .mm-panel { position: absolute; inset: 12px; max-height: none; max-width: none; }
+  .mm-cards { columns: 1; }
+}
+/* Short screens (phones held sideways): tighter column, no keyboard hint. */
+@media (max-height: 520px) {
+  .mm-side { gap: 10px; padding-top: 14px; padding-bottom: 14px; }
+  .mm-brand .logo { font-size: 34px; }
+  .mm-brand .logo.small { font-size: 28px; }
+  .mm-brand .sub, .mm-summary, .mm-hint, .mm .credit { display: none; }
+  .mm-item { padding-top: 6px; padding-bottom: 6px; font-size: 16px; }
+  .mm-item.quit { margin-top: 4px; }
+  .mm-panel { max-height: calc(100vh - 24px); padding: 14px 16px; }
+}

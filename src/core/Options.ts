@@ -15,6 +15,8 @@ export interface Options {
   effects: number;
   /** HUD and menus scale (1 = the default). */
   hudSize: number;
+  /** Your Streetmon, out walking with you, takes on wild ones nearby by itself. */
+  petFights: boolean;
 }
 
 export const OPTION_LADDERS: { [K in keyof Options]: ReadonlyArray<Options[K]> } = {
@@ -23,14 +25,15 @@ export const OPTION_LADDERS: { [K in keyof Options]: ReadonlyArray<Options[K]> }
   music: [1, 0.75, 0.5, 0.25, 0],
   effects: [1, 0.75, 0.5, 0.25, 0],
   hudSize: [1, 1.15, 1.3, 0.85],
+  petFights: [true, false],
 };
 
-export const DEFAULT_OPTIONS: Options = { lookSpeed: 1, invertY: false, music: 1, effects: 1, hudSize: 1 };
+export const DEFAULT_OPTIONS: Options = { lookSpeed: 1, invertY: false, music: 1, effects: 1, hudSize: 1, petFights: true };
 
 export const OPTIONS_KEY = 'es.opts';
 
-/** The next value on an option's ladder (wrapping), from wherever the current one is. */
-export function cycleOption<K extends keyof Options>(opts: Options, key: K): Options {
+/** The next value on an option's ladder (wrapping; `dir` -1 for the one before), from wherever the current one is. */
+export function cycleOption<K extends keyof Options>(opts: Options, key: K, dir = 1): Options {
   const ladder = OPTION_LADDERS[key] as ReadonlyArray<Options[K]>;
   const cur = opts[key];
   // Nearest rung (a value edited by hand or from an older build snaps to the ladder).
@@ -45,7 +48,8 @@ export function cycleOption<K extends keyof Options>(opts: Options, key: K): Opt
       }
     });
   } else i = Math.max(0, ladder.indexOf(cur));
-  return { ...opts, [key]: ladder[(i + 1) % ladder.length] };
+  const n = ladder.length;
+  return { ...opts, [key]: ladder[(((i + (dir < 0 ? -1 : 1)) % n) + n) % n] };
 }
 
 /** The pause-menu label for an option. */
@@ -62,6 +66,8 @@ export function optionLabel<K extends keyof Options>(opts: Options, key: K): str
       return `Effects: ${v === 0 ? 'off' : `${Math.round((v as number) * 100)}%`}`;
     case 'hudSize':
       return `HUD size: ${Math.round((v as number) * 100)}%`;
+    case 'petFights':
+      return `Streetmon fights on its own: ${v ? 'on' : 'off'}`;
   }
   return '';
 }
@@ -77,6 +83,7 @@ export function parseOptions(raw: string | null | undefined): Options {
     if (typeof o.music === 'number' && o.music >= 0 && o.music <= 1) out.music = o.music;
     if (typeof o.effects === 'number' && o.effects >= 0 && o.effects <= 1) out.effects = o.effects;
     if (typeof o.hudSize === 'number' && o.hudSize >= 0.5 && o.hudSize <= 2) out.hudSize = o.hudSize;
+    if (typeof o.petFights === 'boolean') out.petFights = o.petFights;
   } catch {
     // A bad blob: the defaults.
   }
