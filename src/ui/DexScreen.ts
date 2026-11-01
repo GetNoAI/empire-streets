@@ -14,7 +14,7 @@ import type { CreatureIcons } from './CreatureIcons';
 
 const badge = (t: TypeId): string => `<span class="tbadge" style="background:${typeInfo(t).color}">${typeInfo(t).name}</span>`;
 const no = (s: SpeciesSpec): string => `#${String(s.dex).padStart(3, '0')}`;
-const BIOME_NAMES: Record<Biome, string> = { street: 'Street', roof: 'Rooftops', sewer: 'Sewers' };
+const BIOME_NAMES: Record<Biome, string> = { street: 'Street', roof: 'Rooftops', sewer: 'Sewers', pond: 'Pond' };
 const STATE_LABEL = { seen: 'Seen', captured: 'Captured', evolved: 'Evolved', missing: 'Not captured' } as const;
 const mult = (m: number): string => (m === 0 ? '0' : m === 0.5 ? '½' : m === 0.25 ? '¼' : `${m}`);
 const cls = (good: boolean, bad: boolean): string => (good ? 'up' : bad ? 'down' : '');
@@ -149,7 +149,7 @@ export class DexScreen {
     const st = dexState(s.id, this.data);
     const entry = dexEntry(s.id);
     if (st === 'unseen') {
-      const phrase: Record<Biome, string> = { street: 'on the streets', roof: 'up on the rooftops', sewer: 'down in the sewers' };
+      const phrase: Record<Biome, string> = { street: 'on the streets', roof: 'up on the rooftops', sewer: 'down in the sewers', pond: 'in the Central Green pond' };
       const where = dexBiomes(s).map((b) => phrase[b]);
       return `<div class="dex-unknown">${this.icons.img(s.id, false, 'cicon big dex-sil')}<p>${no(s)} ???</p>
         <p class="tm-desc">Not seen yet. ${where.length ? `Word is it turns up ${where.join(' or ')}.` : 'Nobody has seen one in the wild.'}</p></div>`;

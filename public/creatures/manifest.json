@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-30T10:51:14.703Z",
+  "generated": "2026-10-31T23:06:22.099Z",
   "validator": "GlbCheck (Khronos-equivalent data checks; gltf-validator not installed)",
   "atlas": {
     "size": 512,
@@ -18,7 +18,7 @@
         "gun"
       ],
       "file": "creatures/strapback.glb",
-      "triangles": 1108,
+      "triangles": 1256,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -38,9 +38,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 317404,
+      "bytes": 450312,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -54,6 +61,10 @@
         "leg_L",
         "arm_R",
         "leg_R",
+        "arm_L_lo",
+        "leg_L_lo",
+        "arm_R_lo",
+        "leg_R_lo",
         "aura"
       ],
       "surface": {
@@ -68,25 +79,25 @@
         "bevel": 0.08
       },
       "atlasCells": {
-        "vgrad": 336,
-        "wear": 259,
-        "grime": 96,
-        "rust": 37,
+        "vgrad": 386,
+        "grime": 142,
+        "wear": 295,
+        "rust": 53,
         "flat": 240,
         "hgrad": 36,
         "core": 24
       },
       "polish": {
-        "triangles": 1028,
+        "triangles": 1176,
         "bevelled": 12,
         "plain": 0,
         "extrasDropped": 0,
         "coplanarSaved": 0,
-        "hiddenCulled": 96
+        "hiddenCulled": 76
       },
       "shiny": {
         "file": "creatures/strapback_shiny.glb",
-        "triangles": 1108,
+        "triangles": 1256,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -106,9 +117,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 317444,
+        "bytes": 450348,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -123,7 +141,7 @@
         "gun"
       ],
       "file": "creatures/holster.glb",
-      "triangles": 1226,
+      "triangles": 1402,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -143,9 +161,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 347120,
+      "bytes": 486980,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -159,6 +184,10 @@
         "leg_L",
         "arm_R",
         "leg_R",
+        "arm_L_lo",
+        "leg_L_lo",
+        "arm_R_lo",
+        "leg_R_lo",
         "aura"
       ],
       "surface": {
@@ -173,26 +202,26 @@
         "bevel": 0.08
       },
       "atlasCells": {
-        "vgrad": 368,
-        "wear": 317,
-        "grime": 96,
-        "rust": 73,
+        "grime": 140,
+        "vgrad": 424,
+        "wear": 367,
+        "rust": 99,
         "flat": 220,
         "vstrong": 12,
         "hgrad": 36,
         "core": 24
       },
       "polish": {
-        "triangles": 1146,
+        "triangles": 1322,
         "bevelled": 16,
         "plain": 0,
         "extrasDropped": 0,
         "coplanarSaved": 2,
-        "hiddenCulled": 164
+        "hiddenCulled": 116
       },
       "shiny": {
         "file": "creatures/holster_shiny.glb",
-        "triangles": 1226,
+        "triangles": 1402,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -212,9 +241,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 347156,
+        "bytes": 487016,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -230,7 +266,7 @@
         "concrete"
       ],
       "file": "creatures/hardcase.glb",
-      "triangles": 1013,
+      "triangles": 1189,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -250,9 +286,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 293412,
+      "bytes": 434020,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -266,6 +309,10 @@
         "leg_L",
         "arm_R",
         "leg_R",
+        "arm_L_lo",
+        "leg_L_lo",
+        "arm_R_lo",
+        "leg_R_lo",
         "aura"
       ],
       "surface": {
@@ -280,26 +327,26 @@
         "bevel": 0.098
       },
       "atlasCells": {
-        "vgrad": 211,
-        "wear": 271,
-        "grime": 96,
-        "rust": 65,
+        "vgrad": 270,
+        "grime": 137,
+        "wear": 332,
+        "rust": 80,
         "flat": 162,
         "vstrong": 92,
         "hgrad": 12,
         "core": 24
       },
       "polish": {
-        "triangles": 933,
+        "triangles": 1109,
         "bevelled": 15,
         "plain": 0,
         "extrasDropped": 0,
         "coplanarSaved": 2,
-        "hiddenCulled": 285
+        "hiddenCulled": 237
       },
       "shiny": {
         "file": "creatures/hardcase_shiny.glb",
-        "triangles": 1013,
+        "triangles": 1189,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -319,9 +366,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 293448,
+        "bytes": 434056,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -336,7 +390,7 @@
         "gun"
       ],
       "file": "creatures/slugger.glb",
-      "triangles": 1222,
+      "triangles": 1386,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -356,9 +410,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 347472,
+      "bytes": 504524,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -373,6 +434,11 @@
         "leg_BL",
         "leg_FR",
         "leg_BR",
+        "tail_lo",
+        "leg_FL_lo",
+        "leg_BL_lo",
+        "leg_FR_lo",
+        "leg_BR_lo",
         "aura"
       ],
       "surface": {
@@ -388,24 +454,24 @@
       },
       "atlasCells": {
         "hgrad": 100,
-        "rust": 78,
-        "wear": 206,
-        "vgrad": 326,
-        "grime": 216,
+        "rust": 96,
+        "wear": 236,
+        "vgrad": 394,
+        "grime": 264,
         "flat": 192,
         "core": 24
       },
       "polish": {
-        "triangles": 1142,
+        "triangles": 1306,
         "bevelled": 14,
         "plain": 0,
         "extrasDropped": 0,
         "coplanarSaved": 72,
-        "hiddenCulled": 38
+        "hiddenCulled": 22
       },
       "shiny": {
         "file": "creatures/slugger_shiny.glb",
-        "triangles": 1222,
+        "triangles": 1386,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -425,9 +491,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 347508,
+        "bytes": 504560,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -442,7 +515,7 @@
         "gun"
       ],
       "file": "creatures/longshot.glb",
-      "triangles": 781,
+      "triangles": 885,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -462,9 +535,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 243028,
+      "bytes": 370796,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -480,6 +560,10 @@
         "scope",
         "wing_L",
         "wing_R",
+        "leg_L_lo",
+        "leg_R_lo",
+        "wing_L_tip",
+        "wing_R_tip",
         "aura"
       ],
       "surface": {
@@ -496,15 +580,15 @@
       "atlasCells": {
         "vstrong": 80,
         "hgrad": 31,
-        "vgrad": 62,
-        "grime": 30,
+        "vgrad": 124,
+        "grime": 40,
         "flat": 314,
-        "wear": 95,
-        "rust": 41,
+        "rust": 48,
+        "wear": 120,
         "core": 48
       },
       "polish": {
-        "triangles": 701,
+        "triangles": 805,
         "bevelled": 5,
         "plain": 0,
         "extrasDropped": 0,
@@ -513,7 +597,7 @@
       },
       "shiny": {
         "file": "creatures/longshot_shiny.glb",
-        "triangles": 781,
+        "triangles": 885,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -533,9 +617,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 243068,
+        "bytes": 370836,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -550,7 +641,7 @@
         "gun"
       ],
       "file": "creatures/overwatch.glb",
-      "triangles": 927,
+      "triangles": 1051,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -570,9 +661,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 284860,
+      "bytes": 436904,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -589,6 +687,11 @@
         "scope",
         "wing_L",
         "wing_R",
+        "leg_L_lo",
+        "leg_R_lo",
+        "leg_B_lo",
+        "wing_L_tip",
+        "wing_R_tip",
         "aura"
       ],
       "surface": {
@@ -603,16 +706,16 @@
         "bevel": 0.08
       },
       "atlasCells": {
-        "vgrad": 168,
-        "grime": 45,
+        "vgrad": 245,
+        "grime": 60,
         "flat": 438,
-        "wear": 101,
-        "rust": 35,
+        "wear": 114,
+        "rust": 54,
         "hgrad": 12,
         "core": 48
       },
       "polish": {
-        "triangles": 847,
+        "triangles": 971,
         "bevelled": 5,
         "plain": 0,
         "extrasDropped": 0,
@@ -621,7 +724,7 @@
       },
       "shiny": {
         "file": "creatures/overwatch_shiny.glb",
-        "triangles": 927,
+        "triangles": 1051,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -641,9 +744,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 284900,
+        "bytes": 436944,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -658,7 +768,7 @@
         "concrete"
       ],
       "file": "creatures/cinderblock.glb",
-      "triangles": 863,
+      "triangles": 1055,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -678,9 +788,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 255792,
+      "bytes": 400944,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -694,6 +811,10 @@
         "arm_L",
         "leg_R",
         "arm_R",
+        "leg_L_lo",
+        "arm_L_lo",
+        "leg_R_lo",
+        "arm_R_lo",
         "aura"
       ],
       "surface": {
@@ -708,15 +829,15 @@
         "bevel": 0.14
       },
       "atlasCells": {
-        "vgrad": 299,
-        "grime": 32,
-        "wear": 200,
+        "grime": 81,
+        "vgrad": 396,
+        "wear": 246,
         "hgrad": 36,
         "flat": 120,
         "core": 96
       },
       "polish": {
-        "triangles": 783,
+        "triangles": 975,
         "bevelled": 7,
         "plain": 0,
         "extrasDropped": 0,
@@ -725,7 +846,7 @@
       },
       "shiny": {
         "file": "creatures/cinderblock_shiny.glb",
-        "triangles": 863,
+        "triangles": 1055,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -745,9 +866,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 255828,
+        "bytes": 400980,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -762,7 +890,7 @@
         "concrete"
       ],
       "file": "creatures/overpass.glb",
-      "triangles": 1134,
+      "triangles": 1266,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -782,9 +910,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 324128,
+      "bytes": 454096,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -798,6 +933,10 @@
         "arm_L",
         "leg_R",
         "arm_R",
+        "leg_L_lo",
+        "arm_L_lo",
+        "leg_R_lo",
+        "arm_R_lo",
         "aura"
       ],
       "surface": {
@@ -812,26 +951,26 @@
         "bevel": 0.14
       },
       "atlasCells": {
-        "vstrong": 20,
-        "grime": 116,
-        "wear": 308,
-        "vgrad": 214,
-        "rust": 20,
+        "vstrong": 46,
+        "grime": 128,
+        "wear": 369,
+        "vgrad": 250,
+        "rust": 17,
         "flat": 244,
         "hgrad": 36,
         "core": 96
       },
       "polish": {
-        "triangles": 1054,
+        "triangles": 1186,
         "bevelled": 13,
         "plain": 0,
         "extrasDropped": 0,
         "coplanarSaved": 20,
-        "hiddenCulled": 22
+        "hiddenCulled": 18
       },
       "shiny": {
         "file": "creatures/overpass_shiny.glb",
-        "triangles": 1134,
+        "triangles": 1266,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -851,9 +990,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 324164,
+        "bytes": 454136,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -868,7 +1014,7 @@
         "concrete"
       ],
       "file": "creatures/curbstone.glb",
-      "triangles": 1122,
+      "triangles": 1260,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -889,9 +1035,16 @@
         "hurt",
         "faint",
         "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt",
         "idle_curled"
       ],
-      "bytes": 336596,
+      "bytes": 485312,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -906,6 +1059,11 @@
         "leg_BL",
         "leg_FR",
         "leg_BR",
+        "tail_lo",
+        "leg_FL_lo",
+        "leg_BL_lo",
+        "leg_FR_lo",
+        "leg_BR_lo",
         "aura"
       ],
       "surface": {
@@ -921,16 +1079,16 @@
       },
       "atlasCells": {
         "vstrong": 90,
-        "hgrad": 92,
-        "wear": 236,
+        "hgrad": 102,
+        "wear": 268,
         "rust": 52,
-        "vgrad": 172,
-        "grime": 88,
+        "grime": 152,
+        "vgrad": 204,
         "flat": 280,
         "core": 32
       },
       "polish": {
-        "triangles": 1042,
+        "triangles": 1180,
         "bevelled": 11,
         "plain": 0,
         "extrasDropped": 0,
@@ -939,7 +1097,7 @@
       },
       "shiny": {
         "file": "creatures/curbstone_shiny.glb",
-        "triangles": 1122,
+        "triangles": 1260,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -960,9 +1118,16 @@
           "hurt",
           "faint",
           "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt",
           "idle_curled"
         ],
-        "bytes": 336632,
+        "bytes": 485348,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -978,7 +1143,7 @@
         "gun"
       ],
       "file": "creatures/rebarb.glb",
-      "triangles": 1032,
+      "triangles": 1160,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -998,9 +1163,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 293820,
+      "bytes": 423716,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -1014,6 +1186,10 @@
         "leg_BL",
         "leg_FR",
         "leg_BR",
+        "leg_FL_lo",
+        "leg_BL_lo",
+        "leg_FR_lo",
+        "leg_BR_lo",
         "aura"
       ],
       "surface": {
@@ -1029,15 +1205,15 @@
       },
       "atlasCells": {
         "vstrong": 100,
-        "vgrad": 310,
+        "vgrad": 342,
         "flat": 234,
         "hgrad": 60,
-        "grime": 88,
-        "wear": 64,
+        "grime": 152,
+        "wear": 96,
         "core": 96
       },
       "polish": {
-        "triangles": 952,
+        "triangles": 1080,
         "bevelled": 4,
         "plain": 0,
         "extrasDropped": 0,
@@ -1046,7 +1222,7 @@
       },
       "shiny": {
         "file": "creatures/rebarb_shiny.glb",
-        "triangles": 1032,
+        "triangles": 1160,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -1066,9 +1242,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 293848,
+        "bytes": 423748,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -1083,7 +1266,7 @@
         "grind"
       ],
       "file": "creatures/doubleshift.glb",
-      "triangles": 1037,
+      "triangles": 1123,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -1103,9 +1286,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 311456,
+      "bytes": 438704,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -1121,6 +1311,10 @@
         "arm_L",
         "leg_R",
         "arm_R",
+        "leg_L_lo",
+        "arm_L_lo",
+        "leg_R_lo",
+        "arm_R_lo",
         "aura"
       ],
       "surface": {
@@ -1135,22 +1329,22 @@
         "bevel": 0.1
       },
       "atlasCells": {
-        "vgrad": 424,
+        "vgrad": 500,
         "flat": 407,
-        "grime": 94,
+        "grime": 104,
         "core": 32
       },
       "polish": {
-        "triangles": 957,
+        "triangles": 1043,
         "bevelled": 2,
         "plain": 0,
         "extrasDropped": 0,
         "coplanarSaved": 22,
-        "hiddenCulled": 137
+        "hiddenCulled": 131
       },
       "shiny": {
         "file": "creatures/doubleshift_shiny.glb",
-        "triangles": 1037,
+        "triangles": 1123,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -1170,9 +1364,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 311492,
+        "bytes": 438740,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -1187,7 +1388,7 @@
         "grind"
       ],
       "file": "creatures/overtime.glb",
-      "triangles": 1336,
+      "triangles": 1422,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -1207,9 +1408,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 398424,
+      "bytes": 534720,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -1227,6 +1435,10 @@
         "arm_L",
         "leg_R",
         "arm_R",
+        "leg_L_lo",
+        "arm_L_lo",
+        "leg_R_lo",
+        "arm_R_lo",
         "aura"
       ],
       "surface": {
@@ -1241,22 +1453,22 @@
         "bevel": 0.1
       },
       "atlasCells": {
-        "vgrad": 708,
+        "vgrad": 784,
         "flat": 422,
-        "grime": 94,
+        "grime": 104,
         "core": 32
       },
       "polish": {
-        "triangles": 1256,
+        "triangles": 1342,
         "bevelled": 2,
         "plain": 0,
         "extrasDropped": 0,
         "coplanarSaved": 26,
-        "hiddenCulled": 194
+        "hiddenCulled": 188
       },
       "shiny": {
         "file": "creatures/overtime_shiny.glb",
-        "triangles": 1336,
+        "triangles": 1422,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -1276,9 +1488,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 398460,
+        "bytes": 534756,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -1293,7 +1512,7 @@
         "grind"
       ],
       "file": "creatures/hustlepup.glb",
-      "triangles": 1118,
+      "triangles": 1266,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -1313,9 +1532,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 329024,
+      "bytes": 504088,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -1333,6 +1559,11 @@
         "leg_BL",
         "leg_FR",
         "leg_BR",
+        "tail_lo",
+        "leg_FL_lo",
+        "leg_BL_lo",
+        "leg_FR_lo",
+        "leg_BR_lo",
         "aura"
       ],
       "surface": {
@@ -1349,14 +1580,14 @@
       "atlasCells": {
         "hgrad": 48,
         "rust": 57,
-        "wear": 199,
-        "vgrad": 134,
-        "grime": 136,
+        "wear": 231,
+        "grime": 200,
+        "vgrad": 186,
         "flat": 432,
         "core": 32
       },
       "polish": {
-        "triangles": 1038,
+        "triangles": 1186,
         "bevelled": 10,
         "plain": 0,
         "extrasDropped": 0,
@@ -1365,7 +1596,7 @@
       },
       "shiny": {
         "file": "creatures/hustlepup_shiny.glb",
-        "triangles": 1118,
+        "triangles": 1266,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -1385,9 +1616,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 329056,
+        "bytes": 504124,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -1402,7 +1640,7 @@
         "grind"
       ],
       "file": "creatures/cashew.glb",
-      "triangles": 1105,
+      "triangles": 1245,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -1422,9 +1660,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 335088,
+      "bytes": 489896,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -1441,6 +1686,10 @@
         "arm_L",
         "leg_R",
         "arm_R",
+        "leg_L_lo",
+        "arm_L_lo",
+        "leg_R_lo",
+        "arm_R_lo",
         "aura"
       ],
       "surface": {
@@ -1456,13 +1705,13 @@
       },
       "atlasCells": {
         "vstrong": 72,
-        "grime": 88,
-        "vgrad": 507,
+        "grime": 140,
+        "vgrad": 595,
         "flat": 326,
         "core": 32
       },
       "polish": {
-        "triangles": 1025,
+        "triangles": 1165,
         "bevelled": 0,
         "plain": 0,
         "extrasDropped": 0,
@@ -1471,7 +1720,7 @@
       },
       "shiny": {
         "file": "creatures/cashew_shiny.glb",
-        "triangles": 1105,
+        "triangles": 1245,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -1491,9 +1740,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 335124,
+        "bytes": 489932,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -1528,9 +1784,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 263928,
+      "bytes": 287956,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -1591,9 +1854,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 263976,
+        "bytes": 288004,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -1628,9 +1898,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 352816,
+      "bytes": 382644,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -1692,9 +1969,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 352860,
+        "bytes": 382692,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -1709,7 +1993,7 @@
         "smoke"
       ],
       "file": "creatures/hazeling.glb",
-      "triangles": 1200,
+      "triangles": 1280,
       "drawCalls": 4,
       "bbox": {
         "min": [
@@ -1729,9 +2013,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 357436,
+      "bytes": 493100,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -1748,6 +2039,10 @@
         "tail_0",
         "tail_1",
         "tail_2",
+        "leg_FL_lo",
+        "leg_BL_lo",
+        "leg_FR_lo",
+        "leg_BR_lo",
         "aura"
       ],
       "surface": {
@@ -1763,13 +2058,13 @@
       },
       "atlasCells": {
         "vstrong": 128,
-        "vgrad": 812,
-        "grime": 12,
+        "vgrad": 872,
+        "grime": 32,
         "flat": 72,
         "core": 96
       },
       "polish": {
-        "triangles": 1120,
+        "triangles": 1200,
         "bevelled": 0,
         "plain": 0,
         "extrasDropped": 0,
@@ -1778,7 +2073,7 @@
       },
       "shiny": {
         "file": "creatures/hazeling_shiny.glb",
-        "triangles": 1200,
+        "triangles": 1280,
         "drawCalls": 4,
         "bbox": {
           "min": [
@@ -1798,9 +2093,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 357488,
+        "bytes": 493152,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -1816,7 +2118,7 @@
         "concrete"
       ],
       "file": "creatures/flue.glb",
-      "triangles": 1189,
+      "triangles": 1317,
       "drawCalls": 4,
       "bbox": {
         "min": [
@@ -1836,9 +2138,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 383452,
+      "bytes": 554416,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -1857,6 +2166,10 @@
         "puff_0",
         "puff_1",
         "puff_2",
+        "leg_L_lo",
+        "arm_L_lo",
+        "leg_R_lo",
+        "arm_R_lo",
         "aura"
       ],
       "surface": {
@@ -1872,15 +2185,15 @@
       },
       "atlasCells": {
         "vstrong": 128,
-        "vgrad": 194,
-        "wear": 228,
+        "vgrad": 248,
+        "wear": 280,
         "flat": 327,
-        "grime": 116,
+        "grime": 138,
         "hgrad": 8,
         "core": 108
       },
       "polish": {
-        "triangles": 1109,
+        "triangles": 1237,
         "bevelled": 10,
         "plain": 0,
         "extrasDropped": 0,
@@ -1889,7 +2202,7 @@
       },
       "shiny": {
         "file": "creatures/flue_shiny.glb",
-        "triangles": 1189,
+        "triangles": 1317,
         "drawCalls": 4,
         "bbox": {
           "min": [
@@ -1909,9 +2222,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 383500,
+        "bytes": 554464,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -1926,7 +2246,7 @@
         "bass"
       ],
       "file": "creatures/subsonic.glb",
-      "triangles": 998,
+      "triangles": 1062,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -1946,9 +2266,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 284612,
+      "bytes": 369676,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -1961,6 +2288,8 @@
         "rings_0",
         "leg_L",
         "leg_R",
+        "leg_L_lo",
+        "leg_R_lo",
         "aura"
       ],
       "surface": {
@@ -1976,14 +2305,14 @@
       },
       "atlasCells": {
         "vstrong": 140,
-        "vgrad": 150,
-        "wear": 88,
+        "vgrad": 171,
+        "wear": 108,
         "flat": 72,
-        "grime": 28,
+        "grime": 51,
         "core": 440
       },
       "polish": {
-        "triangles": 918,
+        "triangles": 982,
         "bevelled": 3,
         "plain": 0,
         "extrasDropped": 0,
@@ -1992,7 +2321,7 @@
       },
       "shiny": {
         "file": "creatures/subsonic_shiny.glb",
-        "triangles": 998,
+        "triangles": 1062,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -2012,9 +2341,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 284648,
+        "bytes": 369712,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -2029,7 +2365,7 @@
         "bass"
       ],
       "file": "creatures/woofer.glb",
-      "triangles": 1453,
+      "triangles": 1485,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -2049,9 +2385,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 431132,
+      "bytes": 571540,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -2069,6 +2412,10 @@
         "leg_R",
         "arm_R",
         "emitter",
+        "leg_L_lo",
+        "arm_L_lo",
+        "leg_R_lo",
+        "arm_R_lo",
         "aura"
       ],
       "surface": {
@@ -2084,13 +2431,13 @@
       },
       "atlasCells": {
         "vstrong": 152,
-        "vgrad": 177,
-        "grime": 4,
+        "vgrad": 189,
+        "grime": 24,
         "hgrad": 20,
         "core": 1020
       },
       "polish": {
-        "triangles": 1373,
+        "triangles": 1437,
         "bevelled": 0,
         "plain": 8,
         "extrasDropped": 6,
@@ -2099,7 +2446,7 @@
       },
       "shiny": {
         "file": "creatures/woofer_shiny.glb",
-        "triangles": 1453,
+        "triangles": 1485,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -2119,9 +2466,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 431168,
+        "bytes": 571572,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -2136,7 +2490,7 @@
         "bass"
       ],
       "file": "creatures/streetlamp.glb",
-      "triangles": 674,
+      "triangles": 770,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -2156,9 +2510,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 204292,
+      "bytes": 293860,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -2170,6 +2531,8 @@
         "head",
         "wing_L",
         "wing_R",
+        "wing_L_tip",
+        "wing_R_tip",
         "aura"
       ],
       "surface": {
@@ -2187,12 +2550,12 @@
         "grime": 72,
         "vstrong": 16,
         "wear": 12,
-        "flat": 352,
-        "vgrad": 62,
+        "flat": 384,
+        "vgrad": 126,
         "core": 80
       },
       "polish": {
-        "triangles": 594,
+        "triangles": 690,
         "bevelled": 2,
         "plain": 0,
         "extrasDropped": 0,
@@ -2201,7 +2564,7 @@
       },
       "shiny": {
         "file": "creatures/streetlamp_shiny.glb",
-        "triangles": 674,
+        "triangles": 770,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -2221,9 +2584,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 204328,
+        "bytes": 293892,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -2258,9 +2628,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 444612,
+      "bytes": 616924,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -2334,9 +2711,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 444644,
+        "bytes": 616956,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -2351,7 +2735,7 @@
         "wire"
       ],
       "file": "creatures/rooftail.glb",
-      "triangles": 828,
+      "triangles": 956,
       "drawCalls": 4,
       "bbox": {
         "min": [
@@ -2371,9 +2755,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 268752,
+      "bytes": 428888,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -2390,6 +2781,10 @@
         "wing_R",
         "leg_L",
         "leg_R",
+        "wing_L_tip",
+        "wing_R_tip",
+        "leg_L_lo",
+        "leg_R_lo",
         "aura"
       ],
       "surface": {
@@ -2404,17 +2799,17 @@
         "bevel": 0.1
       },
       "atlasCells": {
-        "vstrong": 104,
+        "vstrong": 136,
         "hgrad": 76,
-        "vgrad": 140,
+        "vgrad": 182,
         "flat": 248,
-        "wear": 42,
-        "rust": 22,
-        "grime": 36,
+        "wear": 62,
+        "rust": 34,
+        "grime": 58,
         "core": 80
       },
       "polish": {
-        "triangles": 748,
+        "triangles": 876,
         "bevelled": 2,
         "plain": 0,
         "extrasDropped": 0,
@@ -2423,7 +2818,7 @@
       },
       "shiny": {
         "file": "creatures/rooftail_shiny.glb",
-        "triangles": 828,
+        "triangles": 956,
         "drawCalls": 4,
         "bbox": {
           "min": [
@@ -2443,9 +2838,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 268800,
+        "bytes": 428936,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -2461,7 +2863,7 @@
         "bass"
       ],
       "file": "creatures/antennaroc.glb",
-      "triangles": 1099,
+      "triangles": 1232,
       "drawCalls": 4,
       "bbox": {
         "min": [
@@ -2481,9 +2883,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 352532,
+      "bytes": 537124,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -2503,6 +2912,10 @@
         "wing_R",
         "leg_L",
         "leg_R",
+        "wing_L_tip",
+        "wing_R_tip",
+        "leg_L_lo",
+        "leg_R_lo",
         "aura"
       ],
       "surface": {
@@ -2518,16 +2931,16 @@
       },
       "atlasCells": {
         "vstrong": 80,
-        "wear": 78,
-        "rust": 33,
-        "vgrad": 232,
+        "wear": 107,
+        "rust": 44,
+        "vgrad": 299,
         "flat": 248,
         "hgrad": 12,
-        "grime": 36,
+        "grime": 62,
         "core": 300
       },
       "polish": {
-        "triangles": 1019,
+        "triangles": 1152,
         "bevelled": 3,
         "plain": 0,
         "extrasDropped": 0,
@@ -2536,7 +2949,7 @@
       },
       "shiny": {
         "file": "creatures/antennaroc_shiny.glb",
-        "triangles": 1099,
+        "triangles": 1232,
         "drawCalls": 4,
         "bbox": {
           "min": [
@@ -2556,9 +2969,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 352580,
+        "bytes": 537168,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -2574,7 +2994,7 @@
         "smoke"
       ],
       "file": "creatures/neonmoth.glb",
-      "triangles": 670,
+      "triangles": 734,
       "drawCalls": 5,
       "bbox": {
         "min": [
@@ -2594,9 +3014,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 214440,
+      "bytes": 304808,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -2609,6 +3036,8 @@
         "wing_L",
         "wing_R",
         "glow",
+        "wing_L_tip",
+        "wing_R_tip",
         "aura"
       ],
       "surface": {
@@ -2625,11 +3054,11 @@
       "atlasCells": {
         "vgrad": 269,
         "flat": 67,
-        "vstrong": 24,
-        "core": 230
+        "vstrong": 56,
+        "core": 262
       },
       "polish": {
-        "triangles": 590,
+        "triangles": 654,
         "bevelled": 0,
         "plain": 0,
         "extrasDropped": 0,
@@ -2638,7 +3067,7 @@
       },
       "shiny": {
         "file": "creatures/neonmoth_shiny.glb",
-        "triangles": 670,
+        "triangles": 734,
         "drawCalls": 5,
         "bbox": {
           "min": [
@@ -2658,9 +3087,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 214500,
+        "bytes": 304868,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -2676,7 +3112,7 @@
         "smoke"
       ],
       "file": "creatures/marqueen.glb",
-      "triangles": 1095,
+      "triangles": 1191,
       "drawCalls": 5,
       "bbox": {
         "min": [
@@ -2696,9 +3132,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 321480,
+      "bytes": 419936,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -2711,6 +3154,8 @@
         "wing_L",
         "wing_R",
         "glow",
+        "wing_L_tip",
+        "wing_R_tip",
         "aura"
       ],
       "surface": {
@@ -2727,11 +3172,11 @@
       "atlasCells": {
         "vgrad": 265,
         "flat": 120,
-        "vstrong": 24,
-        "core": 606
+        "vstrong": 56,
+        "core": 670
       },
       "polish": {
-        "triangles": 1015,
+        "triangles": 1111,
         "bevelled": 0,
         "plain": 0,
         "extrasDropped": 0,
@@ -2740,7 +3185,7 @@
       },
       "shiny": {
         "file": "creatures/marqueen_shiny.glb",
-        "triangles": 1095,
+        "triangles": 1191,
         "drawCalls": 5,
         "bbox": {
           "min": [
@@ -2760,9 +3205,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 321540,
+        "bytes": 419996,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -2777,7 +3229,7 @@
         "wire"
       ],
       "file": "creatures/dishling.glb",
-      "triangles": 923,
+      "triangles": 1051,
       "drawCalls": 4,
       "bbox": {
         "min": [
@@ -2797,9 +3249,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 275140,
+      "bytes": 415768,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -2814,6 +3273,10 @@
         "leg_BL",
         "leg_FR",
         "leg_BR",
+        "leg_FL_lo",
+        "leg_BL_lo",
+        "leg_FR_lo",
+        "leg_BR_lo",
         "aura"
       ],
       "surface": {
@@ -2828,16 +3291,16 @@
         "bevel": 0.1
       },
       "atlasCells": {
-        "wear": 118,
-        "rust": 54,
+        "wear": 135,
+        "rust": 61,
         "hgrad": 26,
-        "vgrad": 228,
+        "vgrad": 260,
         "flat": 267,
-        "grime": 88,
+        "grime": 160,
         "core": 62
       },
       "polish": {
-        "triangles": 843,
+        "triangles": 971,
         "bevelled": 6,
         "plain": 0,
         "extrasDropped": 0,
@@ -2846,7 +3309,7 @@
       },
       "shiny": {
         "file": "creatures/dishling_shiny.glb",
-        "triangles": 923,
+        "triangles": 1051,
         "drawCalls": 4,
         "bbox": {
           "min": [
@@ -2866,9 +3329,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 275184,
+        "bytes": 415812,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -2884,7 +3354,7 @@
         "concrete"
       ],
       "file": "creatures/broadcastle.glb",
-      "triangles": 1118,
+      "triangles": 1246,
       "drawCalls": 4,
       "bbox": {
         "min": [
@@ -2904,9 +3374,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 325124,
+      "bytes": 465736,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -2921,6 +3398,10 @@
         "leg_BL",
         "leg_FR",
         "leg_BR",
+        "leg_FL_lo",
+        "leg_BL_lo",
+        "leg_FR_lo",
+        "leg_BR_lo",
         "aura"
       ],
       "surface": {
@@ -2935,17 +3416,17 @@
         "bevel": 0.112
       },
       "atlasCells": {
-        "vgrad": 150,
-        "wear": 263,
+        "vgrad": 166,
+        "wear": 287,
         "rust": 69,
         "hgrad": 12,
         "vstrong": 20,
         "flat": 238,
-        "grime": 88,
+        "grime": 176,
         "core": 198
       },
       "polish": {
-        "triangles": 1038,
+        "triangles": 1166,
         "bevelled": 10,
         "plain": 0,
         "extrasDropped": 0,
@@ -2954,7 +3435,7 @@
       },
       "shiny": {
         "file": "creatures/broadcastle_shiny.glb",
-        "triangles": 1118,
+        "triangles": 1246,
         "drawCalls": 4,
         "bbox": {
           "min": [
@@ -2974,9 +3455,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 325164,
+        "bytes": 465780,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -2991,7 +3479,7 @@
         "sludge"
       ],
       "file": "creatures/gutterat.glb",
-      "triangles": 868,
+      "triangles": 996,
       "drawCalls": 4,
       "bbox": {
         "min": [
@@ -3011,9 +3499,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 279892,
+      "bytes": 435532,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -3031,6 +3526,10 @@
         "tail_1",
         "tail_2",
         "tail_3",
+        "leg_FL_lo",
+        "leg_BL_lo",
+        "leg_FR_lo",
+        "leg_BR_lo",
         "aura"
       ],
       "surface": {
@@ -3046,15 +3545,15 @@
       },
       "atlasCells": {
         "vstrong": 92,
-        "vgrad": 126,
+        "vgrad": 142,
         "flat": 200,
-        "grime": 56,
-        "wear": 80,
+        "grime": 152,
+        "wear": 96,
         "hgrad": 48,
         "core": 186
       },
       "polish": {
-        "triangles": 788,
+        "triangles": 916,
         "bevelled": 4,
         "plain": 0,
         "extrasDropped": 0,
@@ -3063,7 +3562,7 @@
       },
       "shiny": {
         "file": "creatures/gutterat_shiny.glb",
-        "triangles": 868,
+        "triangles": 996,
         "drawCalls": 4,
         "bbox": {
           "min": [
@@ -3083,9 +3582,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 279868,
+        "bytes": 435508,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -3101,7 +3607,7 @@
         "grind"
       ],
       "file": "creatures/ratking.glb",
-      "triangles": 1160,
+      "triangles": 1288,
       "drawCalls": 4,
       "bbox": {
         "min": [
@@ -3121,9 +3627,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 407536,
+      "bytes": 618508,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -3150,6 +3663,10 @@
         "tail_9",
         "tail_10",
         "tail_11",
+        "leg_FL_lo",
+        "leg_BL_lo",
+        "leg_FR_lo",
+        "leg_BR_lo",
         "aura"
       ],
       "surface": {
@@ -3166,14 +3683,14 @@
       "atlasCells": {
         "vstrong": 92,
         "flat": 370,
-        "vgrad": 152,
-        "grime": 56,
-        "wear": 80,
+        "vgrad": 168,
+        "grime": 152,
+        "wear": 96,
         "hgrad": 144,
         "core": 186
       },
       "polish": {
-        "triangles": 1080,
+        "triangles": 1208,
         "bevelled": 4,
         "plain": 0,
         "extrasDropped": 0,
@@ -3182,7 +3699,7 @@
       },
       "shiny": {
         "file": "creatures/ratking_shiny.glb",
-        "triangles": 1160,
+        "triangles": 1288,
         "drawCalls": 4,
         "bbox": {
           "min": [
@@ -3202,9 +3719,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 407512,
+        "bytes": 618484,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -3219,7 +3743,7 @@
         "sludge"
       ],
       "file": "creatures/drainling.glb",
-      "triangles": 1116,
+      "triangles": 1256,
       "drawCalls": 4,
       "bbox": {
         "min": [
@@ -3239,9 +3763,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 348464,
+      "bytes": 513576,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -3260,6 +3791,10 @@
         "tail_1",
         "tail_2",
         "tail_3",
+        "leg_FL_lo",
+        "leg_BL_lo",
+        "leg_FR_lo",
+        "leg_BR_lo",
         "aura"
       ],
       "surface": {
@@ -3275,15 +3810,15 @@
       },
       "atlasCells": {
         "hgrad": 60,
-        "wear": 304,
-        "vgrad": 422,
+        "wear": 338,
+        "vgrad": 449,
         "flat": 72,
-        "grime": 80,
+        "grime": 159,
         "vstrong": 36,
         "core": 62
       },
       "polish": {
-        "triangles": 1036,
+        "triangles": 1172,
         "bevelled": 11,
         "plain": 0,
         "extrasDropped": 0,
@@ -3292,7 +3827,7 @@
       },
       "shiny": {
         "file": "creatures/drainling_shiny.glb",
-        "triangles": 1116,
+        "triangles": 1256,
         "drawCalls": 4,
         "bbox": {
           "min": [
@@ -3312,9 +3847,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 348516,
+        "bytes": 513628,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -3330,7 +3872,7 @@
         "concrete"
       ],
       "file": "creatures/sewergator.glb",
-      "triangles": 1308,
+      "triangles": 1428,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -3350,9 +3892,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 393352,
+      "bytes": 553576,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -3371,6 +3920,10 @@
         "tail_1",
         "tail_2",
         "tail_3",
+        "leg_FL_lo",
+        "leg_BL_lo",
+        "leg_FR_lo",
+        "leg_BR_lo",
         "aura"
       ],
       "surface": {
@@ -3386,16 +3939,16 @@
       },
       "atlasCells": {
         "hgrad": 120,
-        "wear": 446,
+        "wear": 474,
         "rust": 50,
         "flat": 72,
-        "vgrad": 392,
-        "grime": 80,
+        "vgrad": 418,
+        "grime": 146,
         "vstrong": 36,
         "core": 32
       },
       "polish": {
-        "triangles": 1228,
+        "triangles": 1348,
         "bevelled": 17,
         "plain": 0,
         "extrasDropped": 0,
@@ -3404,7 +3957,7 @@
       },
       "shiny": {
         "file": "creatures/sewergator_shiny.glb",
-        "triangles": 1308,
+        "triangles": 1428,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -3424,9 +3977,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 393388,
+        "bytes": 553612,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -3442,7 +4002,7 @@
         "smoke"
       ],
       "file": "creatures/mildew.glb",
-      "triangles": 1104,
+      "triangles": 1172,
       "drawCalls": 4,
       "bbox": {
         "min": [
@@ -3462,9 +4022,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 330092,
+      "bytes": 472396,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -3479,6 +4046,8 @@
         "cap_3",
         "leg_L",
         "leg_R",
+        "leg_L_lo",
+        "leg_R_lo",
         "aura"
       ],
       "surface": {
@@ -3494,14 +4063,14 @@
       },
       "atlasCells": {
         "vstrong": 232,
-        "grime": 76,
-        "vgrad": 280,
+        "grime": 131,
+        "vgrad": 285,
         "flat": 276,
-        "wear": 32,
+        "wear": 40,
         "core": 128
       },
       "polish": {
-        "triangles": 1024,
+        "triangles": 1092,
         "bevelled": 2,
         "plain": 0,
         "extrasDropped": 0,
@@ -3510,7 +4079,7 @@
       },
       "shiny": {
         "file": "creatures/mildew_shiny.glb",
-        "triangles": 1104,
+        "triangles": 1172,
         "drawCalls": 4,
         "bbox": {
           "min": [
@@ -3530,9 +4099,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 330140,
+        "bytes": 472444,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -3548,7 +4124,7 @@
         "smoke"
       ],
       "file": "creatures/moldmother.glb",
-      "triangles": 1472,
+      "triangles": 1474,
       "drawCalls": 5,
       "bbox": {
         "min": [
@@ -3568,9 +4144,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 495052,
+      "bytes": 736984,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -3592,6 +4175,8 @@
         "spore_2",
         "spore_3",
         "spore_4",
+        "leg_L_lo",
+        "leg_R_lo",
         "aura"
       ],
       "surface": {
@@ -3607,23 +4192,23 @@
       },
       "atlasCells": {
         "vstrong": 136,
-        "grime": 64,
-        "vgrad": 512,
+        "grime": 96,
+        "vgrad": 516,
         "wear": 60,
-        "flat": 324,
+        "flat": 290,
         "core": 296
       },
       "polish": {
-        "triangles": 1392,
+        "triangles": 1394,
         "bevelled": 4,
         "plain": 4,
-        "extrasDropped": 0,
+        "extrasDropped": 1,
         "coplanarSaved": 24,
         "hiddenCulled": 104
       },
       "shiny": {
         "file": "creatures/moldmother_shiny.glb",
-        "triangles": 1472,
+        "triangles": 1474,
         "drawCalls": 5,
         "bbox": {
           "min": [
@@ -3643,9 +4228,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 495116,
+        "bytes": 737048,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -3661,7 +4253,7 @@
         "grind"
       ],
       "file": "creatures/gridlock.glb",
-      "triangles": 1487,
+      "triangles": 1489,
       "drawCalls": 5,
       "bbox": {
         "min": [
@@ -3681,9 +4273,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 424864,
+      "bytes": 526072,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -3697,6 +4296,10 @@
         "arm_L",
         "leg_R",
         "arm_R",
+        "leg_L_lo",
+        "arm_L_lo",
+        "leg_R_lo",
+        "arm_R_lo",
         "aura"
       ],
       "surface": {
@@ -3711,25 +4314,25 @@
         "bevel": 0.128
       },
       "atlasCells": {
-        "vgrad": 322,
-        "wear": 492,
-        "grime": 88,
-        "rust": 25,
+        "grime": 78,
+        "vgrad": 376,
+        "wear": 464,
         "hgrad": 84,
+        "rust": 11,
         "flat": 120,
         "core": 276
       },
       "polish": {
-        "triangles": 1407,
-        "bevelled": 19,
-        "plain": 7,
+        "triangles": 1409,
+        "bevelled": 14,
+        "plain": 12,
         "extrasDropped": 0,
         "coplanarSaved": 20,
-        "hiddenCulled": 41
+        "hiddenCulled": 9
       },
       "shiny": {
         "file": "creatures/gridlock_shiny.glb",
-        "triangles": 1487,
+        "triangles": 1489,
         "drawCalls": 5,
         "bbox": {
           "min": [
@@ -3749,9 +4352,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 424852,
+        "bytes": 526060,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -3787,9 +4397,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 412368,
+      "bytes": 473240,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -3801,6 +4418,8 @@
         "head",
         "arm_L",
         "arm_R",
+        "arm_L_lo",
+        "arm_R_lo",
         "aura"
       ],
       "surface": {
@@ -3815,17 +4434,17 @@
         "bevel": 0.118
       },
       "atlasCells": {
-        "vgrad": 414,
+        "vgrad": 446,
         "hgrad": 60,
-        "wear": 161,
-        "rust": 79,
+        "wear": 136,
+        "rust": 72,
         "flat": 178,
         "core": 516
       },
       "polish": {
         "triangles": 1408,
-        "bevelled": 7,
-        "plain": 11,
+        "bevelled": 6,
+        "plain": 12,
         "extrasDropped": 4,
         "coplanarSaved": 50,
         "hiddenCulled": 71
@@ -3852,9 +4471,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 412428,
+        "bytes": 473300,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -3870,7 +4496,7 @@
         "bass"
       ],
       "file": "creatures/undertow.glb",
-      "triangles": 1472,
+      "triangles": 1484,
       "drawCalls": 5,
       "bbox": {
         "min": [
@@ -3890,9 +4516,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 416740,
+      "bytes": 519288,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -3906,6 +4539,10 @@
         "leg_L2",
         "leg_R",
         "leg_R2",
+        "leg_L_lo",
+        "leg_L2_lo",
+        "leg_R_lo",
+        "leg_R2_lo",
         "aura"
       ],
       "surface": {
@@ -3921,23 +4558,23 @@
       },
       "atlasCells": {
         "vstrong": 236,
-        "wear": 136,
-        "vgrad": 256,
-        "grime": 136,
+        "wear": 116,
+        "vgrad": 216,
+        "grime": 208,
         "hgrad": 192,
         "core": 436
       },
       "polish": {
-        "triangles": 1392,
-        "bevelled": 6,
-        "plain": 9,
-        "extrasDropped": 4,
+        "triangles": 1404,
+        "bevelled": 4,
+        "plain": 11,
+        "extrasDropped": 6,
         "coplanarSaved": 24,
         "hiddenCulled": 16
       },
       "shiny": {
         "file": "creatures/undertow_shiny.glb",
-        "triangles": 1472,
+        "triangles": 1484,
         "drawCalls": 5,
         "bbox": {
           "min": [
@@ -3957,9 +4594,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 416796,
+        "bytes": 519344,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -3974,7 +4618,7 @@
         "concrete"
       ],
       "file": "creatures/curbcrusher.glb",
-      "triangles": 1354,
+      "triangles": 1482,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -3994,9 +4638,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 374952,
+      "bytes": 505748,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -4010,6 +4661,10 @@
         "leg_BL",
         "leg_FR",
         "leg_BR",
+        "leg_FL_lo",
+        "leg_BL_lo",
+        "leg_FR_lo",
+        "leg_BR_lo",
         "aura"
       ],
       "surface": {
@@ -4026,15 +4681,15 @@
       "atlasCells": {
         "vstrong": 120,
         "hgrad": 96,
-        "wear": 392,
-        "rust": 104,
-        "vgrad": 234,
-        "grime": 232,
+        "wear": 425,
+        "rust": 95,
+        "grime": 308,
+        "vgrad": 262,
         "flat": 72,
         "core": 24
       },
       "polish": {
-        "triangles": 1274,
+        "triangles": 1402,
         "bevelled": 21,
         "plain": 0,
         "extrasDropped": 0,
@@ -4043,7 +4698,7 @@
       },
       "shiny": {
         "file": "creatures/curbcrusher_shiny.glb",
-        "triangles": 1354,
+        "triangles": 1482,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -4063,9 +4718,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 374988,
+        "bytes": 505780,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -4080,7 +4742,7 @@
         "grind"
       ],
       "file": "creatures/jackpot.glb",
-      "triangles": 1207,
+      "triangles": 1348,
       "drawCalls": 4,
       "bbox": {
         "min": [
@@ -4100,9 +4762,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 357792,
+      "bytes": 505888,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -4118,6 +4787,10 @@
         "arm_L",
         "leg_R",
         "arm_R",
+        "leg_L_lo",
+        "arm_L_lo",
+        "leg_R_lo",
+        "arm_R_lo",
         "aura"
       ],
       "surface": {
@@ -4133,15 +4806,15 @@
       },
       "atlasCells": {
         "vstrong": 108,
-        "vgrad": 417,
-        "wear": 76,
+        "vgrad": 485,
+        "wear": 106,
         "flat": 358,
-        "grime": 80,
-        "rust": 20,
+        "grime": 121,
+        "rust": 22,
         "core": 68
       },
       "polish": {
-        "triangles": 1127,
+        "triangles": 1268,
         "bevelled": 3,
         "plain": 0,
         "extrasDropped": 0,
@@ -4150,7 +4823,7 @@
       },
       "shiny": {
         "file": "creatures/jackpot_shiny.glb",
-        "triangles": 1207,
+        "triangles": 1348,
         "drawCalls": 4,
         "bbox": {
           "min": [
@@ -4170,9 +4843,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 357840,
+        "bytes": 505932,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -4187,7 +4867,7 @@
         "smoke"
       ],
       "file": "creatures/fogbank.glb",
-      "triangles": 844,
+      "triangles": 868,
       "drawCalls": 4,
       "bbox": {
         "min": [
@@ -4207,9 +4887,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 243096,
+      "bytes": 308708,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -4221,6 +4908,8 @@
         "head",
         "arm_L",
         "arm_R",
+        "arm_L_lo",
+        "arm_R_lo",
         "aura"
       ],
       "surface": {
@@ -4236,12 +4925,12 @@
       },
       "atlasCells": {
         "vstrong": 416,
-        "vgrad": 100,
+        "vgrad": 124,
         "core": 176,
         "flat": 72
       },
       "polish": {
-        "triangles": 764,
+        "triangles": 788,
         "bevelled": 0,
         "plain": 0,
         "extrasDropped": 0,
@@ -4250,7 +4939,7 @@
       },
       "shiny": {
         "file": "creatures/fogbank_shiny.glb",
-        "triangles": 844,
+        "triangles": 868,
         "drawCalls": 4,
         "bbox": {
           "min": [
@@ -4270,9 +4959,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 243144,
+        "bytes": 308756,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -4288,7 +4984,7 @@
         "wire"
       ],
       "file": "creatures/floodlight.glb",
-      "triangles": 972,
+      "triangles": 1086,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -4308,9 +5004,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 278968,
+      "bytes": 372368,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -4322,6 +5025,8 @@
         "head",
         "wing_L",
         "wing_R",
+        "wing_L_tip",
+        "wing_R_tip",
         "aura"
       ],
       "surface": {
@@ -4340,11 +5045,11 @@
         "wear": 44,
         "grime": 60,
         "flat": 416,
-        "vgrad": 60,
-        "core": 296
+        "vgrad": 124,
+        "core": 346
       },
       "polish": {
-        "triangles": 892,
+        "triangles": 1006,
         "bevelled": 3,
         "plain": 0,
         "extrasDropped": 0,
@@ -4353,7 +5058,7 @@
       },
       "shiny": {
         "file": "creatures/floodlight_shiny.glb",
-        "triangles": 972,
+        "triangles": 1086,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -4373,9 +5078,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 279004,
+        "bytes": 372404,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -4391,7 +5103,7 @@
         "gun"
       ],
       "file": "creatures/barricade.glb",
-      "triangles": 878,
+      "triangles": 1006,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -4411,9 +5123,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 259584,
+      "bytes": 388012,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -4427,6 +5146,10 @@
         "leg_R",
         "arm_L",
         "arm_R",
+        "leg_L_lo",
+        "leg_R_lo",
+        "arm_L_lo",
+        "arm_R_lo",
         "aura"
       ],
       "surface": {
@@ -4442,16 +5165,16 @@
       },
       "atlasCells": {
         "vstrong": 10,
-        "wear": 219,
+        "wear": 263,
         "hgrad": 64,
         "rust": 13,
-        "vgrad": 208,
-        "grime": 116,
+        "vgrad": 254,
+        "grime": 154,
         "flat": 144,
         "core": 24
       },
       "polish": {
-        "triangles": 798,
+        "triangles": 926,
         "bevelled": 10,
         "plain": 0,
         "extrasDropped": 0,
@@ -4460,7 +5183,7 @@
       },
       "shiny": {
         "file": "creatures/barricade_shiny.glb",
-        "triangles": 878,
+        "triangles": 1006,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -4480,9 +5203,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 259616,
+        "bytes": 388040,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -4497,7 +5227,7 @@
         "gun"
       ],
       "file": "creatures/bigshot.glb",
-      "triangles": 1099,
+      "triangles": 1259,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -4517,9 +5247,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 315192,
+      "bytes": 450968,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -4533,6 +5270,10 @@
         "leg_R",
         "arm_L",
         "arm_R",
+        "leg_L_lo",
+        "leg_R_lo",
+        "arm_L_lo",
+        "arm_R_lo",
         "aura"
       ],
       "surface": {
@@ -4547,17 +5288,17 @@
         "bevel": 0.08
       },
       "atlasCells": {
-        "vstrong": 162,
+        "vstrong": 226,
         "hgrad": 24,
-        "wear": 178,
-        "rust": 64,
-        "vgrad": 335,
-        "grime": 116,
+        "wear": 197,
+        "rust": 75,
+        "grime": 152,
+        "vgrad": 365,
         "flat": 116,
         "core": 24
       },
       "polish": {
-        "triangles": 1019,
+        "triangles": 1179,
         "bevelled": 12,
         "plain": 0,
         "extrasDropped": 0,
@@ -4566,7 +5307,7 @@
       },
       "shiny": {
         "file": "creatures/bigshot_shiny.glb",
-        "triangles": 1099,
+        "triangles": 1259,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -4586,9 +5327,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 315228,
+        "bytes": 451004,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -4604,7 +5352,7 @@
         "concrete"
       ],
       "file": "creatures/smokestack.glb",
-      "triangles": 1480,
+      "triangles": 1476,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -4624,9 +5372,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 417100,
+      "bytes": 547340,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -4642,6 +5397,12 @@
         "leg_BR",
         "arm_L",
         "arm_R",
+        "leg_FL_lo",
+        "leg_BL_lo",
+        "leg_FR_lo",
+        "leg_BR_lo",
+        "arm_L_lo",
+        "arm_R_lo",
         "aura"
       ],
       "surface": {
@@ -4657,24 +5418,24 @@
       },
       "atlasCells": {
         "vstrong": 36,
-        "wear": 208,
+        "wear": 172,
         "hgrad": 516,
-        "vgrad": 52,
-        "grime": 208,
-        "flat": 248,
+        "vgrad": 100,
+        "grime": 264,
+        "flat": 176,
         "core": 132
       },
       "polish": {
-        "triangles": 1400,
-        "bevelled": 9,
-        "plain": 4,
-        "extrasDropped": 0,
+        "triangles": 1396,
+        "bevelled": 6,
+        "plain": 7,
+        "extrasDropped": 2,
         "coplanarSaved": 20,
         "hiddenCulled": 8
       },
       "shiny": {
         "file": "creatures/smokestack_shiny.glb",
-        "triangles": 1480,
+        "triangles": 1476,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -4694,9 +5455,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 417136,
+        "bytes": 547376,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -4732,9 +5500,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 283804,
+      "bytes": 309748,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -4794,9 +5569,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 283840,
+        "bytes": 309788,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -4811,7 +5593,7 @@
         "grind"
       ],
       "file": "creatures/hustlehound.glb",
-      "triangles": 1255,
+      "triangles": 1403,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -4831,9 +5613,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 356084,
+      "bytes": 513012,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -4848,6 +5637,11 @@
         "leg_BL",
         "leg_FR",
         "leg_BR",
+        "tail_lo",
+        "leg_FL_lo",
+        "leg_BL_lo",
+        "leg_FR_lo",
+        "leg_BR_lo",
         "aura"
       ],
       "surface": {
@@ -4863,15 +5657,15 @@
       },
       "atlasCells": {
         "hgrad": 48,
-        "rust": 43,
-        "wear": 225,
-        "vgrad": 102,
-        "grime": 232,
+        "rust": 53,
+        "wear": 263,
+        "vgrad": 170,
+        "grime": 264,
         "flat": 493,
         "core": 32
       },
       "polish": {
-        "triangles": 1175,
+        "triangles": 1323,
         "bevelled": 14,
         "plain": 0,
         "extrasDropped": 0,
@@ -4880,7 +5674,7 @@
       },
       "shiny": {
         "file": "creatures/hustlehound_shiny.glb",
-        "triangles": 1255,
+        "triangles": 1403,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -4900,9 +5694,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 356120,
+        "bytes": 513048,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -4917,7 +5718,7 @@
         "sludge"
       ],
       "file": "creatures/tagling.glb",
-      "triangles": 920,
+      "triangles": 1048,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -4937,9 +5738,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 270356,
+      "bytes": 398336,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -4953,6 +5761,10 @@
         "leg_R",
         "arm_L",
         "arm_R",
+        "leg_L_lo",
+        "leg_R_lo",
+        "arm_L_lo",
+        "arm_R_lo",
         "aura"
       ],
       "surface": {
@@ -4968,15 +5780,15 @@
       },
       "atlasCells": {
         "vstrong": 36,
-        "wear": 136,
-        "vgrad": 94,
+        "wear": 184,
+        "vgrad": 142,
         "hgrad": 18,
         "flat": 456,
-        "grime": 68,
+        "grime": 100,
         "core": 32
       },
       "polish": {
-        "triangles": 840,
+        "triangles": 968,
         "bevelled": 5,
         "plain": 0,
         "extrasDropped": 0,
@@ -4985,7 +5797,7 @@
       },
       "shiny": {
         "file": "creatures/tagling_shiny.glb",
-        "triangles": 920,
+        "triangles": 1048,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -5005,9 +5817,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 270392,
+        "bytes": 398372,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -5023,7 +5842,7 @@
         "wire"
       ],
       "file": "creatures/muralist.glb",
-      "triangles": 1365,
+      "triangles": 1485,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -5043,9 +5862,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 382336,
+      "bytes": 508668,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -5059,6 +5885,10 @@
         "leg_R",
         "arm_L",
         "arm_R",
+        "leg_L_lo",
+        "leg_R_lo",
+        "arm_L_lo",
+        "arm_R_lo",
         "aura"
       ],
       "surface": {
@@ -5073,15 +5903,15 @@
         "bevel": 0.135
       },
       "atlasCells": {
-        "vgrad": 208,
-        "wear": 184,
+        "vgrad": 272,
+        "wear": 224,
         "flat": 417,
-        "grime": 116,
+        "grime": 132,
         "hgrad": 36,
         "core": 324
       },
       "polish": {
-        "triangles": 1285,
+        "triangles": 1405,
         "bevelled": 8,
         "plain": 0,
         "extrasDropped": 0,
@@ -5090,7 +5920,7 @@
       },
       "shiny": {
         "file": "creatures/muralist_shiny.glb",
-        "triangles": 1365,
+        "triangles": 1485,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -5110,9 +5940,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 382368,
+        "bytes": 508704,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -5127,7 +5964,7 @@
         "concrete"
       ],
       "file": "creatures/bollard.glb",
-      "triangles": 1125,
+      "triangles": 1221,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -5147,9 +5984,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 311452,
+      "bytes": 397044,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -5161,6 +6005,8 @@
         "head",
         "leg_L",
         "leg_R",
+        "leg_L_lo",
+        "leg_R_lo",
         "aura"
       ],
       "surface": {
@@ -5176,15 +6022,15 @@
       },
       "atlasCells": {
         "vstrong": 174,
-        "wear": 128,
+        "wear": 140,
         "hgrad": 284,
         "flat": 239,
-        "vgrad": 120,
-        "grime": 68,
+        "vgrad": 130,
+        "grime": 142,
         "core": 32
       },
       "polish": {
-        "triangles": 1045,
+        "triangles": 1141,
         "bevelled": 4,
         "plain": 0,
         "extrasDropped": 0,
@@ -5193,7 +6039,7 @@
       },
       "shiny": {
         "file": "creatures/bollard_shiny.glb",
-        "triangles": 1125,
+        "triangles": 1221,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -5213,9 +6059,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 311484,
+        "bytes": 397072,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -5230,7 +6083,7 @@
         "grind"
       ],
       "file": "creatures/gullgrifter.glb",
-      "triangles": 818,
+      "triangles": 924,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -5250,9 +6103,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 252040,
+      "bytes": 399304,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -5267,6 +6127,11 @@
         "leg_L",
         "wing_R",
         "leg_R",
+        "tail_lo",
+        "wing_L_tip",
+        "leg_L_lo",
+        "wing_R_tip",
+        "leg_R_lo",
         "aura"
       ],
       "surface": {
@@ -5282,25 +6147,25 @@
       },
       "atlasCells": {
         "vstrong": 108,
-        "vgrad": 164,
-        "hgrad": 65,
+        "vgrad": 180,
+        "hgrad": 97,
         "flat": 240,
-        "wear": 76,
-        "rust": 27,
-        "grime": 26,
+        "wear": 103,
+        "rust": 32,
+        "grime": 52,
         "core": 32
       },
       "polish": {
-        "triangles": 738,
+        "triangles": 844,
         "bevelled": 3,
         "plain": 0,
         "extrasDropped": 0,
         "coplanarSaved": 16,
-        "hiddenCulled": 146
+        "hiddenCulled": 144
       },
       "shiny": {
         "file": "creatures/gullgrifter_shiny.glb",
-        "triangles": 818,
+        "triangles": 924,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -5320,9 +6185,16 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 252076,
+        "bytes": 399340,
         "validation": {
           "errors": 0,
           "warnings": 0
@@ -5338,7 +6210,7 @@
         "concrete"
       ],
       "file": "creatures/clogger.glb",
-      "triangles": 941,
+      "triangles": 1069,
       "drawCalls": 3,
       "bbox": {
         "min": [
@@ -5358,9 +6230,16 @@
         "attack",
         "hurt",
         "faint",
-        "evolve_glow"
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
       ],
-      "bytes": 270900,
+      "bytes": 401040,
       "validation": {
         "errors": 0,
         "warnings": 0
@@ -5374,6 +6253,10 @@
         "leg_BL",
         "leg_FR",
         "leg_BR",
+        "leg_FL_lo",
+        "leg_BL_lo",
+        "leg_FR_lo",
+        "leg_BR_lo",
         "aura"
       ],
       "surface": {
@@ -5389,16 +6272,16 @@
       },
       "atlasCells": {
         "vstrong": 130,
-        "grime": 114,
-        "vgrad": 340,
+        "grime": 222,
+        "vgrad": 352,
         "hgrad": 22,
-        "wear": 81,
+        "wear": 89,
         "rust": 6,
         "flat": 72,
         "core": 96
       },
       "polish": {
-        "triangles": 861,
+        "triangles": 989,
         "bevelled": 5,
         "plain": 0,
         "extrasDropped": 0,
@@ -5407,7 +6290,7 @@
       },
       "shiny": {
         "file": "creatures/clogger_shiny.glb",
-        "triangles": 941,
+        "triangles": 1069,
         "drawCalls": 3,
         "bbox": {
           "min": [
@@ -5427,9 +6310,627 @@
           "attack",
           "hurt",
           "faint",
-          "evolve_glow"
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
         ],
-        "bytes": 270936,
+        "bytes": 401076,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "quackpack",
+      "name": "Quackpack",
+      "dex": 52,
+      "types": [
+        "sludge"
+      ],
+      "file": "creatures/quackpack.glb",
+      "triangles": 1184,
+      "drawCalls": 4,
+      "bbox": {
+        "min": [
+          -0.174,
+          0.009,
+          -0.258
+        ],
+        "max": [
+          0.174,
+          0.45,
+          0.282
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
+      ],
+      "bytes": 454192,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 0.45,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "wing_L",
+        "wing_R",
+        "beak",
+        "leg_L",
+        "leg_R",
+        "wing_L_tip",
+        "wing_R_tip",
+        "leg_L_lo",
+        "leg_R_lo",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "gloss",
+          "secondary": "rubber",
+          "accent": "metal",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.15
+      },
+      "atlasCells": {
+        "vstrong": 332,
+        "vgrad": 100,
+        "hgrad": 63,
+        "flat": 383,
+        "wear": 128,
+        "grime": 66,
+        "core": 32
+      },
+      "polish": {
+        "triangles": 1104,
+        "bevelled": 3,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 26,
+        "hiddenCulled": 152
+      },
+      "shiny": {
+        "file": "creatures/quackpack_shiny.glb",
+        "triangles": 1184,
+        "drawCalls": 4,
+        "bbox": {
+          "min": [
+            -0.174,
+            0.009,
+            -0.258
+          ],
+          "max": [
+            0.174,
+            0.45,
+            0.282
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
+        ],
+        "bytes": 454240,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "pedalswan",
+      "name": "Pedalswan",
+      "dex": 53,
+      "types": [
+        "sludge",
+        "bass"
+      ],
+      "file": "creatures/pedalswan.glb",
+      "triangles": 1476,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.638,
+          0.044,
+          -0.867
+        ],
+        "max": [
+          0.638,
+          1.4,
+          0.856
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
+      ],
+      "bytes": 480572,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 1.4,
+      "nodes": [
+        "root",
+        "body",
+        "wing_L",
+        "wing_R",
+        "neck_0",
+        "neck_1",
+        "neck_2",
+        "head",
+        "paddle",
+        "wing_L_tip",
+        "wing_R_tip",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "gloss",
+          "secondary": "rubber",
+          "accent": "metal",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.153
+      },
+      "atlasCells": {
+        "hgrad": 288,
+        "grime": 82,
+        "vstrong": 52,
+        "flat": 130,
+        "vgrad": 412,
+        "core": 432
+      },
+      "polish": {
+        "triangles": 1428,
+        "bevelled": 0,
+        "plain": 19,
+        "extrasDropped": 2,
+        "coplanarSaved": 34,
+        "hiddenCulled": 118
+      },
+      "shiny": {
+        "file": "creatures/pedalswan_shiny.glb",
+        "triangles": 1476,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.638,
+            0.044,
+            -0.867
+          ],
+          "max": [
+            0.638,
+            1.4,
+            0.856
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
+        ],
+        "bytes": 480608,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "koinfish",
+      "name": "Koinfish",
+      "dex": 54,
+      "types": [
+        "grind",
+        "sludge"
+      ],
+      "file": "creatures/koinfish.glb",
+      "triangles": 1115,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.309,
+          0.004,
+          -0.743
+        ],
+        "max": [
+          0.309,
+          0.5,
+          0.751
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
+      ],
+      "bytes": 378192,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 0.5,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "fin_L",
+        "fin_R",
+        "tail",
+        "tail_lo",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "armor",
+          "secondary": "metal",
+          "accent": "gloss",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.115
+      },
+      "atlasCells": {
+        "hgrad": 200,
+        "grime": 38,
+        "vgrad": 402,
+        "vstrong": 197,
+        "flat": 166,
+        "core": 32
+      },
+      "polish": {
+        "triangles": 1035,
+        "bevelled": 0,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 66,
+        "hiddenCulled": 337
+      },
+      "shiny": {
+        "file": "creatures/koinfish_shiny.glb",
+        "triangles": 1115,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.309,
+            0.004,
+            -0.743
+          ],
+          "max": [
+            0.309,
+            0.5,
+            0.751
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
+        ],
+        "bytes": 378228,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "wishmaw",
+      "name": "Wishmaw",
+      "dex": 55,
+      "types": [
+        "grind",
+        "sludge"
+      ],
+      "file": "creatures/wishmaw.glb",
+      "triangles": 1230,
+      "drawCalls": 4,
+      "bbox": {
+        "min": [
+          -0.948,
+          0.108,
+          -1.874
+        ],
+        "max": [
+          0.948,
+          1.6,
+          1.611
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
+      ],
+      "bytes": 424336,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 1.6,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "fin_L",
+        "fin_R",
+        "tail",
+        "jaw",
+        "tail_lo",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "armor",
+          "secondary": "metal",
+          "accent": "gloss",
+          "dark": "rubber",
+          "white": "gloss",
+          "eye": "glow"
+        },
+        "bevel": 0.115
+      },
+      "atlasCells": {
+        "hgrad": 304,
+        "vgrad": 130,
+        "flat": 71,
+        "vstrong": 377,
+        "core": 268
+      },
+      "polish": {
+        "triangles": 1150,
+        "bevelled": 0,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 138,
+        "hiddenCulled": 912
+      },
+      "shiny": {
+        "file": "creatures/wishmaw_shiny.glb",
+        "triangles": 1230,
+        "drawCalls": 4,
+        "bbox": {
+          "min": [
+            -0.948,
+            0.108,
+            -1.874
+          ],
+          "max": [
+            0.948,
+            1.6,
+            1.611
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
+        ],
+        "bytes": 424380,
+        "validation": {
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    {
+      "id": "snapcase",
+      "name": "Snapcase",
+      "dex": 56,
+      "types": [
+        "concrete",
+        "sludge"
+      ],
+      "file": "creatures/snapcase.glb",
+      "triangles": 1034,
+      "drawCalls": 3,
+      "bbox": {
+        "min": [
+          -0.768,
+          0.014,
+          -0.822
+        ],
+        "max": [
+          0.768,
+          0.7,
+          1.007
+        ]
+      },
+      "clips": [
+        "idle",
+        "walk",
+        "attack",
+        "hurt",
+        "faint",
+        "evolve_glow",
+        "attack_strike",
+        "attack_slam",
+        "attack_shoot",
+        "attack_throw",
+        "attack_blast",
+        "attack_power",
+        "attack_taunt"
+      ],
+      "bytes": 437588,
+      "validation": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "height": 0.7,
+      "nodes": [
+        "root",
+        "body",
+        "head",
+        "leg_FL",
+        "leg_BL",
+        "leg_FR",
+        "leg_BR",
+        "tail",
+        "jaw",
+        "leg_FL_lo",
+        "leg_BL_lo",
+        "leg_FR_lo",
+        "leg_BR_lo",
+        "tail_lo",
+        "aura"
+      ],
+      "surface": {
+        "classes": {
+          "primary": "concrete",
+          "secondary": "concrete",
+          "accent": "armor",
+          "dark": "rubber",
+          "white": "concrete",
+          "eye": "glow"
+        },
+        "bevel": 0.143
+      },
+      "atlasCells": {
+        "vstrong": 316,
+        "grime": 38,
+        "vgrad": 285,
+        "wear": 137,
+        "hgrad": 154,
+        "core": 24
+      },
+      "polish": {
+        "triangles": 954,
+        "bevelled": 7,
+        "plain": 0,
+        "extrasDropped": 0,
+        "coplanarSaved": 12,
+        "hiddenCulled": 138
+      },
+      "shiny": {
+        "file": "creatures/snapcase_shiny.glb",
+        "triangles": 1034,
+        "drawCalls": 3,
+        "bbox": {
+          "min": [
+            -0.768,
+            0.014,
+            -0.822
+          ],
+          "max": [
+            0.768,
+            0.7,
+            1.007
+          ]
+        },
+        "clips": [
+          "idle",
+          "walk",
+          "attack",
+          "hurt",
+          "faint",
+          "evolve_glow",
+          "attack_strike",
+          "attack_slam",
+          "attack_shoot",
+          "attack_throw",
+          "attack_blast",
+          "attack_power",
+          "attack_taunt"
+        ],
+        "bytes": 437624,
         "validation": {
           "errors": 0,
           "warnings": 0

@@ -13,3 +13,11 @@ game.init().catch((err: unknown) => {
 
 // Exposed for debugging from the browser console.
 (window as unknown as { game: Game }).game = game;
+
+// Installable and playable offline (Add to Home Screen on a phone): the service worker caches the
+// game once it has been loaded. Only on a built, served copy (not the dev server).
+if ('serviceWorker' in navigator && import.meta.env.PROD && !/EmpireStreets\//.test(navigator.userAgent)) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => undefined);
+  });
+}

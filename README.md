@@ -148,6 +148,44 @@ on a Midtown roof by a fire escape, sells Spark Plugs ($1,200), Steel Cases ($2,
 evolution item. Each opens once and stays open in your save. **Falls** now hurt: landing from
 about 9 m up costs health, from about 30 m it's fatal at full health.
 
+## The Central Green pond
+
+The pond in the middle of the Central Green is real water (`src/world/Pond.ts`, `src/world/PondView.ts`):
+
+- **A basin, not a floor.** A shallow wading shelf a few metres wide runs round a low stone rim,
+  then the bed drops to about 2.4 m in the middle (a Rapier heightfield and a bed mesh from the
+  same depth function). The rim is low enough to step over.
+- **The surface moves:** waves in the vertex shader (the same sum the code uses for anything
+  floating), a scrolling ripple normal map, sky reflections, see-through enough to make out the
+  shelf. Rings spread from anything that splashes, swims or paddles; lily pads (some flowering)
+  ride the waves along the edges.
+- **Wading and swimming.** On the shelf you wade, slower the deeper it gets. Once it's deeper than
+  about 1.25 m you swim (front crawl moving, treading water standing still; Shift swims faster),
+  your head above the waves. Jumping or falling in splashes. Swim to the edge and keep going (or
+  press Space) to climb out onto the grass. No guns, throws or fights while swimming: start a
+  fight and you scramble out onto the bank first. The camera never dips under the surface.
+- **Cars float, then sink.** A car that goes in gets buoyancy at the corners of its underside (so it
+  lists and noses down), water drag and a big splash. It fills over a few seconds; once the water's
+  over the engine it dies ("F  Get out: the engine's flooded"), and it settles on the bed. Get out
+  and swim. A sunk car is gone once you're well away; one you own is towed to the Chop Shop.
+
+### Pond Streetmon
+
+Five water species (dex 52-56) live only on the pond (`spawn.biomes: ["pond"]`, a habitat on the
+street layer with its own cap of 5, 6 at night). They float with part of themselves under the
+surface (`model.sink`), paddle about and keep to the water; after a fight on the bank they waddle
+straight back in. The Dex has a **Pond** filter.
+
+| | Types | When | Notes |
+| --- | --- | --- | --- |
+| Quackpack | Sludge | day, dusk (common) | A rubber duck patched with bottle caps. Evolves at Lv 26 |
+| Pedalswan | Sludge / Bass | dusk, night (rare, aggressive) | A runaway swan pedal boat with a sound system |
+| Koinfish | Grind / Sludge | any time (uncommon, shy) | A koi with coins for scales. Evolves at Lv 30 |
+| Wishmaw | Grind / Sludge | night (rare, aggressive) | A rowboat-sized koi with a fountain-stone mouth |
+| Snapcase | Concrete / Sludge | any time (rare, aggressive) | A snapping turtle with a concrete shell |
+
+Fogbank also drifts low over the water at night.
+
 ## Sewers
 
 Under Uptown, Midtown and Downtown lie three sewer labyrinths, 40 m below the street
@@ -275,6 +313,74 @@ const save = tuning.serialize();                                // tuning.load(s
 
 `npm run tuning:example` runs a complete example (`scripts/tuning-example.js`) in Node.
 
+### Streetmon you can see in the car
+
+Whoever you slot rides on the car: the Engine Bay Streetmon comes up through a chrome-rimmed
+hole in the hood facing the road, the Trunk one leans out of the boot (the tailgate on an SUV, the
+top of a van's box) looking back, and the Roof Rack one sits up in a rack on the roof, scanning
+side to side. They're the real models, about half hidden in the bodywork, idling, swaying with
+the car (back as it pulls away, forward under braking, out of the turns) and playing an attack
+when their ability fires (`src/vehicles/StreetmonRiders.ts`; mount points per body style in
+`slotMount`, `src/vehicles/CarModel.ts`).
+
+## Cars: the showroom, classes, parts and the body shop
+
+**Empire Motors** is a showroom on a Downtown street (cyan sign, pennants, a couple of cars on
+display out front; a cyan square on the minimap). Walk up to the window and press **E**:
+
+- **Showroom**: every car for sale with its class, performance index, top speed, 0-100 time,
+  drive and seats. Pick a colour and buy; it rolls into the delivery bay outside. Bought cars are
+  **yours**: they never despawn, they are saved with their parts, paint, damage and where you left
+  them, and the Chop Shop keeps them on its books. Wreck one and it's **towed to the Chop Shop**,
+  barely running, for you to repair.
+- **Sell a car**: park one of yours out front and get 60% of what it and its parts cost new (the
+  Streetmon riding in it go back to your team).
+
+| Car | Class | Price | Notes |
+| --- | --- | --- | --- |
+| Rustbucket Hatch | D | (Mama's) | Your first car |
+| Pigeon Hatch | C | $9,000 | Tiny, light, turns on a dime; the best cheap car to build up |
+| Yellow Cab | C | $12,000 | Tough and anonymous |
+| Meridian Sedan | C | $15,000 | The everyday car |
+| Box Van | D | $20,000 | Slow, huge, nearly indestructible |
+| Mule Pickup | C | $24,000 | Rides high, keeps its grip on grass (an open bed for the trunk Streetmon) |
+| Ranger SUV | C | $30,000 | Heavy, all-wheel drive |
+| Brawler 440 | B | $32,000 | Muscle: big block, tail-happy |
+| Medic Van | C | $40,000 | A van with a bigger engine and a siren (G) |
+| Dune Rally | B | $48,000 | Long travel, AWD, a light pod; nearly full grip off the road |
+| Vortex GT | A | $55,000 | The sports car |
+| Monarch Limo | D | $65,000 | Seven metres of black glass |
+| City Bus | D | $120,000 | Eleven metres of bus; carries a whole team |
+| Hyperion S | S | $180,000 | The supercar: AWD, 340 km/h |
+
+**Classes** (`src/vehicles/Performance.ts`): every car has a performance index from its top
+speed, power-to-weight and grip, and a class from that: D (up to 50), C (60), B (75), A (92) and
+S above. Parts raise the index and can lift a car a class, and races can be limited to a class
+and below.
+
+**Parts & body shop** (a button on the Chop Shop screen): seven parts with three levels each,
+priced as a share of the car's price (so a hatchback is cheap to build):
+
+| Part | What it does | Per level |
+| --- | --- | --- |
+| Engine | pull and top speed | +9% pull, +4% top speed |
+| Tyres | grip | +6% |
+| Brakes | stopping | +14% |
+| Suspension | steering | +5% |
+| Nitrous | a bottle of boost, hold **Shift** (gamepad RB) | 3 / 5 / 8 s, refills in ~24 s |
+| Weight | lighter | -4% mass, +3% pull |
+| Armour | takes more | +18% durability, +3% mass |
+
+The same screen repairs the bodywork (12% of the car's price for a full rebuild, pro rata) and
+resprays it (2%). Rival racers' cars get the same parts, more of them the higher the race tier.
+
+**Handling**: the parts and the Streetmon tune are layers of multipliers on the car
+(`Car.setLayer`): tune × parts × chips and blueprints × race prep. Beyond that, the surface
+matters (grass and dirt have 70% of the road's grip; pickups 85%, the rally car 95%), damage
+matters (past half health the engine loses up to a fifth of its pull and the top speed drops;
+past 70% the car pulls to one side), nitrous pushes 18% past the top speed, and **V** cycles the
+driving camera: chase, far chase, bonnet.
+
 ## Street races
 
 Every 5-10 minutes of driving around (not wanted, nothing else going on) there's a 65% chance a
@@ -311,6 +417,23 @@ minimap, brown if you need more Street Cred): pull up next to them slowly and th
 | Central Green Circuit | Midtown | 2 | $200 | $1,500 / $700 / $300 | |
 | Uptown Switchback | Uptown | 1 | $150 | $1,100 / $550 / $250 | |
 | Harbor Run | Downtown | 1 | $300 | $2,400 / $1,100 / $500 | 20 Street Cred |
+| Hatch Cup | Midtown | 1 | $50 | $700 / $350 / $150 | class C and below |
+| Midtown Time Attack | Midtown | 1 | $100 | $1,800 / $900 / $400 | time trial: gold 0:58, silver 1:10, bronze 1:30 |
+| Park Loop Drift | Park | 2 | $150 | $2,000 / $1,000 / $450 | drift: 12,000 / 7,000 / 3,000 pts; 5 Street Cred |
+| Uptown Knockout | Uptown | 3 | $250 | $2,600 / $1,200 / $500 | knockout; class B and below; 10 Street Cred |
+| Island Marathon | Waterfront | 1 | $400 | $4,200 / $2,000 / $800 | the longest race; 30 Street Cred |
+| Downtown Grand Prix | Downtown | 4 | $500 | $5,000 / $2,400 / $1,000 | 40 Street Cred |
+
+**Modes** (`mode` on a track): **sprint** (point to point), **circuit** (laps), **knockout**
+(laps; at the end of every lap but the last, whoever is last is out and drives off; you're out
+too if that's you), **time trial** (you alone against the clock, medal times for 1st/2nd/3rd
+money) and **drift** (you alone on a loop, points for the slide angle times speed above 8° and
+5 m/s, with a chain multiplier up to x4 the longer a slide lasts; medal scores). **Class
+limits** (`maxClass`) turn away faster cars at the offer. The race panel shows lap times, your
+best lap, the medal you're on and the score chain; **best times, best laps and best drift
+scores are saved per track** and the result says when you set a record. The league's divisions
+open the tracks: Rookie has the sprints, the Hatch Cup and the time attack; Street the Harbor
+Run, the drift loop and the knockout; Pro the marathon; Elite the Grand Prix.
 
 **Architecture**
 
@@ -354,6 +477,29 @@ function gameLoop(dt) {
 function onBusted() { if (races.active) return races.notifyBusted(); /* normal arrest */ }
 function onWasted() { if (races.active) return races.notifyWasted(); /* normal death */ }
 ```
+
+### Rivals with Streetmon
+
+Rival racers run Streetmon in their cars too, under the same Chop Shop rules as yours (the slot
+decides which types fit and what ability comes with them), and you can see them riding along.
+A "brain" uses their abilities when it gets an opening on you: a smokescreen in your face when
+you're on their tail (or for the speed on a straight), the backfire when you're alongside, the
+bass horn when you're close, spike strips when you're lined up behind them. A rival's spike
+strip gives you (or another racer) a slow puncture for a few seconds, not a wrecked race.
+
+It all scales with the race's tier, the higher of the track's USRL division and yours
+(`src/systems/rivalLoadout.ts`):
+
+| Tier | Armed racers | Slots | Levels | Abilities | Stat boost | Reaction | Takes the opening | Cooldowns |
+|---|---|---|---|---|---|---|---|---|
+| 1 Rookie | about 1 in 3 | 1 | 6-12 | smokescreen, backfire, radar | 40% | 1.4 s | 45% | x1.6 |
+| 2 Street | about 2 in 3 | 1 | 12-22 | + bass horn | 60% | 1.0 s | 60% | x1.35 |
+| 3 Pro | all | 1-2 | 22-34 | + spike strips | 80% | 0.7 s | 75% | x1.15 |
+| 4 Elite | all | 2 | 34-46 | all | 90% | 0.45 s | 90% | x1 |
+| 5 Apex | all | 2-3 | 46-60 | all | full | 0.25 s | always | x0.85 |
+
+Each racer has favourite types (`streetmon` in `races.json`), and the HUD lists who's running
+what when the countdown starts.
 
 ## Wild Streetmon movement (walls and smart fleeing)
 
@@ -678,6 +824,33 @@ Downtown blocks with the jewelers and the bank.)
   sets the **entry fee** charged when you accept a race ($0-2,000) and a **prize money
   multiplier** (up to x2), and opens tracks: the Harbor Run is a Street Division race.
 
+**Difficulty and pacing** (the campaign playthrough, 1 November 2026). Every job was played
+through to the end, and the boss teams were set against the team a player actually has by then,
+without grinding:
+
+| Boss | Team | You'll have about | A sensible team at that level wins |
+| --- | --- | --- | --- |
+| Dockside Dutch | Doubleshift 6, Rebarb 8 | two Streetmon around Lv 10 | about 3 times in 4 |
+| Haze | Hazeling 10, Flue 11, Backfire 13 | three around Lv 13 | about 7 in 10 |
+| Subwoofer Sal | Subsonic 13, Streetlamp 14, Woofer 16, Wirewhip 17 | four around Lv 16 | about 3 in 4 |
+| Captain Hale | Strapback 21, Holster 23, Hardcase 24, Overwatch 25 | four around Lv 20, plus the Vault Queen (Lv 22) | about 2 in 3 |
+| Commissioner Varga | Moldmother 19, Overtime 20, Overpass 21, Ratking 22, Holster 25 | five or six around Lv 24 | about half (two levels more: 9 in 10) |
+
+- **The city grows with you** (`STORY_LEVEL_BONUS` in `src/creatures/SpawnRules.ts`): wild
+  Streetmon gain 3, 6, 10, 14 levels as you finish Acts I to IV, so there's always something
+  worth fighting at your level. Before Act I is done, wild ones never outlevel your strongest
+  Streetmon, and species that only live far above your level stay away.
+- **Scouting**: a boss's intro lists their team (species, level, types) and how many of yours can
+  fight, so you can catch the right counter first. Streetmon slotted into a car ride with the car,
+  not in your team: pull them out at the lift before a boss if you need them.
+- **Fights always finish**: the battle AI never picks a stat move that's already at its +6 / -6
+  limit, and a damaging move always beats a pointless buff, so two walled-up Concrete types no
+  longer brace at each other forever (that one could soft-lock a boss fight).
+- **The first heist** (Quik Cash) is gentler: guards and cameras grow suspicious more slowly
+  (0.3) and the getaway starts at one star (two if the alarm went off), so it's escapable by car.
+- The Vault Queen joins at Lv 22 (it was 32, which made Captain Hale a walkover). Dre, the first
+  street trainer, moved to the far corner of his block, out of Commissioner Varga's way.
+
 **Architecture**
 
 | File | What it does |
@@ -914,6 +1087,218 @@ up. Named characters use it too: **Mama Rust** (grey bun, skirt and a leather sh
 Under-Station, Promoter Vex and Jinx in the campaign, Haze the boss, and Mika, Bree, Nina and
 Vega among the gang trainers.
 
+Everyone moves on the same gait: the knee folds from toe-off through mid-swing and straightens
+for the heel strike (with a little give as it lands), elbows bend more as each arm swings
+forward, the hips bob, shift over the standing leg and turn with the stride while the shoulders
+counter-turn and the head turns back to keep the gaze steady. Standing still, people breathe,
+shift their weight and glance around now and then.
+
+## Walking, running and holding guns
+
+People walk at a natural cadence now: about 1.3 strides a second walking, 1.7 jogging, 2.1
+sprinting (`gaitFrequency` in `src/player/Humanoid.ts`, shared by the player and the crowd), with
+arms swinging in step and a longer stride, not a faster one, as you speed up. Guns are held
+properly: a pistol at the low ready in the right hand, rifles, shotguns and SMGs carried across
+the body in both hands (`carry`); aiming or just after a shot the arms come up (one-handed or
+two-handed, `onehand` / `twohand`). Melee weapons swing as before.
+
+## Flyers in the sky
+
+Flying Streetmon fly (`FLIGHT` in `SpawnRules.ts`): they cruise a few metres up and bob, climb
+away when they flee (faster and higher, up to 14–18 m) and drop back to land when calm. Soaring
+species (Longshot, Overwatch, Gullgrifter, Antennaroc) also fill the sky: up to four at a time
+circle 18–30 m over the streets of any district (`skyTable`), mostly their own and at their usual
+hours. They come down when you get close; anything higher than 3.5 m can't be battled or hit by
+a throw until it does.
+
+## The docks
+
+West Ave and East Ave each have a working pier (`src/world/Docks.ts`): a plank deck on pilings
+with railings, bollards and mooring lines, a T-head with a yellow gantry crane over stacked
+shipping containers, pallets and lamps, and a tugboat and a fishing boat tied up and rocking on
+the water. You can walk out on them; the boats are scenery for now. They're on the map and the
+HUD names them.
+
+## The deep sewers
+
+The sewers go down three levels (`SEWER.levels`): the old drains (-40 m), the deep drains
+(-56 m) and the old cisterns (-72 m), each its own maze under each district, joined by shafts
+with ladders (E at the grate). The deeper you go:
+
+- **Rarer and stronger Streetmon** (`deepTable`): commons fade out, uncommons and rares take
+  over, +9 levels per level down, and shinies are likelier.
+- **Real water.** Channels, cisterns and drowned halls are pools you wade or swim in, with the
+  same swimming as the pond (climb out at an edge). Toxic sludge is now a pool too, the same
+  but green: it burns while you're in it, faster swimming than wading.
+- **Caches**: 4/5/6 sealed lockboxes per maze on levels 1/2/3, in far dead ends: cash, capture
+  items and gear, better the deeper (open with E; they stay open in your save).
+
+## Skylights
+
+Some flat roofs have skylights (a framed glass box or a ridge light); they glow warm at night.
+
+## Going inside
+
+Eight buildings have their doors open (`src/world/Interiors.ts`): Sal's Corner Deli and the
+Lucky 24 Bodega (buy supplies, a cold drink), The Night Owl Diner (eat to heal, a coffee),
+Halvorsen & Pike Insurance and Brightline Logistics (offices: reception, desks, a manager),
+Suds City Laundromat, Pixel Palace Arcade (play a cabinet for a prize) and Goldie's Pawn & Loan
+(sell what you don't need). Walk up to the door and press E; inside, people work, sit and talk.
+You can't go in with the police on you, and guns stay holstered inside.
+
+## Talking to people
+
+Press E next to a passer-by (or anyone inside) to talk (`src/npc/Talk.ts`). What they say comes
+from what's going on: the time of day, the district, your wanted level (nobody wants to be seen
+with you at three stars), your lead Streetmon, whether you've met before. Ask for directions and
+they mark the clinic, a diner, the docks, a safehouse for sale or the pond on your map; ask
+what's going on and you hear true rumours (the deep sewers, the races, the docks); ask for advice
+and you get it. People inside talk shop: Sal about business, the diner's cook about the regulars,
+the pawnbroker about what's selling; and their answers lead to the counter, the menu or a game.
+
+## More to buy and use
+
+New items (`src/data/items.json`, effects in `src/items/Items.ts`), most at the Corner Clinics, some
+at the deli, the rest on the sewer black market:
+
+- **Healing** (from the team screen, on the Streetmon you've selected): Bodega Sandwich (+30 HP),
+  Volt Energy Drink (+80), Field Medkit (full, and stops choking), Smelling Salts (revives a
+  fainted one at half HP), Family Bucket (+50 to the whole party).
+- **For you**: First Aid Kit (+60 health), Repair Kit (fixes the car you're in or last drove),
+  Burner Phone (one wanted star off, not at five), Lockpick Set (padlocked stashes).
+- **Timed effects** (shown under your capture item): Pepper Musk (wild Streetmon weaker than your
+  lead stay away, 4 min), Pheromone Bait (twice the spawns, 3 min), Lucky Rabbit's Foot (shinies x3,
+  10 min).
+- **Situational capture items**: Night Net (x3 between dusk and dawn), Dive Net (x3.5 in water),
+  Rookie Cuffs (x3 on anything below your lead's level).
+- **Protein Shake**: one level up on the spot (black market, needs reputation).
+
+## Battles on the water
+
+Start a fight while you're in the water (or with a Streetmon that's on it) and it stays on the
+water: you tread water, pond and Sludge species swim low in it, flyers hover above it, and everyone
+else rides an orange life raft that bobs on the swell (`src/creatures/WaterBattle.ts`).
+
+## The Empire Royale Casino
+
+A grand room in Midtown behind a gold marquee and a red carpet: banks and islands of slot
+machines with flashing screens, two blackjack tables, a roulette wheel that turns, video poker by
+the bar, chandeliers, a coffered ceiling and a crowd at every table, all talking. The games
+(`src/casino/Games.ts`) have real rules: three-reel slots (about 93% back), blackjack from a
+four-deck shoe (dealer stands on 17, 3:2 naturals, doubling), European roulette (one zero; colours,
+odd/even, halves, dozens and single numbers) and 9/6 Jacks or Better. Bets $10 to $1,000; a big
+win gets a cheer and a little Street Cred. Its own music, **High Roller Lounge**, is generated
+from scratch by `scripts/make-casino-track.py` (a swinging lounge-jazz loop: walking bass,
+brushes and ride, electric piano, vibraphone, a muted trumpet chorus and slot-machine bells).
+
+## The sewers, closer to the real thing
+
+The tunnels are vaulted now (curved haunches where wall meets ceiling), with pipe runs on brackets
+down the walls, damp streaks under the vault, moss and slime at the foot of the walls (more the
+deeper you go), a kerb along the water channel, caged lamps here and there and water dripping
+from the vault around you. Each level's brick is its own colour: older, darker and greener lower
+down. The people who live down there look like it: faded, grimy layers, heavy coats, beanies and
+beards (`weatheredLook`).
+
+## The Gutter Kings
+
+A real gang, armed and hostile (`src/gangs/Gangs.ts`, `src/systems/GangWorld.ts`), in red hoodies.
+
+- **Not for beginners.** Nothing of them shows until your best Streetmon reaches level 14; then
+  Detective Alvarez calls you. The deep sewer levels also warn you if you're under-levelled
+  (Lv 15 for level 2, Lv 28 for level 3) and only let you down if you insist.
+- **Fights are two things at once.** The nearest member sets his Streetmon on yours (always a
+  real-time battle) while the rest shoot from range or rush you with bats. You can fight their
+  Streetmon, shoot back, or both. Members surrender when they're beaten down.
+- **The police come for them.** A street gang fight brings a squad within seconds: they trade fire
+  with the gang and cuff anyone who goes down. Shooting back at the Kings isn't a crime, but shoot
+  an officer and it is.
+- **Kings of the Gutter** (the quest line): meet Alvarez in Midtown; break up the Downtown corner
+  (four of them); run down the courier for his key; find the steel door with the red crown on the
+  deepest level under Downtown; fight through the hideout's guards (cover, barricades, a car on
+  blocks, fuel drums) and beat **King Rook** and his three Streetmon. Reward: $6,000, an SMG, a
+  Rabbit's Foot, Medkits and a lot of reputation; his four lockers are yours too. Leftover crews
+  turn up later for strong players (unless your Street Cred has earned their respect).
+
+## Weapons: earned, not found lying around
+
+Guns are no longer scattered on the pavement. They come from **Hardline Arms**, **quest rewards**
+(the Gutter Kings), the **sewer caches**, the hideout's lockers, and **stashes** down the back
+alleys (`src/world/StreetCaches.ts`): a duffel bag with a bat, a knife or a pistol, or a padlocked
+crate with a shotgun, SMG, rifle or sniper that needs a Lockpick Set. A fallen officer only leaves
+ammo if you already carry a pistol.
+
+## The park
+
+The Central Green has meadows of tall grass that sway in the wind (harder in a storm), flower beds
+along the paths and wildflowers in the grass, hedges and shrubs, pines among the broadleaf trees
+and benches by the paths (`src/world/ParkFlora.ts`). Buildings come in three variants of each
+facade (different window layouts and tones), so a street isn't one texture repeated.
+
+## A living city
+
+- **Weather** (`src/world/Weather.ts`): clear, overcast, rain, thunderstorms, fog and the odd snow,
+  each lasting a few game hours. Rain and snow make every car slide more; rain, storms and fog cut
+  how far the police can see; the streets empty in bad weather; Sludge types come out in the rain,
+  Wire types in storms, Smoke types in fog. The sky greys over, rain falls round you, lightning
+  flashes (and thunder follows), the grass bends in the wind. The clock shows the weather.
+- **Two reputations** (`src/systems/Reputation.ts`): **Street Cred** (the underworld: races,
+  fights, beating gangs, casino wins, some crimes) and **Civic standing** (ordinary people and the
+  police: helping, finishing jobs, taking down gangs; crimes and hurting people lower it). Civic
+  standing changes shop prices and whether witnesses report small crimes; Street Cred opens races,
+  black-market prices and gang respect. Both are on the quest panel.
+- **Speech bubbles** (`src/ui/Bubbles.ts`, `src/npc/Chatter.ts`): passers-by, shop staff, gamblers,
+  sewer folk, gang members and police say things over their heads as you pass: about the weather,
+  their neighbourhood, you (by your reputation), a gang fight down the block. Minor talk never
+  stops the game.
+- **Named neighbourhoods** (`src/world/Districts.ts`): Harlow Heights, Sutton Row, Hell's Galley,
+  the Glass District, Canal Yards, Old Battery, the Central Green and the Waterfront. Crossing into
+  one puts its name and tagline on screen; each has its own light (a gentle colour grade and haze),
+  its locals dress their own way, and they talk about where they live.
+- **Climbing** (`Player.tryMantle`): jump into anything waist- to head-high (a car, crates, a low
+  wall, a container) and you climb up onto it or vault over it.
+- **The environment as a weapon** (`src/systems/Hazards.ts`): red fuel drums in alleys, on gang
+  corners and in the hideout explode when shot (throwing people, wrecking cars, setting off the next
+  drum); transformer boxes on the pavement arc when shot, dropping everyone nearby, twice as far
+  on wet ground.
+
+## Phones, tablets and the Android app
+
+On a touch screen (or with `?touch=1` in the address) the game shows **on-screen controls**
+(`src/mobile/Touch.ts`): a stick appears where your left thumb lands (walk, or steer; push it
+forward in a car for the gas), dragging on the right looks around, and buttons on the right do
+what the moment needs: on foot jump, run, use, fight, fire, aim, throw and the weapon wheel; in a
+car gas, brake, handbrake, horn, nitrous, out, camera and the race Y; in a battle the move bar is
+tapped directly, with swap, flee, cuff, shoot and aim buttons. Team and map are top right, pause
+beside them. Phones also get a lighter graphics profile (`src/mobile/Platform.ts`): a capped
+pixel ratio, smaller shadow maps, no bloom on weaker phones, a shorter draw distance.
+
+Two ways to put it on an Android phone:
+
+1. **Install from the web (PWA).** The published site has a manifest, icons and a service worker
+   (`public/manifest.webmanifest`, `public/sw.js`): open it in Chrome on the phone and choose
+   *Add to Home screen*. It runs full screen in landscape and works offline once loaded.
+2. **The Android app** (`android/`): a full-screen WebView that ships the built game inside the
+   APK and plays offline. `npm run build:android` builds the game and copies `dist/` into the
+   app; open `android/` in Android Studio and press Run (or build an APK). See `android/README.md`.
+3. **An APK from GitHub Actions.** Push to GitHub and `.github/workflows/android.yml` builds the
+   game and the app with the Android SDK; download `empire-streets-apk` from the run (a `v*` tag
+   also attaches it to a release).
+
+What makes it play well on a phone:
+
+- **A context button.** A green pill low in the middle of the screen names what you can do right where you are
+  and does it on a tap: *Go into Sal's Corner Deli*, *Talk*, *Get in the Sedan*, *Climb out*,
+  *Open the vault box*, *Climb down to the deep drains*. It's the game's own prompt
+  (`contextFromPrompt` in `Touch.ts`), so anything that shows "E …" on a desktop is one tap.
+- **Sprint by pushing the stick all the way**, no button needed (RUN still locks it on).
+- **Aim assist** (`src/mobile/AimAssist.ts`): while you aim or fire a gun the view eases onto the
+  target nearest the crosshair inside a narrow cone (cops first when you're wanted), a little each
+  frame, so your thumb on the look area always wins.
+- **A thinner world**: the platform's crowd share (50–70%) now really applies: fewer people,
+  less traffic, fewer wild Streetmon and flyers.
+- Light haptics on the buttons; the app keeps sustained-performance clocks and stays full screen.
+
 ## Performance
 
 **Quality governor** (`src/render/ResolutionScaler.ts`): when the GPU can't keep up, the shadow map
@@ -1038,6 +1423,71 @@ Priority: a cinematic with music, battles, then a heist, a race, a police chase,
 the first time they play (the everyday ones up front). K mutes music with the other sound; it
 ducks while paused.
 
+## 3D sound
+
+All sound is synthesised (no audio files). `src/audio/Spatial.ts` puts a `THREE.AudioListener` on
+the camera and plays the world through pooled `THREE.PositionalAudio` voices on the synth's own
+AudioContext, through its master bus (so K still mutes everything):
+
+- **Vehicles**: the nearest moving AI cars (traffic, racers, police) each get an engine loop
+  pitched by a gearbox model from their speed and throttle (bigger engines lower), and a tyre
+  squeal that opens up with their sideways slip; crashes, explosions, horn blasts and popped tyres
+  come from where they happen. Your own car stays in your head.
+- **Police**: each unit with its lights on gets its own wailing siren (out of step with the
+  others) that pans as it passes and fades over a few hundred metres.
+- **Combat and world**: gunfire, bullet hits, molotovs, Streetmon moves (explosions, bass thumps
+  and drops, electric zaps and hums, roars, quakes), cries, tuning abilities, props breaking,
+  heist drills and alarms, and capture pods: the throw's whoosh, the flash as it opens, the clack
+  when it lands, each wobble's click, the lock-shut click and chime or the pop when it bursts.
+
+Sounds pan (HRTF on desktop, cheaper equal-power on phones) and fall off with distance (inverse,
+reference distance an eighth of each sound's range). Every one-shot takes a world position or a
+plain distance (`audio.crash(0.8, car.position)`), so adding a sound in the world is one line.
+
+## Rolls and dives
+
+Press **Z** (Y on a gamepad, ROLL on a phone) to roll the way you're moving, or forward if you're
+standing still. A roll covers about 4 m in 0.6 s. For roughly 0.3 s in the middle of it you are
+**invulnerable** (the i-frames). The start of the roll and getting up at the end are not, so you
+have to time it. While you're **aiming a gun** the same button makes you **dive** instead: a
+longer, lower dive (5.4 m) that keeps the gun up, so you can keep firing on the way down, with time
+slowing a little while you're in the air. You land on your front and take 0.4 s to get up, and
+you can be hit during that time. The HUD shows a stamina bar, with "DODGED" when the i-frames
+saved you.
+
+How it's kept from being spammed (`src/player/Roll.ts`):
+
+- **Stamina.** A roll costs 28 and a dive 38, out of 100. Stamina refills at 24/s after a 0.9 s
+  pause, and not at all while you're rolling. There is a 0.25 s gap between rolls.
+- **Chains get worse.** Each roll within 2.2 s of the last one costs 50% more and has a shorter
+  i-frame window (32% shorter each time). A third or fourth roll in a row protects you very little.
+  Rolling nonstop keeps you invulnerable only about 12% of the time.
+- **Winded.** If you spend your last stamina, you're winded for 1.8 s: you move at 60% speed,
+  can't sprint or roll, and stamina refills at half speed.
+- **What it doesn't dodge.** The i-frames only stop *hits*: gunfire, fists and bats, Streetmon
+  attacks and being run over. Falls, fire, sludge, steam vents, shocks, drowning and being crushed
+  still hurt in full, and explosions do half.
+- **Arrests.** An officer's grab isn't a hit. Rolling doesn't break an arrest in progress: the
+  arrest meter freezes while you roll instead of draining. If you're winded, the meter fills 35%
+  faster. So rolling away is a way to get *out of reach*, not out of the cuffs. When you're
+  wasted or busted, your stamina and roll state reset.
+- **Where you can't.** You can't roll in water, while climbing, while carrying heist loot, in a
+  car, or indoors (except in the casino).
+
+## HUD
+
+Bottom left: the minimap (heading-up) with your health and the car's, top right the Wanted
+stars, cash, clock and your team's health, bottom right the weapon and ammo (and capture items),
+the speedometer, gear and nitrous bar while driving, tuned-car abilities with their cooldowns,
+and the autosave indicator. The minimap shows Streetmon nearby, race lines and checkpoints,
+mission markers, your rides and safehouses, and every police officer and cruiser with its
+**vision cone**: blue while it hasn't seen you, red when it has.
+
+The cones are real: police see far (110 m from a cruiser, 60 m on foot) only where they're
+looking, and only 40 m (22 m) behind and to the sides (`src/police/Vision.ts`), so you can slip
+past a cruiser from behind. Once a unit is on your tail it watches you all round until it loses
+sight of you.
+
 ## Controls
 
 | On foot | |
@@ -1045,11 +1495,12 @@ ducks while paused.
 | W A S D | Move (relative to the camera) |
 | Shift / Alt | Sprint / walk |
 | Space | Jump |
+| Z (pad Y, phone ROLL) | Dodge roll; with a gun aimed, a dive you can shoot through (see *Rolls and dives*) |
 | Mouse | Look around (click the game to capture the mouse) |
 | E or F | Get in / out of a car (or drag the driver out of one in traffic); enter a gun shop |
 | E at a heist planning spot | Plan the job (pick the crew; Enter starts it) |
 | E at the vault / truck / case | Breach it; E next to a loot bag picks it up |
-| Z / X | Heist: Hacker jams cameras and alarm / Smoke knocks out guards (gamepad X / B) |
+| Z / X | Heist: Hacker jams cameras and alarm / Smoke knocks out guards (gamepad d-pad left / right) |
 | Backspace | Walk away from a heist |
 | E next to someone with an M | Talk (campaign jobs; answer with 1-4); next to a boss: challenge them |
 | J | Campaign: track the next active job |
@@ -1079,6 +1530,9 @@ ducks while paused.
 | B (evolving) | Stop the evolution |
 | E at a clinic | Heal your team, buy capture items |
 | E at the impound | Get confiscated Streetmon back |
+| E at Empire Motors (on foot) | Buy and sell cars |
+| E at a safehouse door | Buy it, or go in: save, heal, rest your team, sleep |
+| Hold T | Quick-select wheel: point at a Streetmon to make it your lead, or at a capture item to throw it at the nearest wild one (from a car too). Time slows while it's open |
 
 | Driving | |
 | --- | --- |
@@ -1086,17 +1540,42 @@ ducks while paused.
 | A / D | Steer |
 | Space | Handbrake: tap it above 35 km/h with the steering held to start a drift. Steer into the turn to hold about 25-40° of slide, throttle to widen it and keep speed, let go of the steering to straighten out |
 | H | Horn (Sonic Bass Horn with a Bass type in the trunk) |
+| Shift | Nitrous (a bought part; also the Nitrous Smokescreen with a Smoke type in the engine bay) |
+| V | Driving camera: chase, far chase, bonnet |
 | R | Flip the car back onto its wheels |
-| G | Siren (in a police car) |
+| G | Siren (in a police car or the Medic Van) |
 | E on the Chop Shop lift | Lower the car into the Underground Chop Shop (F still gets out) |
 | Y | Take a street race offer |
 | Backspace | Turn down a race offer, or quit a race |
 | Shift | Nitrous Smokescreen (Smoke type in the engine bay) |
 | X | Spike Strip Dispenser (Grind type in the trunk) |
-| Gamepad RB / Y / B | Engine ability / Sonic Bass Horn / spike strip |
 
-M (or gamepad Select) opens the city map, K mutes, Esc or P pauses, F8 shows the creature
-steering debug rays.
+M opens the city map, K mutes, Esc or P pauses, F8 shows the creature steering debug rays.
+
+### Gamepad
+
+Plug in any standard controller (Xbox, PlayStation, Switch Pro in a browser that maps it). Every
+device feeds the same actions (`src/core/Gamepad.ts`), and the button map follows what you're
+doing. Prompts switch to pad buttons ("X  Get in the Sedan") as soon as you touch the pad.
+
+| | On foot | Driving | Real-time battle | City map |
+| --- | --- | --- | --- | --- |
+| Left stick | Move | Steer | Move | Pan |
+| Right stick | Camera | Camera | Camera | |
+| A | Jump | Handbrake | Move 1 | |
+| B | Battle / set your lead on someone | Spike strip / Smoke | Move 4 | Close |
+| X | Use (E) | Flip the car | Move 2 | Centre on you |
+| Y | Get in a car | Get out | Move 3 | |
+| LB (hold) | Quick-select wheel (aim with the right stick) | Quick-select wheel | Throw a capture item | Zoom out |
+| RB | Throw a capture item | Nitrous | Swap Streetmon | Zoom in |
+| LT / RT | Aim / fire | Brake-reverse / throttle (analogue) | Aim / fire | |
+| L3 / R3 | Sprint / switch capture item | Horn / camera view | Sprint | |
+| D-pad | ↑ team, ↓ reload, ←/→ weapons (heist: Hacker / Smoke) | ↑ take a race, ↓ siren, ← quit race (heist: Hacker), → Chop Shop lift | ↑ T toggle, ↓ flee, ←/→ weapons | |
+| Back / Start | Map / pause | Map / pause | Pause | Close |
+
+In menus (title, pause, team, dex, shops, dialogue, turn-based battles) the d-pad or left stick
+moves a yellow focus ring between the buttons, A presses, B backs out, and the right stick
+scrolls long lists.
 
 ## What's in it
 
@@ -1254,10 +1733,30 @@ Their models are procedural like the rest (`src/creatures/models/NewBuilders.ts`
 - **Models**: low-poly, flat-shaded, built in code (`src/creatures/models/Builders.ts`, helpers in
   `Kit.ts`): 300-1500 triangles, 2-5 draw calls each, origin at the feet, facing +Z, exact species
   height. Rig nodes `root > body > head, arm_L, arm_R, leg_L, leg_R, tail...` (one mesh per
-  material, rigidly skinned to the nodes so every part animates without extra draw calls). Clips:
-  `idle` (2 s loop), `walk` (1 s loop), `attack` (0.6 s), `hurt` (0.4 s), `faint` (1 s) and
-  `evolve_glow` (loop), plus extras such as Curbstone's `idle_curled`. Each has a shiny variant
-  with a hue-shifted palette.
+  material, skinned to the nodes so every part animates without extra draw calls). Each has a
+  shiny variant with a hue-shifted palette.
+- **Articulation**: every arm, leg, wing and one-piece tail gets a second joint automatically
+  (`arm_L_lo` elbow, `leg_FL_lo` knee, `wing_L_tip`, `tail_lo`) halfway along it. Hands, feet,
+  paws and claws move to the new bone; parts across the joint are sliced there and soft-skinned
+  to both bones, so a one-piece leg bends at the knee. (If the slices would break the 1,500
+  triangle cap, the smallest are un-sliced first; they still bend.)
+- **Clips** (`src/creatures/models/Motion.ts`, sampled at **30 fps**, then keys a straight line
+  already gives are thinned out): `idle` (2 s loop), `walk` (1 s loop), `hurt`, `faint`,
+  `evolve_glow`, the all-purpose `attack` (overworld bites), and one attack per move style that
+  battles pick from the move's effect: `attack_strike` (swipe or bite or tail-whip; a
+  quadruped rears and claws), `attack_slam` (both arms overhead, crash down, squash),
+  `attack_shoot` (brace, aim, recoil; Gun types double-tap), `attack_throw` (overhand wind-up and
+  release), `attack_blast` (curl in, fling everything out, roar), `attack_power` (gather, then
+  flex) and `attack_taunt` (point, head-shake, tail lash). Every attack winds up, strikes with a
+  little overshoot, holds and settles; the move's effects launch on the clip's release frame.
+  Overlap is built in: forearms, shins, the head, tail segments, wing tips, ears and antennae run
+  behind whatever they hang from. Each type moves in its own way and leads with different
+  extremities (Gun: snappy, arms lead; Concrete: heavy, body and legs lead, big squash; Grind:
+  twitchy arms and tail; Smoke: floaty, long trailing tails and wings; Bass: the body pulses,
+  speaker rings bob; Wire: antennae and cables whip, constant jitter; Sludge: the most squash and
+  wobble). Builders can still give a node its own motion (`k.motion`); on the styled attacks it
+  is added on top of the library's. Animation runs every frame up close and at 15 fps beyond
+  35 m.
 - **Exported files**: `npm run creatures` writes `public/creatures/<id>.glb`,
   `<id>_shiny.glb` and `manifest.json` (id, file, triangles, draw calls, bounding box, clips,
   nodes), and validates every file with the Khronos glTF-Validator plus the project's own
@@ -1294,7 +1793,7 @@ Their models are procedural like the rest (`src/creatures/models/NewBuilders.ts`
     Creatures dodge traffic.
 
 - **Your first Streetmon**: a new game starts with a choice of Cinderblock (Concrete),
-  Strapback (Gun) or Subsonic (Bass) at level 5. Concrete beats Gun, Gun beats Bass, Bass beats
+  Strapback (Gun) or Subsonic (Bass) at level 7. Concrete beats Gun, Gun beats Bass, Bass beats
   Concrete.
 - **Battles** (`src/creatures/BattleEngine.ts` for the rules, `BattleController.ts` for the
   staging): aggressive wild creatures start a fight when they reach you, or walk up to any wild
@@ -1357,10 +1856,11 @@ Their models are procedural like the rest (`src/creatures/models/NewBuilders.ts`
   or swap any two. Keys 1-6 select, Esc closes.
 - **Levelling** (`src/creatures/Progression.ts`): beating or catching a foe gives XP =
   base(tier: 55 / 95 / 160) x foe level / 7 x ((2 x foe level + 10) / (foe level + your level
-  + 10))^2.5 x 2 (`XP_MULTIPLIER`) + 1, x1.5 against a trainer's creature, shared between the
+  + 10))^2.5 x 3 (`XP_MULTIPLIER`) + 1, x1.5 against a trainer's creature, shared between the
   creatures that fought it; the rest of the team (still standing) gets 30% of it too
-  (`BENCH_SHARE`, one line in the battle log). That's double the original curve: a starter goes
-  from Lv 5 to Lv 15 in about 26 even fights instead of 51. Beating something above your level
+  (`BENCH_SHARE`, one line in the battle log). That's three times the original curve (it was doubled first, then raised again after the
+  campaign playthrough of 1 November 2026): eight wild fights take a starter from Lv 7 to about
+  Lv 10. Beating something above your level
   pays far more than farming weaklings. XP curves are
   fast (x0.8), medium or slow (x1.25) of level^3; the cap is level 100. Levelling up raises max
   HP without healing the damage taken. New moves arrive at their learnset level: learned
@@ -1432,13 +1932,112 @@ Their models are procedural like the rest (`src/creatures/models/NewBuilders.ts`
    config validator and tests will tell you about any mistake (unknown move, bad colour, missing
    Reload, triangle budget, and so on).
 
+## Textures and weathering
+
+The surfaces were reworked on 1 November 2026 against a set of concept renders (weathered,
+rusty Streetmon on a wet, stained street). Everything is still generated in code: there are no
+texture files to license, and every surface stays tileable and consistent.
+
+**Streetmon** (`src/creatures/models/Atlas.ts`). The shared atlas every creature samples is now
+written at **2048 px** (`public/creatures/atlas/`, 256 px per cell, so a part's side gets 240 px of
+detail instead of 56) with **1024 px copies** (`_1k` suffix) that phones load instead
+(`CreatureModels` swaps the file names on touch devices). The 512 px version is still generated in
+memory for the team-screen icons and the tests. Each cell now carries a weathering pass on top of
+its base material: chipped edges along a part's border (bare metal showing through, concrete
+corners crumbling, hems fraying), rust streaks running down from every rivet and seam and creeping
+up from the bottom edge, dust and grime settling low on the part with drip marks and speckle, fine
+scratches, dents in metal, a hammered finish on armour, round air pockets, aggregate grain and
+hairline cracks in concrete, fibre grain in the weave of cloth. The heavy cells (`rust`, `grime`,
+`wear`) get the full dose; ordinary cells a lighter one, so a palette still reads as its colour.
+`npm run creatures` rewrites the atlas files (both sizes); `atlasImages(size)` makes any size.
+
+**The street** (`src/world/Textures.ts`). Asphalt is a 10 m tile at 1024 px built texel by texel:
+mottled lanes, aggregate showing through, tar-sealed crack lines (dark and glossy), hairline
+cracks, a couple of repair patches with sealed seams, oil and damp low spots that go glossy.
+The sidewalk is a 3 m tile at 1024 px: four slabs, each its own shade with a broomed finish,
+bevelled joints with grime in them, hairline cracks, stains and gum spots. Road markings use a
+**worn-paint mask** (`makeMarkingWear`): the paint has flaked along the cracks and the wheel
+tracks, so the asphalt shows through, and what's left is scuffed and less than pure white.
+Facades are drawn at 1024 px with per-brick shading (one in twelve bricks burnt dark or pale),
+window air conditioners on some windows (standing proud in the normal map, with a drip stain),
+and a full-resolution weathering pass: rain streaks under the sills, a dirt band up the ground
+floor, soot under the cornice. Roofs got gravel ballast and seam pooling. The brick and stone
+colours are a little darker and less saturated.
+
+**Wet streets** (`Game.applyWeather`). The weather's `wet` value (it lags the rain and dries
+slowly) now drives the ground: asphalt goes dark and glossy (roughness 1 → 0.4) so it reflects
+the sky and the street lamps, the pavement less so, and the paint on the markings sheens up.
+
 ## Better-looking models
 
 Everything is generated in code. To raise the visual quality, drop licensed `.glb` models into
 `public/models/` and list them in `public/models/manifest.json` (see the README there).
 Cars and the player switch over automatically; anything missing falls back to the built-in models.
 
+## Options and the playtest pass
+
+The pause menu (Esc, or II on a phone) has a row of **options**, kept outside the save so they
+stick across new games and imports (`src/core/Options.ts`, localStorage `es.opts`): **Look
+speed** (60–200%), **Invert look**, **Music** and **Effects** volume (100% to off, separately),
+and **HUD size** (85–130%: the HUD, battle bars, tips and the compass scale together). Each
+button cycles its ladder. **Save & quit to title** saves and goes back to the title screen (two
+clicks, like starting over). The controls table under the menu shows the keyboard on a desktop
+and the touch buttons on a phone.
+
+A playtest pass against Entro Games' twenty post-playtest questions (what should have been
+explained earlier, what did you want to do but couldn't, which moments felt like work, what was
+missing from the reference cards, accessibility) found and fixed these:
+
+- **Mama Rust now stands outside her Chop Shop**, wherever the city plan put the lift, so the
+  opening walk, "the Rustbucket at the kerb" and the chop-shop cinematic all agree. (Her spot in
+  the campaign config had drifted 600 m from the lift as the districts were re-planned: the new
+  kid was being sent across town with no car.)
+- A wild Streetmon at 0 HP that hadn't fainted (hit by a car while in a trainer's pod, say) could
+  still be battled, and the battle crashed every frame. KO'd creatures now faint, can't be
+  targeted, and `startWild` refuses a foe with nothing to fight.
+- People who gave you a job vanished the moment you accepted it. They stay, with a grey "…"
+  marker, and talking to them repeats the brief.
+- Street events (outbreaks, supply drops) wait until Mama's welcome is done, so the first minutes
+  aren't a timed panel 600 m away.
+- Real-time battles show the **catch odds** of your quick capture item next to "C catch", and the
+  hint pulses green once a throw is worth it (30%+).
+- The objective beacon thins out as you arrive (it was a wall of light over the lift).
+- At one or two stars an officer takes about 1.7 s to get the cuffs on (1.1 s from three), so
+  "BEING ARRESTED" is readable and a roll can still get you out of reach.
+- In the casino, "E Talk" to the dealer no longer hides "Play blackjack / roulette / slots": the
+  nearest thing wins, with a bias to the table.
+- The wardrobe clears bystanders from beside you (the world is frozen while it's open, and a
+  frozen stranger made it unclear who you were dressing).
+- Podded (invisible) Streetmon no longer show as dots on the maps or count as seen in the dex.
+- The title and pause controls list Z (roll / dive), T (battle key toggle) and V (car camera).
+- Phones: the job panel sits top-left clear of the thumb buttons, the capture line says THROW
+  rather than "C throw V switch", battle hints name the buttons (SWAP · CUFF 25% · FLEE · SHOOT),
+  the race button is labelled RACE and only shows while a race is on offer, the job panel hides
+  during a battle (the foe's bar takes that corner), and BLACKED OUT / BUSTED fit the screen.
+
 ## Saving
+
+Saving goes through `src/core/SaveManager.ts`: the save is LZ-compressed (about a third of the
+JSON's size), wrapped with a checksum and the time it was saved, and written twice, to
+localStorage (synchronously, so the save when you close the tab still lands) and IndexedDB (in
+the background, with a much bigger quota). Each store keeps the previous save as a backup; on
+boot the newest good copy wins, so a damaged save loads the backup (and says so) and a cleared
+or full localStorage still loads from IndexedDB. Old plain-JSON saves load as they are.
+**Export save** downloads a compressed `.esave` file; **Import save** takes `.esave` or `.json`.
+
+Autosave triggers, with a spinning-disc indicator bottom right saying why: going into a
+safehouse (and waking up), pulling off a heist, winning a race, catching a Streetmon. On top of
+those, routine saves every 45 s and after any change (at most every 4 s).
+
+### Safehouses
+
+A front door in each district (`src/world/Safehouses.ts`): the **Rust Row Walk-up** right where a
+new game starts is yours; the Midtown Studio ($8,000), the Pier 9 Container Flat on the
+Waterfront ($9,000) and the Downtown Loft ($15,000) are for sale. Owned doors have a green lamp
+(a red one and a FOR SALE sign otherwise) and a green house on the maps. Walk up on foot and
+press **E**: the game saves, you're patched up and your team is rested, and you can sleep till
+morning (07:00) or evening (20:00). Get wasted and you wake at the last one you used. You can't
+go in with the police after you. Owned safehouses, the last one used and visits are saved.
 
 The game autosaves every 45 seconds (never mid-battle or mid-evolution), right after battles,
 catches, evolutions and picking your starter, and when you close or hide the tab. The pause menu
@@ -1450,14 +2049,14 @@ Saved: cash, the time of day, where you are, weapons and ammo, the bag, your par
 impound (every creature's species, level, XP, HP, ammo, IVs, moves, nickname, status, shininess
 and where it was caught), the dex, which gang trainers you've beaten, the battle mode and play
 time. Not saved: wanted level and the police, wild creatures and traffic (they respawn).
-Saves are versioned plain JSON (`src/core/SaveSystem.ts`), now version 2, which also stores your
+Saves are versioned JSON (`src/core/SaveSystem.ts`, compressed for storage), now version 2, which also stores your
 height and world layer, species you've evolved, the capture pity counter, opened stashes, quest
 progress, reputation, manholes found and the sewer seed (most of these are used by the rooftop,
 sewer and pity features as they land). Version 1 saves upgrade automatically with defaults. Loading repairs anything that doesn't
 fit the current config (unknown species, moves, items or weapons are dropped; levels, HP, ammo
 and IVs are clamped; Gun types get Reload back; a party over 6 spills into the stash) and tells
 you what it fixed, so old or hand-edited saves never break the game. Saves live in the
-browser's local storage for this site; use Export to back up or move a game.
+browser's storage for this site (localStorage and IndexedDB); use Export to back up or move a game.
 
 ## Systems and config at a glance
 
@@ -1491,7 +2090,8 @@ browser's local storage for this site; use Export to back up or move a game.
 ```
 src/
   main.ts, config.ts, style.css
-  core/       Game (loop, state, enter/exit, death), Input
+  core/       Game (loop, state, enter/exit, death), Input, Gamepad (pad mapping and menu focus),
+              SaveSystem (save format, repair), SaveManager (compression, localStorage + IndexedDB)
   world/      CityLayout (pure, tested), CityBuilder (meshes + colliders), Environment, Textures
   vehicles/   specs (data), Car (physics), CarModel (procedural meshes), VehicleManager
   player/     Player (character controller), Humanoid (procedural rig + animation)
@@ -1502,18 +2102,18 @@ src/
               destruction.js + DestructionWorld (breakable props), raidManager.js + RaidWorld (legendaries),
               streetRaceManager.js (+ .d.ts; street races), RaceWorld (race props, racers)
   config/     vehicle_streetmon_tuning.json, races.json
-  police/     Wanted (rules; tested), Escalation (per-star table), PoliceSystem (units, pursuit,
+  police/     Wanted (rules; tested), Escalation (per-star table), Vision (sight cones; tested), PoliceSystem (units, pursuit,
               arrests, roadblocks), Tank + TankLogic (5-star tanks)
   camera/     CameraRig (orbit on foot, chase in car, wall collision)
   fx/         Effects (smoke, fire, sparks, skid marks, explosion light, bursts), MoveFx + moveFxPlan.js
               (move effects), Decals (bullet holes, scorch, cracks), DamageNumbers
-  audio/      Audio (WebAudio synthesis)
+  audio/      Audio (WebAudio synthesis), Spatial (THREE.AudioListener + PositionalAudio voices)
   weapons/    WeaponTypes (data + validation; tested), Inventory (tested), WeaponSystem, WeaponModels, Shops
   creatures/  Data, Creature, BattleEngine, BattleController, SpawnRules, SpawnSystem, Catching,
               CatchVisuals, Bag, Party, Progression, EvolutionScene, Trainers, Clinics, CreatureModels
   creatures/models/  Kit (rig, merge, clips), Builders (all species), LegendBuilders, GlbCheck
   data/       weapons, types, moves, creatures, items, humans, trainers (JSON config)
-  ui/         Hud, Menus, WeaponHud, PartyBar, BattleUi, TeamScreen, DexScreen, ClinicMenu, CreatureIcons, DialogueBox,
+  ui/         Hud, QuickWheel, Menus, WeaponHud, PartyBar, BattleUi, TeamScreen, DexScreen, ClinicMenu, CreatureIcons, DialogueBox,
               ChopShopMenu
   npc/        Quests (sewer people, dialogue, quests, black market)
   preview/    Model turntable (preview.html)

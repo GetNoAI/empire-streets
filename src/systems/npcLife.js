@@ -35,7 +35,7 @@ export const HUNTER_STATES = /** @type {const} */ ({
   DONE: 'DONE',
 });
 
-export const TOPICS = /** @type {const} */ (['tips', 'league', 'brag', 'news']);
+export const TOPICS = /** @type {const} */ (['tips', 'league', 'brag', 'news', 'life', 'rumor']);
 
 /**
  * @typedef {import('./npcLife').Person} Person

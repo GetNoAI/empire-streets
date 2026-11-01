@@ -174,23 +174,28 @@
       "steps": [
         {
           "text": "Walk with {W} {A} {S} {D}",
-          "do": "move"
+          "do": "move",
+          "touch": "Walk: put your left thumb down anywhere on the left and drag"
         },
         {
           "text": "Look around with the {Mouse} (click the game first to capture it)",
-          "do": "look"
+          "do": "look",
+          "touch": "Look around: drag anywhere on the right"
         },
         {
           "text": "Hold {Shift} to sprint",
-          "do": "sprint"
+          "do": "sprint",
+          "touch": "Push the stick all the way out to sprint (RUN keeps you sprinting)"
         },
         {
           "text": "Press {Space} to jump",
-          "do": "jump"
+          "do": "jump",
+          "touch": "Tap JUMP to jump"
         },
         {
           "text": "Hold {Alt} to walk quietly: wild Streetmon notice you less",
-          "do": "walk"
+          "do": "walk",
+          "touch": "Push the stick only a little to walk quietly: wild Streetmon notice you less"
         }
       ]
     },
@@ -209,7 +214,8 @@
       "steps": [
         {
           "text": "Walk up to any car and press {E} (or {F}) to get in",
-          "do": "enterCar"
+          "do": "enterCar",
+          "touch": "Walk up to any car and tap the green button to get in"
         },
         {
           "text": "Someone at the wheel? You'll pull them out: that's carjacking, a crime if anyone sees it"
@@ -282,7 +288,8 @@
           "do": "waypoint"
         },
         {
-          "text": "Drag to pan, scroll to zoom, right-click clears the waypoint, {M} or {Esc} closes"
+          "text": "Drag to pan, scroll to zoom, right-click clears the waypoint, {M} or {Esc} closes",
+          "touch": "Drag to pan, pinch to zoom, tap a spot for a waypoint; Close shuts it"
         },
         {
           "text": "Drive there and press {E} next to them to talk"
@@ -378,7 +385,8 @@
           "text": "Point at a Streetmon to see its health bar and level"
         },
         {
-          "text": "Sneak up walking ({Alt}): shy ones run if they hear you, aggressive ones attack"
+          "text": "Sneak up walking ({Alt}): shy ones run if they hear you, aggressive ones attack",
+          "touch": "Sneak up with a light push on the stick: shy ones run if they hear you, aggressive ones attack"
         }
       ]
     },
@@ -409,7 +417,8 @@
           "text": "{4} Run (not from trainers, bosses or the police). {Space} speeds up the text"
         },
         {
-          "text": "Prefer action? Pause ({Esc}) and switch Battles to Real-time"
+          "text": "Prefer action? Pause ({Esc}) and switch Battles to Real-time",
+          "touch": "Prefer action? Pause (II) and switch Battles to Real-time"
         }
       ]
     },
@@ -436,7 +445,8 @@
           "text": "{5} swaps your Streetmon, {X} flees, {C} throws a capture item"
         },
         {
-          "text": "{LMB} shoots or hits the foe with your weapon too"
+          "text": "{LMB} shoots or hits the foe with your weapon too",
+          "touch": "SHOOT fires at (or hits) the foe with your weapon too"
         },
         {
           "text": "{T} switches the number keys to your weapons (and back to commands)",
@@ -645,11 +655,13 @@
       "steps": [
         {
           "text": "Hold {RMB} to aim",
-          "do": "aim"
+          "do": "aim",
+          "touch": "Tap AIM to raise the gun (tap again to lower it); the view eases onto targets near the crosshair"
         },
         {
           "text": "{LMB} to fire (or swing, or throw)",
-          "do": "fire"
+          "do": "fire",
+          "touch": "Hold FIRE to fire (or swing, or throw)"
         },
         {
           "text": "{R} to reload",
@@ -661,7 +673,8 @@
         },
         {
           "text": "Hold {Tab} for the weapon wheel",
-          "do": "weaponWheel"
+          "do": "weaponWheel",
+          "touch": "WPN switches weapons; hold QUICK for the quick wheel"
         }
       ]
     },
@@ -1320,7 +1333,8 @@
           "text": "The game saves itself as you play"
         },
         {
-          "text": "{Esc} pauses: save, export a save file, turn sound, shadows and these tips on or off, or replay any tip"
+          "text": "{Esc} pauses: save, export a save file, turn sound, shadows and these tips on or off, or replay any tip",
+          "touch": "II pauses: save, export a save file, turn sound, shadows and these tips on or off, or replay any tip"
         },
         {
           "text": "{K} mutes the sound"

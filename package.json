@@ -18,7 +18,11 @@
     "heist:example": "tsx scripts/heist-example.ts",
     "events:example": "tsx scripts/street-events-example.ts",
     "living:example": "tsx scripts/living-world-example.ts",
-    "campaign:example": "tsx scripts/campaign-example.ts"
+    "campaign:example": "tsx scripts/campaign-example.ts",
+    "android:sync": "bash scripts/android-sync.sh",
+    "build:android": "npm run build && bash scripts/android-sync.sh",
+    "build:esbuild": "tsc --noEmit && node scripts/build-esbuild.mjs",
+    "build:android:esbuild": "npm run build:esbuild && bash scripts/android-sync.sh"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.14.0",

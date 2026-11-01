@@ -29,8 +29,12 @@ export class TeamScreen {
     private readonly icons: CreatureIcons,
     /** Use an evolution item on a creature (evolves into `to`). */
     private readonly onUseItem?: (c: Creature, itemId: string, to: string) => void,
-    /** Use a field item (the Escape Rope). Returns a note to show if it can't be used now, or null when it was used. */
-    private readonly onUseField?: (itemId: string) => string | null,
+    /**
+     * Use a field or heal item (on the selected Streetmon where it matters). Returns null when it
+     * was used and the screen should close, a note starting "✓" when it was used and the screen
+     * stays open (a heal), or why it can't be used now.
+     */
+    private readonly onUseField?: (itemId: string, target: Creature | null) => string | null,
   ) {
     this.el = document.createElement('div');
     this.el.className = 'overlay team';
@@ -40,7 +44,8 @@ export class TeamScreen {
       const t = e.target as HTMLElement;
       const f = t.closest('[data-field]') as HTMLButtonElement | null;
       if (f && !f.disabled) {
-        const note = this.onUseField?.(f.dataset['field']!) ?? null;
+        const target = this.list(this.sel.where)[this.sel.i] ?? null;
+        const note = this.onUseField?.(f.dataset['field']!, target) ?? null;
         if (note === null) this.close();
         else {
           this.note = note;
@@ -152,8 +157,8 @@ export class TeamScreen {
     const p = this.party;
     const items = this.bag.captures().map((e) => `${e.item.name} x${e.count}`).join(' · ') || 'No capture items';
     const field = [...DATA.items.values()]
-      .filter((it) => it.kind === 'field' && this.bag.count(it.id) > 0)
-      .map((it) => `<button class="btn small" data-field="${it.id}" title="${it.description}">Use ${it.name} (${this.bag.count(it.id)})</button>`)
+      .filter((it) => (it.kind === 'field' || it.kind === 'heal') && this.bag.count(it.id) > 0 && it.id !== 'lockpick')
+      .map((it) => `<button class="btn small ${it.kind === 'heal' ? 'heal-item' : ''}" data-field="${it.id}" title="${it.description}">${it.kind === 'heal' && !it['party'] ? `${it.name} on the selected` : `Use ${it.name}`} (${this.bag.count(it.id)})</button>`)
       .join('');
     const rows = (where: 'party' | 'stash'): string => {
       const l = this.list(where);

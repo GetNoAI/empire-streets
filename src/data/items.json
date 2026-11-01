@@ -92,6 +92,150 @@
       "kind": "field",
       "price": 350,
       "description": "A knotted rope and a grappling hook. Use it underground (I, your team screen) to climb straight out of the sewers at the nearest manhole."
+    },
+    {
+      "id": "nightNet",
+      "name": "Night Net",
+      "kind": "capture",
+      "price": 350,
+      "catchMult": 1,
+      "bonus": {
+        "night": true,
+        "mult": 3
+      },
+      "description": "A dark mesh net with reflective weights. x3 between dusk and dawn, ordinary in daylight.",
+      "model": "cuffs"
+    },
+    {
+      "id": "diveNet",
+      "name": "Dive Net",
+      "kind": "capture",
+      "price": 400,
+      "catchMult": 1,
+      "bonus": {
+        "water": true,
+        "mult": 3.5
+      },
+      "description": "A weighted fishing net. x3.5 in water (the pond, the sewer pools, the docks), ordinary on land.",
+      "model": "cuffs"
+    },
+    {
+      "id": "rookieCuffs",
+      "name": "Rookie Cuffs",
+      "kind": "capture",
+      "price": 180,
+      "catchMult": 1,
+      "bonus": {
+        "weaker": true,
+        "mult": 3
+      },
+      "description": "Light training cuffs. x3 on anything lower level than your lead; ordinary otherwise.",
+      "model": "cuffs"
+    },
+    {
+      "id": "streetSnack",
+      "name": "Bodega Sandwich",
+      "kind": "heal",
+      "price": 60,
+      "heal": 30,
+      "description": "Chopped cheese, extra hot sauce. Restores 30 HP to one Streetmon."
+    },
+    {
+      "id": "energyDrink",
+      "name": "Volt Energy Drink",
+      "kind": "heal",
+      "price": 180,
+      "heal": 80,
+      "description": "Tastes like a battery. Restores 80 HP to one Streetmon."
+    },
+    {
+      "id": "medkit",
+      "name": "Field Medkit",
+      "kind": "heal",
+      "price": 450,
+      "heal": 9999,
+      "cure": true,
+      "description": "Bandages, splints and something in a syringe. Fully heals one Streetmon and stops it choking."
+    },
+    {
+      "id": "smellingSalts",
+      "name": "Smelling Salts",
+      "kind": "heal",
+      "price": 600,
+      "revive": 0.5,
+      "description": "Revives a fainted Streetmon with half its HP."
+    },
+    {
+      "id": "familyBucket",
+      "name": "Family Bucket",
+      "kind": "heal",
+      "price": 500,
+      "heal": 50,
+      "party": true,
+      "description": "Fried chicken for the whole team. Restores 50 HP to every Streetmon in your party."
+    },
+    {
+      "id": "firstAid",
+      "name": "First Aid Kit",
+      "kind": "field",
+      "price": 120,
+      "playerHeal": 60,
+      "description": "For you, not them. Patches up 60 health."
+    },
+    {
+      "id": "pepperMusk",
+      "name": "Pepper Musk",
+      "kind": "field",
+      "price": 250,
+      "repel": 240,
+      "description": "Spray it on and wild Streetmon weaker than your lead keep away for 4 minutes."
+    },
+    {
+      "id": "bait",
+      "name": "Pheromone Bait",
+      "kind": "field",
+      "price": 300,
+      "attract": 180,
+      "description": "Crack the jar and twice as many wild Streetmon show up for 3 minutes."
+    },
+    {
+      "id": "rabbitFoot",
+      "name": "Lucky Rabbit's Foot",
+      "kind": "field",
+      "price": 2500,
+      "lucky": 600,
+      "description": "Hold it tight: shiny Streetmon are three times as likely for 10 minutes."
+    },
+    {
+      "id": "proteinShake",
+      "name": "Protein Shake",
+      "kind": "field",
+      "price": 3000,
+      "levelUp": 1,
+      "description": "Raises one Streetmon a level on the spot."
+    },
+    {
+      "id": "burner",
+      "name": "Burner Phone",
+      "kind": "field",
+      "price": 800,
+      "wantedDown": 1,
+      "description": "Call in a favour: the police drop one wanted star (not at five)."
+    },
+    {
+      "id": "repairKit",
+      "name": "Repair Kit",
+      "kind": "field",
+      "price": 400,
+      "repair": true,
+      "description": "Duct tape, a jack and a can of tyre foam. Fixes the car you're in (or the last one you drove) good as new."
+    },
+    {
+      "id": "lockpick",
+      "name": "Lockpick Set",
+      "kind": "field",
+      "price": 350,
+      "description": "Opens a locked cache or vault box without a key. Used up on the lock."
     }
   ]
 }

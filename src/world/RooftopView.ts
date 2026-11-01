@@ -19,6 +19,8 @@ export interface RooftopView {
   setStashOpen(id: string, open: boolean): void;
   /** Pulses jump pads and elevator lights. */
   update(t: number): void;
+  /** Skylights light up from the rooms below after dark (0 day .. 1 night). */
+  setNight(k: number): void;
 }
 
 function box(w: number, h: number, d: number, x: number, y: number, z: number, rotZ = 0, rotY = 0): THREE.BufferGeometry {
@@ -204,8 +206,75 @@ export function buildRooftops(plan: RooftopPlan, world: RAPIER.World): RooftopVi
   const crates = new Map<string, { body: THREE.Mesh; lid: THREE.Mesh; mat: THREE.Material }>();
   for (const s of plan.stashes) crates.set(s.id, crate(s, s.secret ? secretMat : crateMat, root));
 
+  // ---- skylights: glazed hip frames over the stairwells of some roofs, glowing warm at night.
+  const skyFrame: THREE.BufferGeometry[] = [];
+  const skyGlass: THREE.BufferGeometry[] = [];
+  const clear = (x: number, z: number, r: number): boolean =>
+    plan.stashes.every((q) => Math.hypot(q.x - x, q.z - z) > r + 1.5) &&
+    plan.access.every((q) => Math.hypot(q.roof.x - x, q.roof.z - z) > r + 3) &&
+    plan.pads.every((q) => Math.hypot(q.x - x, q.z - z) > r + 2.5) &&
+    plan.stairs.every((q) => Math.hypot(q.x - x, q.z - z) > r + 3);
+  for (const r of plan.roofs) {
+    if (r.kind !== 'roof' && r.kind !== 'tall') continue;
+    const rw = r.rect.x1 - r.rect.x0;
+    const rd = r.rect.z1 - r.rect.z0;
+    if (rw < 12 || rd < 12 || (r.id * 2654435761) % 5 > 1) continue;
+    const n = rw * rd > 500 ? 2 : 1;
+    for (let k = 0; k < n; k++) {
+      // Toward a corner (water towers and spires stand in the middle).
+      const fx = k === 0 ? 0.24 : 0.74;
+      const fz = (r.id + k) % 2 ? 0.26 : 0.72;
+      const x = r.rect.x0 + rw * fx;
+      const z = r.rect.z0 + rd * fz;
+      const sw = Math.min(5, rw * 0.22);
+      const sd = Math.min(3.4, rd * 0.18);
+      if (!clear(x, z, Math.max(sw, sd) / 2)) continue;
+      const y = r.top;
+      // Curb, a ridge, and four sloped glass panes over a steel frame.
+      skyFrame.push(box(sw + 0.3, 0.45, sd + 0.3, x, y + 0.225, z));
+      const ridgeH = 0.7;
+      skyFrame.push(box(sw, 0.08, 0.08, x, y + 0.45 + ridgeH, z));
+      const slope = Math.atan2(ridgeH, sd / 2);
+      const pane = Math.hypot(ridgeH, sd / 2);
+      for (const side of [-1, 1]) {
+        const g = new THREE.BoxGeometry(sw - 0.1, 0.04, pane);
+        g.rotateX(side * slope);
+        g.translate(x, y + 0.45 + ridgeH / 2, z + (side * sd) / 4);
+        skyGlass.push(g.toNonIndexed());
+        for (let i = 0; i <= 4; i++) {
+          const m = new THREE.BoxGeometry(0.06, 0.06, pane);
+          m.rotateX(side * slope);
+          m.translate(x - sw / 2 + (sw * i) / 4, y + 0.47 + ridgeH / 2, z + (side * sd) / 4);
+          skyFrame.push(m.toNonIndexed());
+        }
+      }
+      for (const side of [-1, 1]) {
+        const tri = new THREE.BufferGeometry();
+        const ex = x + (side * sw) / 2;
+        tri.setAttribute('position', new THREE.Float32BufferAttribute([ex, y + 0.45, z - sd / 2, ex, y + 0.45, z + sd / 2, ex, y + 0.45 + ridgeH, z], 3));
+        tri.setAttribute('uv', new THREE.Float32BufferAttribute([0, 0, 1, 0, 0.5, 1], 2));
+        tri.computeVertexNormals();
+        skyGlass.push(tri);
+      }
+      collider(sw / 2 + 0.15, 0.6, sd / 2 + 0.15, x, y + 0.6, z);
+    }
+  }
+  const skyFrameMesh = skyFrame.length ? new THREE.Mesh(mergeGeometries(skyFrame.map((g) => (g.index ? g.toNonIndexed() : g)), false), withSurface(new THREE.MeshStandardMaterial({ color: 0x3a3f45, metalness: 0.7, roughness: 0.45 }), 'paintedMetal')) : null;
+  const skyGlassMat = new THREE.MeshStandardMaterial({ color: 0x9fc4d6, emissive: 0xffc27a, emissiveIntensity: 0.0, roughness: 0.08, metalness: 0.3, transparent: true, opacity: 0.55, side: THREE.DoubleSide });
+  const skyGlassMesh = skyGlass.length ? new THREE.Mesh(mergeGeometries(skyGlass.map((g) => (g.index ? g.toNonIndexed() : g)), false), skyGlassMat) : null;
+  if (skyFrameMesh) {
+    skyFrameMesh.castShadow = true;
+    skyFrameMesh.receiveShadow = true;
+    root.add(skyFrameMesh);
+  }
+  if (skyGlassMesh) root.add(skyGlassMesh);
+
   return {
     root,
+    setNight(k: number): void {
+      skyGlassMat.emissiveIntensity = 1.3 * k;
+      skyGlassMat.opacity = 0.55 + 0.3 * k;
+    },
     setStashOpen(id: string, open: boolean): void {
       const c = crates.get(id);
       if (!c) return;
@@ -213,6 +282,7 @@ export function buildRooftops(plan: RooftopPlan, world: RAPIER.World): RooftopVi
       c.body.material = open ? openMat : c.mat;
     },
     update(t: number): void {
+
       padMat.emissiveIntensity = 1.2 + Math.sin(t * 4) * 0.5;
       doorMat.emissiveIntensity = 1.2 + Math.sin(t * 2) * 0.25;
     },

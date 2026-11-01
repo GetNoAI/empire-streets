@@ -3,8 +3,11 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { species } from './Data';
 import { buildCreatureModel } from './models/Builders';
+import { ATLAS } from './models/Atlas';
+import { platform } from '../mobile/Platform';
 import { atlasRole, type AtlasTextures } from './models/AtlasTextures';
 import { markBloom } from '../render/SelectiveBloom';
+import { ATTACK_CLIPS, type AttackStyle } from './models/Motion';
 
 /**
  * Creature model instances for the game. Loads the exported .glb (public/creatures, so artists can
@@ -57,7 +60,13 @@ export interface CreatureInstance {
   mixer: THREE.AnimationMixer;
   clips: Map<string, THREE.AnimationClip>;
   /** Plays a clip; loops for idle/walk/evolve_glow, holds the last frame for faint. */
-  play(name: string, fade?: number): void;
+  play(name: string, fade?: number, speed?: number): void;
+  /**
+   * Plays the attack clip for a move style (attack_strike, _shoot ...; the all-purpose `attack`
+   * on older models). `speed` > 1 plays it faster. Returns how long it runs and when the move
+   * leaves the Streetmon (seconds, at that speed).
+   */
+  attack(style: AttackStyle, speed?: number): { duration: number; release: number };
   current: string;
   dispose(): void;
 }
@@ -99,8 +108,15 @@ export function attachEmissivePulse(root: THREE.Object3D, now: () => number = ()
   return n;
 }
 
+/** Phones load the 1024 px atlas copies (a quarter of the texture memory) in place of the 2048 ones. */
+function atlasManager(): THREE.LoadingManager {
+  const m = new THREE.LoadingManager();
+  if (platform.touch) m.setURLModifier((url) => (/streetmon_(color|normal|orm)\.png$/.test(url) ? url.replace(/\.png$/, `${ATLAS.phoneSuffix}.png`) : url));
+  return m;
+}
+
 export class CreatureModels {
-  private readonly loader = new GLTFLoader();
+  private readonly loader = new GLTFLoader(atlasManager());
   private readonly sources = new Map<string, Promise<Source>>();
   private manifest: Promise<Set<string>> | null = null;
 
@@ -159,21 +175,29 @@ export class CreatureModels {
       mixer,
       clips,
       current: '',
-      play(name: string, fade = 0.15): void {
+      play(name: string, fade = 0.15, speed = 1): void {
         const clip = clips.get(name);
-        if (!clip || name === inst.current) return;
+        if (!clip || (name === inst.current && !name.startsWith('attack'))) return;
         const next = mixer.clipAction(clip);
         next.reset();
+        next.timeScale = speed;
         if (LOOPING.has(name)) next.setLoop(THREE.LoopRepeat, Infinity);
         else {
           next.setLoop(THREE.LoopOnce, 1);
           next.clampWhenFinished = true;
         }
         next.play();
-        if (action && fade > 0) action.crossFadeTo(next, fade, false);
-        else action?.stop();
+        if (action && action !== next && fade > 0) action.crossFadeTo(next, fade, false);
+        else if (action !== next) action?.stop();
         action = next;
         inst.current = name;
+      },
+      attack(style: AttackStyle, speed = 1): { duration: number; release: number } {
+        const name = clips.has(`attack_${style}`) ? `attack_${style}` : 'attack';
+        inst.play(name, 0.06, speed);
+        const T = ATTACK_CLIPS[style];
+        if (name === 'attack') return { duration: 0.6 / speed, release: 0.12 / speed };
+        return { duration: T.duration / speed, release: T.release / speed };
       },
       dispose(): void {
         mixer.stopAllAction();

@@ -19,11 +19,13 @@
  * The Music class plays it all on HTMLAudioElements.
  */
 
-export type TrackId = 'overworld' | 'sewer' | 'wildBattle' | 'chase' | 'policeBattle' | 'npcBattle' | 'race' | 'heist' | 'boss' | 'legendary' | 'intro' | 'cinematic';
+export type TrackId = 'overworld' | 'sewer' | 'casino' | 'wildBattle' | 'chase' | 'policeBattle' | 'npcBattle' | 'race' | 'heist' | 'boss' | 'legendary' | 'intro' | 'cinematic';
 
 const FILES: Record<TrackId, string> = {
   overworld: 'transit-after-midnight.mp3',
   sewer: 'dragging-through-concrete.mp3',
+  // Inside the Empire Royale (generated for the game: scripts/make-casino-track.py).
+  casino: 'high-roller-lounge.mp3',
   wildBattle: 'kinetic-overdrive.mp3',
   chase: 'blue-and-red.mp3',
   policeBattle: 'asphalt-on-fire.mp3',
@@ -39,12 +41,13 @@ const FILES: Record<TrackId, string> = {
 };
 
 /** Tracks that always pick up where they left off (the rest restart unless you were only away briefly). */
-const RESUMES: ReadonlySet<TrackId> = new Set(['overworld', 'sewer']);
+const RESUMES: ReadonlySet<TrackId> = new Set(['overworld', 'sewer', 'casino']);
 
 /** How intense each track is: switching up is immediate, switching down waits a moment. */
 export const INTENSITY: Record<TrackId, number> = {
   overworld: 0,
   sewer: 0,
+  casino: 0.5,
   chase: 2,
   race: 3,
   heist: 3,
@@ -87,6 +90,8 @@ export interface MusicSituation {
   race?: boolean;
   /** Underground. */
   sewer?: boolean;
+  /** Inside a building: the casino has its own music; other rooms keep the street's. */
+  indoors?: 'casino' | 'room' | null;
   /** A cinematic with its own music is playing: the opening, or a high-octane one. */
   cinematic?: 'intro' | 'action' | null;
 }
@@ -108,6 +113,8 @@ export function pickTrack(s: MusicSituation): TrackId {
   if (s.heist) return 'heist';
   if (s.race) return 'race';
   if (s.stars >= 2 || (s.chasing && s.stars > 0)) return 'chase';
+  if (s.indoors === 'casino') return 'casino';
+  if (s.indoors === 'room') return 'overworld';
   if (s.sewer) return 'sewer';
   return 'overworld';
 }
@@ -230,6 +237,9 @@ export class Music {
     this.enabled = on;
   }
 
+  /** Music volume from the options (0..1 of the default level). */
+  userVolume = 1;
+
   /** Muffles the music in the sewers (1 = normal); glides there. */
   setPlaceVolume(v: number): void {
     this.placeTarget = Math.max(0, Math.min(1, v));
@@ -273,7 +283,7 @@ export class Music {
     const k = 1 - Math.exp(-dt / MUSIC.duckGlide);
     this.duck += (this.duckTarget - this.duck) * k;
     this.place += (this.placeTarget - this.place) * k;
-    const master = this.enabled ? MUSIC.volume * this.duck * this.place : 0;
+    const master = this.enabled ? MUSIC.volume * this.userVolume * this.duck * this.place : 0;
     const vols = this.director.update(dt, this.ids);
     for (const [id, a] of this.tracks) {
       const v = vols.get(id) ?? 0;

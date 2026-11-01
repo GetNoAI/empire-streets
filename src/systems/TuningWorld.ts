@@ -27,8 +27,10 @@ export interface TuningWorldDeps {
   /** Camera position, for sound distance. */
   listener(): THREE.Vector3;
   shake(amount: number): void;
-  /** The car the player is driving (spike strips never pop it). */
+  /** The car the player is driving (your own spike strips never pop it; a rival's slows it). */
   playerCar(): Car | null;
+  /** One of a race's NPC racers (a spike strip gives them a slow leak, not a wreck). */
+  isRacer?(car: Car): boolean;
 }
 
 export interface RadarSources {
@@ -85,6 +87,9 @@ export class TuningWorld {
   private readonly s = new THREE.Vector3();
   private readonly tmp = new THREE.Vector3();
 
+  /** You drove over a rival's hazard (the HUD says so). */
+  onPlayerHit: ((what: 'spikeStrip') => void) | null = null;
+
   constructor(private readonly d: TuningWorldDeps) {
     const mat = new THREE.MeshStandardMaterial({ color: 0x8a8d90, roughness: 1, transparent: true, opacity: 0.72, depthWrite: false });
     this.puffMesh = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 1), mat, MAX_PUFFS);
@@ -107,28 +112,27 @@ export class TuningWorld {
   trigger(car: Car, ab: AbilityPayload, ctx: { strength?: number } = {}): boolean {
     if (car.disposed || car.destroyed) return false;
     const P = ab.params as Record<string, number>;
-    const dist = car.position.distanceTo(this.d.listener());
     switch (ab.id) {
       case 'nitrousSmokescreen':
         this.trails.set(car, { left: ab.duration ?? 5, next: 0, params: ab.params, power: ab.power });
         this.flame(car, 2.2);
-        audio.sfx(ab.sfx ?? '', dist);
+        audio.sfx(ab.sfx ?? '', car.position);
         return true;
       case 'exhaustBackfire':
         this.shockwave(car, P.radius * ab.power, P.impulse * ab.power * Math.min(1.5, 0.6 + (ctx.strength ?? 6) / 12), P.damage, P.staggerSeconds, 0, 0, 0xff8a2a);
         this.flame(car, 3.2);
-        audio.sfx(ab.sfx ?? '', dist);
+        audio.sfx(ab.sfx ?? '', car.position);
         this.d.shake(0.05);
         return true;
       case 'sonicBassHorn':
         this.shockwave(car, P.radius * ab.power, P.impulse * ab.power, 0, P.staggerSeconds, P.lift, P.flipMaxMass, 0xb26bff, P.flipTorque, P.pedKnock);
-        audio.sfx(ab.sfx ?? '', dist);
+        audio.sfx(ab.sfx ?? '', car.position);
         this.d.shake(0.07);
         return true;
       case 'spikeStripDispenser':
         if (Math.abs(car.speed) < 1) return false; // nowhere to drop it behind a parked car
         this.dropHazard(car, ab);
-        audio.sfx(ab.sfx ?? '', dist);
+        audio.sfx(ab.sfx ?? '', car.position);
         return true;
       default:
         return true;
@@ -404,8 +408,10 @@ export class TuningWorld {
         this.removeHazard(h);
         continue;
       }
+      const ownerIsMine = h.owner === mine;
       for (const c of this.d.vehicles.cars) {
-        if (c === mine || c === h.owner || c.disposed || c.destroyed) continue;
+        if (c === h.owner || c.disposed || c.destroyed) continue;
+        if (c === mine && ownerIsMine) continue;
         const rx = c.position.x - h.x;
         const rz = c.position.z - h.z;
         if (Math.abs(rx) > 8 || Math.abs(rz) > 8) continue;
@@ -414,9 +420,18 @@ export class TuningWorld {
         if (Math.abs(along) > h.width / 2 + c.spec.length * 0.35 || Math.abs(across) > h.length / 2 + c.spec.width * 0.3) continue;
         if (h.kind === 'spikeStrip') {
           if (c.tyresPopped) continue;
+          // In a race (you or a racer): a slow leak for a few seconds, not a race-ending wreck.
+          if (c === mine || this.d.isRacer?.(c)) {
+            if (c.flatFor > 0) continue;
+            c.flatFor = Number(h.params.raceFlatSeconds ?? 4.5);
+            this.d.effects.sparks(c.position.x, 0.3, c.position.z, 16);
+            audio.sfx('sfx_tyre_pop', c.position);
+            if (c === mine) this.onPlayerHit?.('spikeStrip');
+            continue;
+          }
           c.tyresPopped = true;
           this.d.effects.sparks(c.position.x, 0.3, c.position.z, 16);
-          audio.sfx('sfx_tyre_pop', c.position.distanceTo(this.d.listener()));
+          audio.sfx('sfx_tyre_pop', c.position);
           this.d.police.daze([c], Number(h.params.staggerSeconds ?? 1.2));
         } else {
           c.slipFor = Math.max(c.slipFor, Number(h.params.seconds ?? 3));

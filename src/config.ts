@@ -95,7 +95,7 @@ export const BATTLE = {
   realtimeIdle: 3,
   /** Starter creatures offered on a new game (level). */
   starters: ['cinderblock', 'strapback', 'subsonic'] as const,
-  starterLevel: 5,
+  starterLevel: 7,
   /** Clinic fee: base + per fainted creature. */
   clinicFee: { base: 20, perFainted: 15 },
   /** Blacking out (all creatures fainted, not wanted): clinic respawn fee. */

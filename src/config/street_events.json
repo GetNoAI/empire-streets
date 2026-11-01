@@ -514,78 +514,70 @@
     "roof": [
       {
         "id": "roof-uptown-1",
-        "x": -396.7,
-        "y": 15.3,
+        "x": -377.1,
+        "y": 16.8,
         "z": -320,
         "district": "uptown",
         "label": "rooftop"
       },
       {
-        "id": "roof-midtown-2",
-        "x": 208.6,
-        "y": 15.7,
-        "z": 320,
-        "district": "midtown",
+        "id": "roof-downtown-2",
+        "x": 228.7,
+        "y": 12.1,
+        "z": 362,
+        "district": "downtown",
         "label": "rooftop"
       },
       {
         "id": "roof-midtown-3",
-        "x": -207.3,
-        "y": 17.7,
+        "x": -248.1,
+        "y": 18.6,
         "z": 10,
         "district": "midtown",
         "label": "rooftop"
       },
       {
         "id": "roof-downtown-4",
-        "x": -368.3,
-        "y": 13.2,
-        "z": 362,
+        "x": -420.5,
+        "y": 27.6,
+        "z": 434,
         "district": "downtown",
         "label": "rooftop"
       },
       {
         "id": "roof-uptown-5",
-        "x": 231.5,
-        "y": 13.3,
+        "x": 246.6,
+        "y": 33.8,
         "z": -238,
         "district": "uptown",
         "label": "rooftop"
       },
       {
         "id": "roof-uptown-6",
-        "x": -250.4,
-        "y": 13.6,
-        "z": -196,
+        "x": -214.9,
+        "y": 14.3,
+        "z": -238,
         "district": "uptown",
         "label": "rooftop"
       },
       {
         "id": "roof-uptown-7",
-        "x": -223.5,
-        "y": 36.2,
-        "z": -424,
+        "x": -203,
+        "y": 19.8,
+        "z": -444,
         "district": "uptown",
         "label": "rooftop"
       },
       {
         "id": "roof-midtown-8",
-        "x": -217,
-        "y": 16.1,
-        "z": 300,
+        "x": -180.3,
+        "y": 26.2,
+        "z": 310,
         "district": "midtown",
         "label": "rooftop"
       },
       {
         "id": "roof-downtown-9",
-        "x": -360.8,
-        "y": 30.4,
-        "z": 548,
-        "district": "downtown",
-        "label": "rooftop"
-      },
-      {
-        "id": "roof-downtown-10",
         "x": -69.2,
         "y": 16,
         "z": 424,
@@ -593,17 +585,25 @@
         "label": "rooftop"
       },
       {
+        "id": "roof-midtown-10",
+        "x": -369.2,
+        "y": 17.5,
+        "z": 176,
+        "district": "midtown",
+        "label": "rooftop"
+      },
+      {
         "id": "roof-midtown-11",
-        "x": -400.7,
-        "y": 15.3,
-        "z": 134,
+        "x": 381.5,
+        "y": 19,
+        "z": 10,
         "district": "midtown",
         "label": "rooftop"
       },
       {
         "id": "roof-downtown-12",
-        "x": -212.8,
-        "y": 34.7,
+        "x": 105.8,
+        "y": 19,
         "z": 568,
         "district": "downtown",
         "label": "rooftop"
@@ -620,16 +620,16 @@
       },
       {
         "id": "alley-downtown-2",
-        "x": -222.2,
-        "z": 434,
+        "x": -226.7,
+        "z": 372,
         "district": "downtown",
         "label": "alley",
         "halfLength": 20
       },
       {
         "id": "alley-midtown-1",
-        "x": -227.5,
-        "z": 62,
+        "x": -228.8,
+        "z": 124,
         "district": "midtown",
         "label": "alley",
         "halfLength": 20
@@ -644,16 +644,16 @@
       },
       {
         "id": "alley-uptown-1",
-        "x": -377.9,
-        "z": -186,
+        "x": -374,
+        "z": -248,
         "district": "uptown",
         "label": "alley",
         "halfLength": 20
       },
       {
         "id": "alley-uptown-2",
-        "x": 373.2,
-        "z": -372,
+        "x": 370,
+        "z": -310,
         "district": "uptown",
         "label": "alley",
         "halfLength": 20

@@ -1,4 +1,5 @@
 import type { TutorialManager, TutorialView } from '../systems/tutorialManager.js';
+import { touchParts } from '../mobile/Touch';
 
 /**
  * The tutorial card: a panel on the right with the tip's title, its steps (practice steps tick
@@ -58,7 +59,9 @@ export class TutorialCard {
     const esc = (t: string): string => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
     const steps = v.steps
       .map((s) => {
-        const body = s.parts.map((p) => (typeof p === 'string' ? esc(p) : `<kbd>${esc(p.key)}</kbd>`)).join('');
+        // On a touch screen the keys read as the buttons and gestures that do the same.
+        const parts = document.body.classList.contains('touch') ? (s.touchParts ?? touchParts(s.parts)) : s.parts;
+        const body = parts.map((p) => (typeof p === 'string' ? esc(p) : 'touch' in p && p.touch ? `<b class="tkey">${esc(p.key)}</b>` : `<kbd>${esc(p.key)}</kbd>`)).join('');
         const mark = s.practice ? `<i class="tut-check${s.done ? ' on' : ''}" aria-label="${s.done ? 'done' : 'to do'}"></i>` : '<i class="tut-dot"></i>';
         return `<li class="${s.practice ? 'practice' : ''}${s.done ? ' done' : ''}">${mark}<span>${body}</span></li>`;
       })
@@ -71,7 +74,7 @@ export class TutorialCard {
       <div class="tut-title">${esc(v.title)}</div>
       ${v.intro ? `<div class="tut-intro">${esc(v.intro)}</div>` : ''}
       <ul class="tut-steps">${steps}</ul>
-      <div class="tut-foot"><span>${todo ? 'Try them: they tick off as you go' : ''}</span><button class="tut-ok" data-act="close"><kbd>Enter</kbd> ${todo ? 'Skip' : 'Got it'}</button></div>`;
+      <div class="tut-foot"><span>${todo ? 'Try them: they tick off as you go' : ''}</span><button class="tut-ok" data-act="close"><kbd class="keyonly">Enter</kbd> ${todo ? 'Skip' : 'Got it'}</button></div>`;
     if (fresh) {
       this.el.classList.remove('out');
       this.el.classList.add('on');

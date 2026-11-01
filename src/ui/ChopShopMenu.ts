@@ -17,6 +17,8 @@ export interface ChopShopContext {
   canSlot(slot: SlotName, id: string): { ok: boolean; reason?: string };
   slot(slot: SlotName, id: string): { ok: boolean; reason?: string };
   unslot(slot: SlotName): { ok: boolean; reason?: string };
+  /** Opens the parts and body shop for this car. */
+  onParts?(): void;
   onClose(): void;
 }
 
@@ -59,6 +61,7 @@ export class ChopShopMenu {
       if (!b || !this.ctx || (b as HTMLButtonElement).disabled) return;
       const act = b.dataset['act'];
       if (act === 'close') return this.close();
+      if (act === 'parts') return this.ctx.onParts?.();
       if (act === 'slot') this.sel = b.dataset['slot'] as SlotName;
       else if (act === 'install') {
         const r = this.ctx.slot(this.sel, b.dataset['id']!);
@@ -82,12 +85,12 @@ export class ChopShopMenu {
     this.render();
   }
 
-  close(): void {
+  close(leave = true): void {
     if (!this.isOpen) return;
     this.el.style.display = 'none';
     const c = this.ctx;
     this.ctx = null;
-    c?.onClose();
+    if (leave) c?.onClose();
   }
 
   key(code: string): boolean {
@@ -152,6 +155,7 @@ export class ChopShopMenu {
         <div class="tm-head">
           <div class="tm-sname">UNDERGROUND CHOP SHOP</div>
           <div class="tm-bag">${esc(c.carName)}: slot Streetmon into the car. They ride along until you take them out.</div>
+          ${c.onParts ? '<button class="btn small" data-act="parts">Parts &amp; body shop</button>' : ''}
           <button class="btn small" data-act="close">Drive out (Esc)</button>
         </div>
         ${this.note ? `<div class="tm-hint">${esc(this.note)}</div>` : ''}

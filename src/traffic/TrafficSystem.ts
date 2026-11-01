@@ -297,7 +297,7 @@ export class TrafficSystem {
     if (car.lastImpactAt > 0 && performance.now() - car.lastImpactAt < dt * 1000 + 20) {
       d.shaken = 2.5;
       if (d.honkCd <= 0) {
-        audio.honk(car.position.distanceTo(this.listener));
+        audio.honk(car.position);
         d.honkCd = 2;
       }
     }
@@ -436,7 +436,7 @@ export class TrafficSystem {
     if (gap && gap.gap < 8 && Math.abs(v) < 0.5 && !stopBlocked) {
       d.stuck += dt;
       if (d.stuck > 3 && d.honkCd <= 0 && gap.isPlayerOrPed) {
-        audio.honk(pos.distanceTo(this.listener));
+        audio.honk(pos);
         d.honkCd = 3 + Math.random() * 3;
       }
     } else d.stuck = 0;

@@ -88,7 +88,7 @@
       "description": "Replaces the horn: a 12 m shockwave all around the car. Flips light police cruisers, shoves roadblocks and knocks people off their feet.",
       "trigger": "active",
       "replacesHorn": true,
-      "input": { "keys": ["KeyH"], "gamepadButton": 3, "label": "H" },
+      "input": { "keys": ["KeyH"], "gamepadButton": 10, "label": "H" },
       "cooldown": 20,
       "params": { "radius": 12, "impulse": 9, "lift": 4, "flipMaxMass": 2000, "flipTorque": 3.2, "pedKnock": 7, "staggerSeconds": 2.5 },
       "fx": { "ring": "fx_bass_ring_large" },

@@ -277,6 +277,9 @@ export class Battle {
           const targets = m.target === 'allFoes' ? foes : [t];
           for (const tt of targets) score += this.expectedDamage(c, tt, m, targets.length) / Math.max(1, tt.creature.hp);
           score = Math.min(score, 1.2 * targets.length);
+          // Chip damage still beats a pointless buff: a hit always counts for something, so two
+          // walled-up creatures keep trading blows instead of bracing at each other forever.
+          if (score > 0) score = Math.max(score, 0.05);
           if (m.effects?.some((e) => e.type === 'recoil')) score *= 0.85;
         } else {
           const eff = m.effects ?? [];
@@ -289,7 +292,10 @@ export class Battle {
             // Stat moves: worth it early, not when already boosted.
             const st = eff.find((e) => e.type === 'stat');
             const already = st && st.type === 'stat' ? (st.who === 'self' ? c.stages[st.stat] : -t.stages[st.stat]) : 0;
-            score = this.turn < 2 && already < 2 && hpFrac > 0.6 ? 0.45 : 0.08;
+            // Already at the limit (+6 / -6): the move does nothing, so never pick it.
+            const who = st && st.type === 'stat' ? (st.who === 'self' ? c : t) : null;
+            const capped = !!(st && st.type === 'stat' && who && (st.stages > 0 ? who.stages[st.stat] >= 6 : who.stages[st.stat] <= -6));
+            score = capped ? 0 : this.turn < 2 && already < 2 && hpFrac > 0.6 ? 0.45 : 0.03;
           }
         }
         score *= 0.85 + this.rand() * 0.3;

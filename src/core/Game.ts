@@ -2,7 +2,9 @@ import RAPIER from '@dimforge/rapier3d-compat';
 import * as THREE from 'three';
 import { ModelLibrary } from '../assets/ModelLibrary';
 import { audio } from '../audio/Audio';
+import { SpatialAudio, type EngineSource, type SirenSource } from '../audio/Spatial';
 import { CameraRig } from '../camera/CameraRig';
+import { cycleOption, loadOptions, optionLabel, saveOptions, type Options } from './Options';
 import { BATTLE, CAMERA, GRAPHICS, GROUP, PHYSICS, PLAYER, WORLD, groups } from '../config';
 import { Effects } from '../fx/Effects';
 import { copLook } from '../peds/CrowdRenderer';
@@ -14,8 +16,8 @@ import { SpawnSystem, type WildCreature } from '../creatures/SpawnSystem';
 import { BattleController, type BattleResult } from '../creatures/BattleController';
 import { Clinics, CLINIC_NAME, clinicSpots } from '../creatures/Clinics';
 import { Party } from '../creatures/Party';
-import { createCreature, magazine, displayName, maxHp as maxHpOf } from '../creatures/Creature';
-import { DATA, TYPE_IDS, species, typeInfo } from '../creatures/Data';
+import { createCreature, magazine, displayName, maxHp as maxHpOf, xpForLevel } from '../creatures/Creature';
+import { DATA, TYPE_IDS, layerOfBiome, species, typeInfo } from '../creatures/Data';
 import { BattleUi } from '../ui/BattleUi';
 import { Bag } from '../creatures/Bag';
 import { CatchVisuals } from '../creatures/CatchVisuals';
@@ -24,13 +26,41 @@ import { pityMessage, recordThrow, softBonus } from '../creatures/Pity';
 import { item as itemSpec, type CaptureItem } from '../creatures/Data';
 import { CreatureIcons } from '../ui/CreatureIcons';
 import { TeamScreen } from '../ui/TeamScreen';
-import { DEFAULT_SEWER_SEED, SAVE_VERSION, browserStore, creatureToJson, describeSave, loadSave, type SaveData } from './SaveSystem';
+import { DEFAULT_SEWER_SEED, SAVE_VERSION, creatureToJson, describeSave, loadSave, type SaveData } from './SaveSystem';
+import { saves, unpackSave } from './SaveManager';
+import { PadInput, padPrompt, type PadContext } from './Gamepad';
+import { QuickWheel, type WheelEntry } from '../ui/QuickWheel';
+import { POND, bankPoint, carLift, depthAt as depthAtLake, inLake, nearestEdge, nearestWater, newCarWater, stepCarWater, submersion, waterPoint, waveY, type CarWater } from '../world/Pond';
+import type { PondView } from '../world/PondView';
+import type { DocksView } from '../world/Docks';
+import { INTERIOR, buildInterior, buildInteriorDoors, planInteriors, type InteriorRoom, type InteriorSpot } from '../world/Interiors';
+import { interiorTalk, streetTalk, type TalkAction, type TalkContext, type TalkTree } from '../npc/Talk';
+import { randomLook, weatheredLook } from '../peds/CrowdRenderer';
+import { SAFEHOUSE, buildSafehouses, newSafehouseState, planSafehouses, sanitizeSafehouses, sleepHours, type SafehouseSpot, type SafehouseState, type SafehouseView } from '../world/Safehouses';
 import { dexEntries } from '../creatures/Dex';
 import { PartyBar } from '../ui/PartyBar';
 import { DexScreen } from '../ui/DexScreen';
 import { ClinicMenu } from '../ui/ClinicMenu';
 import { EvolutionScene } from '../creatures/EvolutionScene';
 import { BENCH_SHARE, gainXp, xpYield, type ProgressEvent } from '../creatures/Progression';
+import { applyHeal, effectsLine, newEffects, spawnModifiers, tickEffects } from '../items/Items';
+import { waterLift, waterRide } from '../creatures/WaterBattle';
+import { CasinoMenu, type CasinoGame } from '../ui/CasinoMenu';
+import { Bubbles } from '../ui/Bubbles';
+import { ROLL } from '../player/Roll';
+import { Weather, weatherEffects } from '../world/Weather';
+import { Precipitation } from '../fx/Precipitation';
+import { FLORA_WIND } from '../world/ParkFlora';
+import { NeighbourhoodTracker, localLook, neighbourhoodAt, type Neighbourhood } from '../world/Districts';
+import { chatterGap, roomChatter, sewerChatter, streetChatter } from '../npc/Chatter';
+import { EnvHazards, type HazardSpot } from '../systems/Hazards';
+import { CAR_WEATHER } from '../vehicles/Car';
+import { VISION } from '../police/Vision';
+import { GangWorld, type GangMember } from '../systems/GangWorld';
+import { parseGangState } from '../gangs/Gangs';
+import { applyRep, civicTier, clampCivic, repLine, type RepEvent } from '../systems/Reputation';
+import { buildStreetCaches, planStreetCaches, type StreetCache, type StreetCacheView } from '../world/StreetCaches';
+import { catchSituation } from '../creatures/Catching';
 import { districtAt } from '../creatures/SpawnRules';
 import type { Battle } from '../creatures/BattleEngine';
 import { TrainerSystem, type Trainer } from '../creatures/Trainers';
@@ -41,12 +71,20 @@ import { LAYERS, WorldLayers, layerLabel } from '../world/WorldLayers';
 import { ROOFS, planGarages, planRooftops, type Access, type JumpPad, type KeepClear, type RooftopPlan, type Stash } from '../world/Rooftops';
 import { buildRooftops, type RooftopView } from '../world/RooftopView';
 import { Humanoid } from '../player/Humanoid';
-import { SEWER, blockAt, blockCentre, key as blockKey, planSewers, propAt, ventActive, type Maze, type Manhole } from '../world/Sewers';
-import { buildSewers, type SewerView } from '../world/SewerView';
+import { SEWER, blockAt, blockCentre, key as blockKey, planDeepSewers, planSewers, poolAt, poolEdge, propAt, ventActive, type Cache, type Maze, type Manhole } from '../world/Sewers';
+import { buildSewers, type SewerView, type ShaftMark } from '../world/SewerView';
 import { COMMUNITY, advanceQuest, canStart, currentStep, marketStock, openingNode, quest as questSpec, startQuest, type NpcSpec } from '../npc/Quests';
 import { DialogueBox } from '../ui/DialogueBox';
 import { TankSystem, type Tank, type TankTarget } from '../police/Tank';
 import { CHOP_SHOP, buildChopShop, planChopShop, type ChopShopSpot } from '../world/ChopShop';
+import { DEALERSHIP, buildDealership, planDealership, type DealershipSpot } from '../world/Dealership';
+import { GarageMenu } from '../ui/GarageMenu';
+import { platform } from '../mobile/Platform';
+import { ASSIST, assistTurn, pickAssist, type AssistTarget } from '../mobile/AimAssist';
+import { TouchControls } from '../mobile/Touch';
+import { VEHICLES } from '../vehicles/specs';
+import { MAX_LEVEL, NO_UPGRADES, classOf, performanceIndex, sanitizeUpgrades, upgradeEffect, upgradePrice, type CarClass, type UpgradeLevels, type UpgradePart } from '../vehicles/Performance';
+import { MODE_NAMES, modeOf } from '../systems/streetRaceManager.js';
 import { ChopShopMenu } from '../ui/ChopShopMenu';
 import { VehicleTuningManager, type SlotName, type StreetmonInfo } from '../systems/vehicleTuning.js';
 import { TuningWorld } from '../systems/TuningWorld';
@@ -67,6 +105,7 @@ import racesConfig from '../config/races.json';
 import livingWorldConfig from '../config/living_world.json';
 import campaignConfig from '../config/campaign_quests.json';
 import leagueConfig from '../config/racing_league.json';
+import { raceTier, rivalLoadouts, tierInfo, type RivalLoadout, type RivalSlot } from '../systems/rivalLoadout';
 import { QuestManager, validateCampaign, validateLeague, type Blueprint, type CampaignConfig, type Dialogue, type LeagueConfig, type QuestContext } from '../systems/questManager.js';
 import { CampaignWorld } from '../systems/CampaignWorld';
 import cinematicsConfig from '../config/cinematics.json';
@@ -107,13 +146,14 @@ import { TrafficSystem } from '../traffic/TrafficSystem';
 import { Player } from '../player/Player';
 import { Hud } from '../ui/Hud';
 import { Menus } from '../ui/Menus';
-import { clamp } from '../util/math';
+import { clamp, wrapAngle } from '../util/math';
 import { Car } from '../vehicles/Car';
 import { chassisRestHeight } from '../vehicles/CarModel';
-import { getSpec } from '../vehicles/specs';
+import { getSpec, type VehicleSpec } from '../vehicles/specs';
 import { VehicleManager } from '../vehicles/VehicleManager';
+import { ABILITY_STYLE, StreetmonRiders, type RiderSpec } from '../vehicles/StreetmonRiders';
 import { buildCity, type StaticProp } from '../world/CityBuilder';
-import { CITY, generateLayout, type CityLayout } from '../world/CityLayout';
+import { CITY, generateLayout, rectContains, type CityLayout } from '../world/CityLayout';
 import { Environment } from '../world/Environment';
 import { Input } from './Input';
 import { SelectiveBloom } from '../render/SelectiveBloom';
@@ -137,6 +177,10 @@ export class Game {
   private readonly scene = new THREE.Scene();
   private readonly camera: THREE.PerspectiveCamera;
   private readonly input: Input;
+  /** Gamepads, mapped onto the same Input per context (src/core/Gamepad.ts). */
+  private padIn!: PadInput;
+  /** Hold T / LB: switch your lead Streetmon or throw a capture item (src/ui/QuickWheel.ts). */
+  private quickWheel!: QuickWheel;
   private readonly menus: Menus;
   private state: State = 'loading';
   private world!: RAPIER.World;
@@ -159,9 +203,20 @@ export class Game {
   /** Entrances and furniture other things keep clear of (fire escapes, elevators, doors, lift, alleys). */
   private keepClear: KeepClear[] = [];
   private chopView!: ReturnType<typeof buildChopShop>;
+  private dealerSpot!: DealershipSpot;
+  private dealerView!: ReturnType<typeof buildDealership>;
+  private garageMenu!: GarageMenu;
+  /** On-screen controls (phones and tablets). */
+  private touchUi: TouchControls | null = null;
+  /** The showroom's display cars (parked in its bays; replaced when one goes missing). */
+  private readonly displayCars = new Set<Car>();
+  private displayCheck = 0;
   private chopMenu!: ChopShopMenu;
   private tuning!: VehicleTuningManager;
   private tuneWorld!: TuningWorld;
+  /** Slotted Streetmon you can see riding in their cars (yours and rival racers'). */
+  private riders!: StreetmonRiders;
+  private ridersCheck = 0;
   /** Tuned rides by id, and the Streetmon slotted into them (out of the party while they ride). */
   private readonly rides = new Map<string, Car>();
   private readonly garageMon = new Map<string, Creature>();
@@ -189,7 +244,6 @@ export class Game {
   eventWorld!: EventWorld;
   /** Upgrade-chip level applied to each car's mods (so it's applied once per car). */
   /** Upgrade chips and campaign blueprints applied to each car (multipliers on its mods). */
-  private readonly carBonus = new WeakMap<Car, { speed: number; accel: number; grip: number; steer: number; armor: number }>();
   /** The campaign: quests, story flags, the racing league (see setupCampaign). */
   quests!: QuestManager;
   campaignWorld!: CampaignWorld;
@@ -255,8 +309,6 @@ export class Game {
   private alarmBellT = 0;
   /** The full-screen city map (M). */
   private cityMap!: MapOverlay;
-  /** Gamepad buttons held last frame (for presses). */
-  private padHeld: boolean[] = [];
   private readonly raceMat = new THREE.Matrix4();
   /** 5-star police tanks. */
   private tanks!: TankSystem;
@@ -280,6 +332,33 @@ export class Game {
   hour = DAY.startHour;
   /** In-game seconds since start (for cooldowns). */
   gameTime = 0;
+  /** Pepper Musk, Pheromone Bait, the Rabbit's Foot: seconds left on each. */
+  private itemFx = newEffects();
+  private rollQueued = false;
+  private rollNoteAt = -99;
+  private staminaEl: HTMLDivElement | null = null;
+  private casinoMenu!: CasinoMenu;
+  bubbles!: Bubbles;
+  readonly weather = new Weather();
+  private precip: Precipitation | null = null;
+  private readonly hood = new NeighbourhoodTracker();
+  private hoodNow: Neighbourhood | null = null;
+  private chatterIn = 2;
+  hazards!: EnvHazards;
+  /** The police's sight ranges before the weather shortens them. */
+  private readonly visionBase = { car: VISION.car.range, foot: VISION.foot.range, patrol: VISION.patrol.range };
+  private crowdBase = { peds: 0, cars: 0 };
+  gangs!: GangWorld;
+  /** Civic standing (-100..100): the second half of your reputation (Street Cred is the other). */
+  civic = 0;
+  private streetCaches: StreetCache[] = [];
+  private streetCacheView: StreetCacheView | null = null;
+  /** Deep-level warnings: the level you were warned about and when (press again to go anyway). */
+  private deepWarned: { level: number; at: number } | null = null;
+  /** The current battle is on water (the pond, a sewer pool, off the docks): see water battles. */
+  private battleInWater = false;
+  /** The last car you drove (for the Repair Kit). */
+  private lastDriven: Car | null = null;
   private clockEl!: HTMLDivElement;
   /** The player's Streetmon. */
   readonly party = new Party();
@@ -291,6 +370,14 @@ export class Game {
   private starterEl: HTMLDivElement | null = null;
   readonly bag = new Bag();
   catcher!: CatchVisuals;
+  /** 3D sound (src/audio/Spatial.ts): made on the first click, null before. */
+  spatial: SpatialAudio | null = null;
+  /** The Central Green pond: waves and ripples (PondView.ts), and each car's state in it (Pond.ts). */
+  private pond!: PondView;
+  private docks!: DocksView;
+  private readonly carWater = new WeakMap<Car, CarWater>();
+  private readonly floodTold = new WeakSet<Car>();
+  private strokeClock = 0;
   readonly icons = new CreatureIcons();
   private team!: TeamScreen;
   private partyBar!: PartyBar;
@@ -300,6 +387,19 @@ export class Game {
   private playTime = 0;
   private autosaveTimer = 45;
   private saveDirty = false;
+  /** What asked for the next autosave (shown with the indicator); null: a routine save. */
+  private autosaveNote: string | null = null;
+  private lastSaveAt = -999;
+  private safeSpots: SafehouseSpot[] = [];
+  private safeView!: SafehouseView;
+  private safehouses: SafehouseState = { owned: [], last: null, visits: {} };
+  /** Buildings you can walk into (doors outside, rooms far below), and the one you're in. */
+  private interiorSpots: InteriorSpot[] = [];
+  private rooms: InteriorRoom[] = [];
+  private roomPeople: Array<{ room: InteriorRoom; role: string; model: Humanoid; seed: number }> = [];
+  private interior: InteriorRoom | null = null;
+  /** How many times you've spoken to someone (by id), so they remember you. */
+  private talked = new Map<string, number>();
   private clinicMenu!: ClinicMenu;
   private captureEl!: HTMLDivElement;
   /** Streetmon dex: species seen and caught. */
@@ -340,6 +440,8 @@ export class Game {
   private tranqHits = 0;
   follower!: Follower;
   readonly music = new Music();
+  /** Player options (look speed, inverted look, volumes, HUD size), kept outside the save. */
+  private options: Options = loadOptions();
   /** Street, rooftops or sewers: where the player is. */
   layers!: WorldLayers;
   /** A move between layers in progress (climb, ride, drop): fade out, move, fade in. */
@@ -354,6 +456,9 @@ export class Game {
   private roofTrader: { x: number; y: number; z: number; heading: number; model: Humanoid | null } | null = null;
   /** The sewer labyrinth: one maze under each built-up district. */
   mazes: Maze[] = [];
+  /** The deep drains (levels 2 and 3 under each district), and the shafts between levels. */
+  deepMazes: Maze[] = [];
+  private shafts: Array<{ from: { x: number; z: number; floor: number }; to: { x: number; z: number; floor: number }; level: number; district: string }> = [];
   private sewerView!: SewerView;
   private cityRoot!: THREE.Object3D;
   private flashlight!: THREE.SpotLight;
@@ -423,7 +528,7 @@ export class Game {
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(this.renderer.domElement);
     this.camera = new THREE.PerspectiveCamera(CAMERA.baseFov, window.innerWidth / window.innerHeight, CAMERA.near, CAMERA.far);
-    if (GRAPHICS.bloom.enabled) {
+    if (GRAPHICS.bloom.enabled && platform.bloom) {
       try {
         this.bloom = new SelectiveBloom(this.renderer, this.scene, this.camera, GRAPHICS.bloom);
         // Off switch for slow machines: localStorage['es.bloom'] = '0'.
@@ -438,6 +543,15 @@ export class Game {
       }
     }
     this.input = new Input(this.renderer.domElement);
+    this.padIn = new PadInput(this.input);
+    if (platform.touch) {
+      this.input.touch = true;
+      document.body.classList.add('touch');
+      this.touchUi = new TouchControls(container, this.input, () => {
+        if (this.state === 'playing') this.pause();
+        else if (this.state === 'paused') this.resume();
+      });
+    }
     this.menus = new Menus(container, {
       onPlay: () => this.start('new'),
       onContinue: () => this.start('continue'),
@@ -484,7 +598,19 @@ export class Game {
         this.state = 'playing';
         this.playCinematic(d, {}, 'intro');
       },
+      optionLabel: (k) => optionLabel(this.options, k as keyof Options),
+      onCycleOption: (k) => {
+        this.options = cycleOption(this.options, k as keyof Options);
+        saveOptions(this.options);
+        this.applyOptions();
+        return optionLabel(this.options, k as keyof Options);
+      },
+      onQuit: () => {
+        this.autosave();
+        window.location.reload();
+      },
     });
+    this.applyOptions();
     window.addEventListener('resize', () => this.onResize());
     document.addEventListener('pointerlockchange', () => {
       if (!this.input.pointerLocked && this.state === 'playing' && !this.battles?.locksPlayer && !this.evolution?.active && !this.cityMap?.isOpen) this.pause();
@@ -511,8 +637,45 @@ export class Game {
     this.layout.garages = garages;
     // The Chop Shop's lift goes in a Midtown kerb lane (parked cars cleared around it).
     this.chopSpot = planChopShop(this.layout);
+    // Mama Rust stands outside her shop, whichever kerb the city plan gave it (her spot in the
+    // campaign config is only a fallback): on the pavement beside the roll-up door, facing the
+    // street. Everything that points at her (the new-game walk, the guide, the chop-shop
+    // cinematic's "car at the kerb") then agrees with where the lift is.
+    {
+      const mama = (campaignConfig as unknown as CampaignConfig).npcs.find((n) => n.id === 'rust');
+      const cs = this.chopSpot;
+      if (mama) {
+        mama.at = { x: cs.x + 7.5, z: cs.doorZ - cs.side * 1.7 };
+        mama.heading = cs.side > 0 ? Math.PI / 2 : -Math.PI / 2;
+      }
+    }
+    // Empire Motors: a showroom front in a Downtown kerb lane, well away from the Chop Shop.
+    this.dealerSpot = planDealership(this.layout, [this.chopSpot]);
+    // Safehouses: a front door in each district (the Midtown one round the corner from Mama's is yours).
+    this.safeSpots = planSafehouses(
+      this.layout,
+      [
+        { x: this.chopSpot.x, z: this.chopSpot.z },
+        { x: this.chopSpot.x, z: this.chopSpot.doorZ },
+        { x: this.dealerSpot.x, z: this.dealerSpot.doorZ },
+        ...clinicSpots(this.layout).map((c) => c.door),
+        ...shopSpots(this.layout).map((c) => c.door),
+      ],
+      this.layout.playerSpawn,
+    );
+    this.safehouses = newSafehouseState(this.safeSpots);
+    this.interiorSpots = planInteriors(this.layout, [
+      { x: this.chopSpot.x, z: this.chopSpot.doorZ },
+      { x: this.dealerSpot.x, z: this.dealerSpot.doorZ },
+      ...clinicSpots(this.layout).map((c) => c.door),
+      ...shopSpots(this.layout).map((c) => c.door),
+      ...this.safeSpots.map((h) => ({ x: h.x, z: h.z })),
+    ]);
+    this.layout.clearFronts = [{ x: this.dealerSpot.x, z: this.dealerSpot.doorZ, r: 16 }, ...this.safeSpots.map((s) => ({ x: s.x, z: s.z, r: 4 })), ...this.interiorSpots.map((s) => ({ x: s.x, z: s.z, r: 4 }))];
     const city = buildCity(this.layout, this.world);
     this.cityProps = city.props;
+    this.pond = city.pond;
+    this.docks = city.docks;
     // Entrances never overlap: fire escapes and elevator doors keep clear of street furniture,
     // shop and clinic doors and the Chop Shop; manholes and small props keep clear of all of those.
     const keep: KeepClear[] = [
@@ -522,6 +685,11 @@ export class Game {
       { x: this.chopSpot.x, z: this.chopSpot.z, r: 5 },
       ...this.chopSpot.bays.map((b) => ({ x: b.x, z: b.z, r: 4 })),
       { x: this.chopSpot.x, z: this.chopSpot.doorZ, r: 4 },
+      { x: this.dealerSpot.x, z: this.dealerSpot.z, r: 5 },
+      ...[...this.dealerSpot.bays, this.dealerSpot.delivery].map((b) => ({ x: b.x, z: b.z, r: 4 })),
+      { x: this.dealerSpot.x, z: this.dealerSpot.doorZ, r: 10 },
+      ...this.safeSpots.map((s) => ({ x: s.x, z: s.z, r: 4 })),
+      ...this.interiorSpots.map((s) => ({ x: s.x, z: s.z, r: 4 })),
       ...alleyAvoidPoints(heistsConfig, racesConfig as never).map((p) => ({ ...p, r: 2.5 })),
     ];
     this.roofPlan = planRooftops(this.layout, garages, undefined, keep);
@@ -539,6 +707,28 @@ export class Game {
     this.scene.add(this.roofView.root);
     this.chopView = buildChopShop(this.chopSpot);
     this.scene.add(this.chopView.root);
+    this.dealerView = buildDealership(this.dealerSpot);
+    this.scene.add(this.dealerView.root);
+    this.scene.add(buildInteriorDoors(this.interiorSpots).root);
+    for (const sp of this.interiorSpots) {
+      const room = buildInterior(sp, this.world);
+      this.rooms.push(room);
+      this.scene.add(room.root);
+      room.people.forEach((pp, k) => {
+        let seed = 0;
+        for (const ch of `${sp.id}:${k}`) seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
+        let rs = seed || 1;
+        const look = randomLook(() => ((rs = (Math.imul(rs, 1664525) + 1013904223) >>> 0) / 4294967296));
+        const model = new Humanoid(look);
+        model.root.position.set(pp.x, INTERIOR.floorY, pp.z);
+        model.root.rotation.y = pp.heading;
+        room.root.add(model.root);
+        this.roomPeople.push({ room, role: pp.role, model, seed });
+      });
+    }
+    this.safeView = buildSafehouses(this.safeSpots);
+    this.safeView.setOwned(this.safehouses.owned);
+    this.scene.add(this.safeView.root);
     // Sewers: a maze centred under each built-up district, manholes on open pavement above.
     {
       const probe = new WorldLayers(this.layout);
@@ -558,10 +748,16 @@ export class Game {
         this.keepClear.every((k) => Math.hypot(k.x - x, k.z - z) >= k.r + 1.4) &&
         L.parking.every((s) => Math.hypot(s.x - x, s.z - z) >= 3.2);
       this.mazes = planSewers(this.layout, DEFAULT_SEWER_SEED, centres, streetOk);
+      this.deepMazes = planDeepSewers(DEFAULT_SEWER_SEED, this.mazes);
+      this.linkShafts();
       // Covers sit on the surface: sidewalks, the park and the promenade are on a 0.15 m curb.
       const inR = (r: { x0: number; x1: number; z0: number; z1: number }, x: number, z: number): boolean => x >= r.x0 && x <= r.x1 && z >= r.z0 && z <= r.z1;
       const outer = (x: number, z: number): boolean => x < L.aveX[0] - CITY.aveWidth / 2 || x > L.aveX[L.aveX.length - 1] + CITY.aveWidth / 2 || z < L.streetZ[0] - CITY.streetWidth / 2 || z > L.streetZ[L.streetZ.length - 1] + CITY.streetWidth / 2;
-      this.sewerView = buildSewers(this.mazes, this.world, (x, z) => (inR(L.park, x, z) || outer(x, z) || L.blocks.some((b) => inR(b, x, z)) ? 0.15 : 0));
+      const marks: ShaftMark[] = this.shafts.flatMap((sh) => [
+        { x: sh.from.x, z: sh.from.z, floor: sh.from.floor, down: true },
+        { x: sh.to.x, z: sh.to.z, floor: sh.to.floor, down: false },
+      ]);
+      this.sewerView = buildSewers([...this.mazes, ...this.deepMazes], this.world, (x, z) => (inR(L.park, x, z) || outer(x, z) || L.blocks.some((b) => inR(b, x, z)) ? 0.15 : 0), marks);
       this.scene.add(this.sewerView.under, this.sewerView.covers);
     }
     // People living in the sewers: even spots round the hub, odd ones at camps out in the halls
@@ -635,6 +831,7 @@ export class Game {
     const ave = Math.max(...this.layout.aveX.filter((x) => x < (mama?.at.x ?? 0)));
     const sp = mama ? { x: ave + CITY.aveWidth / 2 + 2, z: mama.at.z - NEW_GAME_WALK } : this.layout.playerSpawn;
     this.player = new Player(this.world, sp.x, 0.15, sp.z, models.playerModel() ?? new Humanoid(toHumanoidLook(this.playerLook)));
+    this.player.water = (x, z) => this.waterAt(x, z);
     this.scene.add(this.player.model.root);
     // Facing down the avenue towards Mama's street (not into the wall beside you).
     const look = mama ? { x: sp.x, z: mama.at.z } : { x: sp.x + 1, z: sp.z };
@@ -651,6 +848,11 @@ export class Game {
         this.peds.spawnFleeing(side.x, side.z, look, tx, tz);
       },
     });
+    // Phones keep a thinner crowd and less traffic (the platform's share of the desktop numbers).
+    if (platform.crowd < 1) {
+      this.peds.maxPeds = Math.round(this.peds.maxPeds * platform.crowd);
+      this.traffic.maxCars = Math.round(this.traffic.maxCars * platform.crowd);
+    }
     this.police = new PoliceSystem(this.world, this.graph, this.vehicles, this.traffic, this.peds, this.wanted, {
       onBusted: () => this.onArrested(),
       onOfficerFire: (o, chance) => this.onOfficerFire(o, chance),
@@ -674,6 +876,7 @@ export class Game {
       onHitMarker: (kill) => this.weaponHud.hitMarker(kill),
       // Shots into the world: street props take the damage, anything else gets a bullet hole.
       onWorldHit: (handle, damage, at, normal, dir) => {
+        if (this.hazards?.bullet(handle, damage)) return true;
         if (this.destruction?.bullet(handle, damage, at, dir.x, dir.z)) return true;
         this.decals?.add('bullet', at, normal, 0.16 + Math.random() * 0.06);
         return false;
@@ -687,7 +890,7 @@ export class Game {
       shellExploded: (x, y, z, src) => this.tankShellBlast(x, y, z, src),
       fired: (x, y, z) => {
         const d = this.camera.position.distanceTo(this.tmp.set(x, y, z));
-        audio.explosion(d + 25);
+        audio.explosion({ x, y, z });
         this.rig.shake(clamp(0.05 * (1 - d / 90), 0, 0.05));
       },
       crush: (t, dt) => this.tankCrush(t, dt),
@@ -713,6 +916,7 @@ export class Game {
         if (Math.hypot(w.x - this.focus().x, w.z - this.focus().z) < 60) this.hud.toast(why === 'hidden' ? `The ${w.spec.name} lost track of you.` : `The ${w.spec.name} gave up the chase.`, 2200);
       },
     });
+    this.spawns.capScale = Math.max(0.6, platform.crowd);
     this.clinics = new Clinics(this.scene, this.layout);
     this.trainers = new TrainerSystem(
       this.scene,
@@ -728,11 +932,13 @@ export class Game {
     this.hud = new Hud(this.container, this.layout);
     this.hud.setVisible(false);
     this.weaponHud = new WeaponHud(this.hud.el);
+    this.quickWheel = new QuickWheel(this.hud.el, (e) => this.quickPick(e));
     this.clockEl = document.createElement('div');
     this.clockEl.className = 'clock';
     this.hud.el.appendChild(this.clockEl);
     this.shopMenu = new ShopMenu(this.container);
     this.battleUi = new BattleUi(this.container, this.icons);
+    this.battleUi.onPickMove = (k) => this.input.press(`Digit${k + 1}`);
     this.partyBar = new PartyBar(this.hud.el, this.icons);
     this.dexScreen = new DexScreen(this.container, this.icons);
     this.catcher = new CatchVisuals(this.scene, this.effects);
@@ -786,6 +992,19 @@ export class Game {
       },
     };
     for (const id of this.progress.stashesOpened) this.roofView.setStashOpen(id, true);
+    // The pond: water-dwelling Streetmon float on it and spawn while you're near the Central Green.
+    const lake = this.layout.parkLake;
+    this.spawns.layers.pond = {
+      ground: (x, z) => (inLake(lake, x, z, 0.8) ? POND.surface - 0.06 : null),
+      spawnPoint: (pl, rand) => {
+        const cx = (lake.x0 + lake.x1) / 2;
+        const cz = (lake.z0 + lake.z1) / 2;
+        if (Math.hypot(pl.x - cx, pl.z - cz) > 190) return null;
+        const p = waterPoint(lake, rand, 5);
+        return { x: p.x, y: POND.surface - 0.06, z: p.z, district: 'park' };
+      },
+      nearest: (x, z) => nearestWater(lake, x, z, 2.5),
+    };
     this.spawns.layers.sewer = {
       ground: (x, z) => {
         const m = this.mazeAt(x, z);
@@ -795,10 +1014,11 @@ export class Game {
         const h = blockCentre(m!, m!.hub.i, m!.hub.j);
         if (Math.hypot(h.x - x, h.z - z) < 9) return null;
         if (this.sewerCamps.some((c) => Math.hypot(c.x - x, c.z - z) < 7)) return null;
-        return propAt(m!, x, z, 0.1) ? null : SEWER.floor;
+        if (m!.pools.has(blockKey(b!.i, b!.j))) return null;
+        return propAt(m!, x, z, 0.1) ? null : m!.floor;
       },
       spawnPoint: (pl, rand) => {
-        const m = this.mazeAt(pl.x, pl.z);
+        const m = this.mazeAt(pl.x, pl.z, pl.y);
         if (!m) return null;
         // Most spawns are in the open rooms (halls and chambers) within reach, the rest anywhere.
         if (rand() < SEWER.roomSpawnShare) {
@@ -813,19 +1033,19 @@ export class Game {
             const i = r.i + Math.round((rand() * 2 - 1) * r.r);
             const j = r.j + Math.round((rand() * 2 - 1) * r.r);
             const c = blockCentre(m, i, j);
-            if (m.open[i]?.[j] && !m.hazards.has(blockKey(i, j)) && !propAt(m, c.x, c.z, 0.6) && Math.hypot(c.x - pl.x, c.z - pl.z) > 10) return { x: c.x, y: SEWER.floor, z: c.z, district: m.district };
+            if (m.open[i]?.[j] && !m.hazards.has(blockKey(i, j)) && !m.pools.has(blockKey(i, j)) && !propAt(m, c.x, c.z, 0.6) && Math.hypot(c.x - pl.x, c.z - pl.z) > 10) return { x: c.x, y: m.floor, z: c.z, district: m.district, level: m.level };
           }
         }
         for (let t = 0; t < 12; t++) {
           const a = rand() * Math.PI * 2;
           const d = 12 + rand() * 28;
           const b = blockAt(m, pl.x + Math.cos(a) * d, pl.z + Math.sin(a) * d);
-          if (b && m.open[b.i][b.j] && !m.hazards.has(blockKey(b.i, b.j))) {
+          if (b && m.open[b.i][b.j] && !m.hazards.has(blockKey(b.i, b.j)) && !m.pools.has(blockKey(b.i, b.j))) {
             const c = blockCentre(m, b.i, b.j);
             const h = blockCentre(m, m.hub.i, m.hub.j);
             if (Math.hypot(h.x - c.x, h.z - c.z) < 12) continue;
             if (this.sewerCamps.some((k) => Math.hypot(k.x - c.x, k.z - c.z) < 9) || propAt(m, c.x, c.z, 0.6)) continue;
-            return { x: c.x, y: SEWER.floor, z: c.z, district: m.district };
+            return { x: c.x, y: m.floor, z: c.z, district: m.district, level: m.level };
           }
         }
         return null;
@@ -838,6 +1058,10 @@ export class Game {
     this.setupStreetEvents();
     this.setupLivingWorld();
     this.setupRaids();
+    this.setupGangs();
+    this.setupHazards();
+    this.precip = new Precipitation(this.scene, platform.touch ? 1000 : 2400);
+    this.peds.styleAt = (x, z, look) => localLook(neighbourhoodAt(this.layout, x, z), look, Math.random);
     this.setupColliderStreaming();
     this.setupCampaign();
     this.setupCityMap();
@@ -850,9 +1074,10 @@ export class Game {
     this.guide = new WaypointGuide(this.scene, this.container);
     this.story = new StoryCard(this.container);
     this.weapons.creatureTargets = () => this.creatureTargets();
-    this.team = new TeamScreen(this.container, this.party, this.bag, this.icons, (c, itemId, to) => this.useEvolutionItem(c, itemId, to), (id) => this.useFieldItem(id));
+    this.team = new TeamScreen(this.container, this.party, this.bag, this.icons, (c, itemId, to) => this.useEvolutionItem(c, itemId, to), (id, target) => this.useFieldItem(id, target));
     this.evolution = new EvolutionScene(this.container, this.scene, this.creatureModels, this.effects, (x, z) => this.groundAt(x, z));
     this.clinicMenu = new ClinicMenu(this.container);
+    this.casinoMenu = new CasinoMenu(this.container);
     this.captureEl = document.createElement('div');
     this.captureEl.className = 'capture-hud';
     this.hud.el.appendChild(this.captureEl);
@@ -865,6 +1090,11 @@ export class Game {
       groundY: (x, z) => this.groundAt(x, z),
       walkable: (x, z) => !this.peds.blocked(x, z),
       clear: (x, z) => this.battleClear(x, z),
+      water: {
+        active: () => this.battleInWater,
+        lift: (c, t) => waterLift(waterRide(c.speciesId), species(c.speciesId).model.height, t),
+        raft: (c) => waterRide(c.speciesId) === 'raft',
+      },
       moveFx: this.moveFx,
       dmgNums: this.dmgNums,
       onNoise: (x, z, r, side, user) => this.onBattleNoise(x, z, r, side, user),
@@ -880,6 +1110,10 @@ export class Game {
       },
       throwOrigin: () => this.player.position.clone().setY(this.player.position.y + 0.6),
       quickCapture: () => this.bag.currentCapture()?.id ?? null,
+      quickCaptureOdds: (t) => {
+        const it = this.bag.currentCapture();
+        return it ? Math.min(1, catchChance(t.creature, it, true) + softBonus(this.progress.pity, this.catchUid(t.creature))) : null;
+      },
       award: (b, outcome) => this.award(b, outcome),
     });
     this.onResize();
@@ -892,6 +1126,8 @@ export class Game {
       this.vehicles.postPhysics(PHYSICS.step, this.player.position);
     }
 
+    // The save store: localStorage plus IndexedDB (the newest good copy of the two wins).
+    await saves.init();
     this.state = 'title';
     console.info(`[game] ready in ${Math.round(performance.now() - t0)} ms`);
     this.menus.setSaveInfo(this.savedSummary());
@@ -907,7 +1143,8 @@ export class Game {
   private start(mode: 'new' | 'continue' = 'new'): void {
     if (this.state !== 'title') return;
     if (mode === 'continue') {
-      const text = browserStore.read();
+      const text = saves.read();
+      if (saves.info.recovered) window.setTimeout(() => this.hud.toast('Your last save was damaged: loaded the backup.', 6000), 1800);
       if (text) {
         try {
           const { data, warnings } = loadSave(text);
@@ -919,6 +1156,7 @@ export class Game {
       }
     }
     audio.unlock();
+    this.ensureSpatial();
     audio.ui();
     this.music.unlock();
     this.menus.hideTitle();
@@ -952,6 +1190,8 @@ export class Game {
     this.hud.setVisible(false);
     audio.silenceCar();
     this.wardrobeYaw = 25;
+    // Nobody standing frozen beside you in the mirror.
+    this.peds.clearAround(this.player.position.x, this.player.position.z, 9);
     const finish = (): void => {
       this.hud.setVisible(true);
       this.closeMenu();
@@ -1169,11 +1409,13 @@ export class Game {
     this.state = 'paused';
     this.menus.showPause(true);
     audio.silenceCar();
+    this.spatial?.hush();
   }
 
   private resume(): void {
     if (this.state !== 'paused') return;
     audio.unlock();
+    this.ensureSpatial();
     this.menus.showPause(false);
     this.state = 'playing';
     this.input.requestPointerLock();
@@ -1194,7 +1436,7 @@ export class Game {
   private onResize(): void {
     const w = window.innerWidth;
     const h = window.innerHeight;
-    const maxPr = Math.min(window.devicePixelRatio, GRAPHICS.maxPixelRatio);
+    const maxPr = Math.min(window.devicePixelRatio, GRAPHICS.maxPixelRatio, platform.maxPixelRatio);
     if (!this.resScale || this.resScale.max !== maxPr) this.resScale = new ResolutionScaler(maxPr);
     this.renderer.setPixelRatio(this.resScale.scale);
     this.renderer.setSize(w, h);
@@ -1214,7 +1456,9 @@ export class Game {
 
   private frameBody(): void {
     const raw = this.clock.getDelta();
-    const dt = Math.min(raw, 0.1);
+    // The quick-select wheel slows time while it's open.
+    const dt = Math.min(raw, 0.1) * (this.quickWheel?.isOpen && this.state === 'playing' ? 0.3 : 1) * (this.state === 'playing' && this.player ? this.player.dodge.timeScale(this.aiming) : 1);
+    this.padIn.update(Math.min(raw, 0.1), this.padContext(), { heist: !!this.heists?.active });
     // Dynamic resolution (judged on the previous frame's CPU share).
     if (this.state === 'playing' && this.resScale) {
       const q = this.resScale.frame(raw, this.frameCpu / 1000);
@@ -1242,7 +1486,7 @@ export class Game {
       this.input.endFrame();
     }
     if (this.state === 'playing') {
-      this.handleFrameInput();
+      this.handleFrameInput(dt);
       const sf = this.focus();
       this.colliderStream.update(dt, sf.x, sf.z);
       this.signals.update(dt);
@@ -1295,7 +1539,15 @@ export class Game {
       if (this.player.onFoot) this.peds.separateFrom(this.player.position.x, this.player.position.z, 0.65);
       this.living.update(dt);
       this.raidWorld.update(dt);
+      this.gangs.update(dt);
     }
+    if (this.state === 'playing') {
+      this.updateNeighbourhood(dt);
+      this.updateChatter(dt);
+      this.hazards?.update(dt);
+    }
+    this.precip?.update(this.state === 'playing' ? dt : 0, this.camera.position, this.weather.params().rain, this.weather.params().snow, this.weather.params().wind, this.layers.current === 'sewer' || !!this.interior);
+    this.bubbles.update(this.state === 'playing' ? dt : 0, this.camera, this.container.clientWidth || window.innerWidth, this.container.clientHeight || window.innerHeight);
     this.signalView.update(dt);
     this.shops?.update(dt);
     const seated = [...this.traffic.seated(), ...this.police.seated(), ...(this.eventWorld?.seated() ?? [])];
@@ -1304,6 +1556,11 @@ export class Game {
     this.env.update(dt, this.focus(), this.camera);
     this.effects.update(this.state === 'playing' ? dt : 0);
     this.moveFx.update(this.state === 'playing' ? dt : 0);
+    this.pond.update(this.gameTime, this.state === 'playing' ? dt : 0);
+    this.docks.update(this.gameTime);
+    if (this.state === 'playing') this.updateRoomPeople(dt);
+    this.interior?.update?.(this.gameTime);
+    if (this.state === 'playing') this.pondPlayer(dt);
     if (this.state === 'playing') this.destruction?.update(dt, this.focus());
     if (this.state === 'playing') this.updateHudAndAudio(dt);
     if (this.bloom) this.bloom.render(this.scene, this.camera);
@@ -1316,25 +1573,16 @@ export class Game {
     return this.player.vehicle ? this.player.vehicle.position : this.player.position;
   }
 
-  private handleFrameInput(): void {
+  private handleFrameInput(dt = 1 / 60): void {
     const inp = this.input;
     const p = this.player;
     if (inp.wasPressed('KeyK')) audio.setEnabled(!audio.on);
-    // The city map (M or the gamepad's Select): while it's open, keys drive the map.
-    const pad = typeof navigator !== 'undefined' && navigator.getGamepads ? navigator.getGamepads()[0] : null;
-    const padPress = (b: number): boolean => {
-      const now = !!pad?.buttons[b]?.pressed;
-      const was = !!this.padHeld[b];
-      this.padHeld[b] = now;
-      return now && !was;
-    };
-    const selectPressed = padPress(8);
+    // The city map (M, or Back on a pad): while it's open, keys drive the map.
     if (this.cityMap.isOpen) {
       for (const code of ['Escape', 'KeyM', 'KeyC', 'Backspace', 'Delete', 'Equal', 'Minus', 'NumpadAdd', 'NumpadSubtract']) if (inp.wasPressed(code)) this.cityMap.key(code);
-      if (selectPressed) this.cityMap.close();
       return;
     }
-    if ((inp.wasPressed('KeyM') || selectPressed) && !this.battles.locksPlayer && !this.evolution.active) {
+    if (inp.wasPressed('KeyM') && !this.battles.locksPlayer && !this.evolution.active) {
       if (this.input.pointerLocked) document.exitPointerLock();
       this.cityMap.open();
       return;
@@ -1363,14 +1611,17 @@ export class Game {
       return;
     }
     if (inp.wasPressed('Space') && p.onFoot) this.jumpQueued = true;
+    // Roll (Z): a dive instead while aiming a gun. (During a heist Z is the crew's ability.)
+    if (inp.wasPressed('KeyZ') && p.onFoot && !this.heists?.active) this.rollQueued = true;
     // T: the number keys switch between commanding your Streetmon and picking weapons (real-time battles).
     if (inp.wasPressed('KeyT')) {
       if (this.battles.active && this.battles.mode === 'realtime') {
         this.numKeysCommand = !this.numKeysCommand;
         this.hud.toast(this.numKeysCommand ? 'Number keys: Streetmon commands (1-4 moves, 5 swap)' : 'Number keys: weapons (T to command your Streetmon again)', 2000);
         this.tut?.action('toggleKeys');
-      } else this.hud.toast('T switches the number keys between Streetmon commands and weapons during real-time battles.', 2500);
+      }
     }
+    this.quickWheelInput();
     this.battles.commandKeys = this.numKeysCommand;
     const atShop = p.onFoot ? this.shops.shopAt(p.position.x, p.position.z) : null;
     if (atShop && inp.wasPressed('KeyE', 'KeyF')) {
@@ -1380,6 +1631,20 @@ export class Game {
     const atClinic = p.onFoot ? this.clinics.clinicAt(p.position.x, p.position.z) : null;
     if (atClinic && inp.wasPressed('KeyE', 'KeyF')) {
       this.openClinic();
+      return;
+    }
+    if (this.atDealer() && inp.wasPressed('KeyE', 'KeyF')) {
+      this.openDealer();
+      return;
+    }
+    const home = this.atSafehouse();
+    if (home && inp.wasPressed('KeyE', 'KeyF')) {
+      this.openSafehouse(home);
+      return;
+    }
+    const inside = this.interiorUse();
+    if (inside && inp.wasPressed('KeyE', 'KeyF')) {
+      inside.act();
       return;
     }
     if (inp.wasPressed('KeyI') && !this.battles.active) {
@@ -1395,7 +1660,10 @@ export class Game {
       const it = this.bag.cycleCapture();
       this.hud.toast(it ? `Throwing: ${it.name}` : 'No capture items', 1200);
     }
-    if (p.onFoot && !this.battles.active && !this.throwing && inp.wasPressed('KeyC')) this.overworldThrow();
+    if (p.onFoot && !this.battles.active && !this.throwing && inp.wasPressed('KeyC')) {
+      if (p.swimming) this.hud.toast("You can't throw while you're swimming: get to the bank.", 1800);
+      else this.overworldThrow();
+    }
     // Challenge a wild creature you've walked up to.
     if (p.onFoot && !this.battles.active && !this.evolution.active && inp.wasPressed('KeyB')) {
       const w = this.spawns.nearest(p.position, 7);
@@ -1411,7 +1679,7 @@ export class Game {
       this.retrieveImpound();
       return;
     }
-    if (p.onFoot && !this.battles.locksPlayer) this.weaponInput();
+    if (p.onFoot && !this.battles.locksPlayer && !p.swimming && !this.interior) this.weaponInput();
     if (p.onFoot && !this.battles.active && inp.wasPressed('KeyE', 'KeyF')) {
       const use = this.roofUse();
       if (use) {
@@ -1426,7 +1694,7 @@ export class Game {
     }
     // Heists: Z (Hacker) and X (Smoke) abilities, E at the planning spot / breach point / a loot bag,
     // Backspace walks away from the job.
-    if (this.heistKeys(p, padPress)) return;
+    if (this.heistKeys(p)) return;
     // Street events: E next to a supply crate starts prying it open.
     if (p.onFoot && !p.dead && inp.wasPressed('KeyE', 'KeyF') && this.eventWorld.interact()) return;
     // The campaign: E next to a mission giver (M) or a boss.
@@ -1444,9 +1712,15 @@ export class Game {
     }
     if (inp.wasPressed('KeyE', 'KeyF') && !p.dead) {
       if (p.vehicle) this.exitVehicle();
+      else if (p.swimming) this.hud.toast('Swim to the edge to climb out (Space).', 1600);
       else {
-        const car = this.enterableCar();
+        const car = this.interior ? null : this.enterableCar();
         if (car) this.enterVehicle(car);
+        else if (!this.interior) {
+          // Nobody's car to get into: stop the passer-by next to you for a word.
+          const ped = this.nearestPerson(2.2);
+          if (ped && ped.role === 'civ' && this.wanted.stars < 3) this.talkToPed(ped);
+        }
       }
     }
     const car = p.vehicle;
@@ -1455,19 +1729,39 @@ export class Game {
         const up = this.tmp.set(0, 1, 0).applyQuaternion(car.quaternion).y;
         if (up < 0.6) car.flipUpright();
       }
-      if (inp.wasPressed('KeyG') && car.spec.style === 'police') car.sirenOn = !car.sirenOn;
+      if (inp.wasPressed('KeyG') && (car.spec.style === 'police' || car.spec.style === 'ambulance')) car.sirenOn = !car.sirenOn;
+      if (inp.wasPressed('KeyV')) this.hud.toast(`Camera: ${{ chase: 'chase', far: 'far chase', hood: 'bonnet' }[this.rig.cycleCarView()]}`, 1200);
+      // Nitrous (a bought part): hold Shift (RB on a pad).
+      car.boost = car.nitro.capacity > 0 && inp.isDown('ShiftLeft', 'ShiftRight');
       // A tuned car's abilities (keys and gamepad); the Sonic Bass Horn takes over the horn.
       const tid = car.tuneId;
       if (tid && this.tuning.isTuned(tid)) {
-        const pad = typeof navigator !== 'undefined' && navigator.getGamepads ? navigator.getGamepads()[0] : null;
-        this.tuning.handleInput(tid, { isDown: (code) => inp.isDown(code), gamepad: pad });
+        // Pad buttons arrive as their keys (src/core/Gamepad.ts), so no raw gamepad here.
+        this.tuning.handleInput(tid, { isDown: (code) => inp.isDown(code), gamepad: null });
       }
       audio.setHorn(inp.isDown('KeyH') && !(tid && this.tuning.hasAbility(tid, 'sonicBassHorn')));
     }
-    if (!this.weaponHud.wheelOpen) {
+    if (!this.weaponHud.wheelOpen && !this.quickWheel.isOpen) {
       const scoped = this.aiming && !!this.weapons.current.zoomFov;
-      this.rig.addMouse(inp.mouseDX, inp.mouseDY, !!car, scoped ? 0.25 : this.aiming ? 0.7 : 1);
+      const look = inp.takeLook();
+      this.rig.addMouse(look.dx, look.dy, !!car, scoped ? 0.25 : this.aiming ? 0.7 : 1);
+      if (platform.touch && !car) this.touchAimAssist(dt);
     }
+  }
+
+  /** Phones: while aiming or firing a gun, ease the view onto the target nearest the crosshair. */
+  private touchAimAssist(dt: number): void {
+    const p = this.player;
+    if (!p.onFoot || !isRanged(this.weapons.current) || !(this.aiming || this.input.mouseLeft) || this.battles.active) return;
+    const heading = wrapAngle(this.rig.yaw + Math.PI);
+    const targets: AssistTarget[] = [];
+    for (const q of this.peds.peds) {
+      if (q.state === 'dead' || q.state === 'down' || q.state === 'fly') continue;
+      if (Math.abs(q.x - p.position.x) > ASSIST.range || Math.abs(q.z - p.position.z) > ASSIST.range) continue;
+      targets.push({ x: q.x, z: q.z, threat: q.role === 'cop' && this.wanted.stars > 0 });
+    }
+    const pick = pickAssist({ x: p.position.x, z: p.position.z, heading }, targets);
+    if (pick) this.rig.yaw = wrapAngle(this.rig.yaw + assistTurn(pick.delta, dt, this.aiming));
   }
 
   // ------------------------------------------------------------------ weapons
@@ -1504,7 +1798,9 @@ export class Game {
     const p = this.player;
     const inp = this.input;
     this.gunfireCd -= dt;
-    const active = p.onFoot && !p.isKnockedDown && !this.battles.locksPlayer && !this.evolution.active && !this.throwing;
+    // No shooting mid-roll; a dive is for shooting (until you land and get up).
+    const tumbling = !!p.dodge.active && (p.dodge.active.kind === 'roll' || p.dodge.recovering);
+    const active = p.onFoot && !p.isKnockedDown && !p.swimming && !this.interior && !this.battles.locksPlayer && !this.evolution.active && !this.throwing && !tumbling;
     if (!active) {
       this.aiming = false;
       p.facingOverride = null;
@@ -1526,7 +1822,9 @@ export class Game {
     this.gameTime += dt;
     this.playTime += dt;
     this.autosaveTimer -= dt;
-    if ((this.autosaveTimer <= 0 || this.saveDirty) && !this.battles.active && !this.evolution.active && !this.throwing && !this.player.dead) {
+    // Routine saves every 45 s, changes at most every 4 s (packing a save takes a few ms), milestones at once.
+    const due = this.autosaveTimer <= 0 || (this.saveDirty && (!!this.autosaveNote || this.gameTime - this.lastSaveAt > 4));
+    if (due && !this.battles.active && !this.evolution.active && !this.throwing && !this.player.dead) {
       this.autosaveTimer = 45;
       this.saveDirty = false;
       this.autosave();
@@ -1535,14 +1833,24 @@ export class Game {
     this.hour = (this.hour + dt * DAY.hoursPerSecond) % 24;
     if (this.hour < before) this.dayCount++;
     this.env.setTime(this.hour);
+    if (this.weather.update(dt * DAY.hoursPerSecond, dt)) {
+      const w = this.weather.dominant;
+      this.hud.toast(w === 'rain' ? 'It starts to rain: roads get slick, Sludge types come out.' : w === 'storm' ? 'A thunderstorm rolls in: Wire types love it. Watch the roads.' : w === 'fog' ? 'Fog comes in off the river: the police can\'t see as far.' : w === 'snow' ? 'Snow! Slippery roads.' : w === 'clear' ? 'The sky clears.' : 'The clouds roll in.', 3200);
+      this.saveDirty = true;
+    }
+    this.applyWeather(dt);
+    // Skylights glow after dusk until dawn.
+    const h = this.hour;
+    this.roofView.setNight(h >= 19 || h < 5.5 ? 1 : h >= 17.5 ? (h - 17.5) / 1.5 : h < 7 ? (7 - h) / 1.5 : 0);
     const phase = phaseAt(this.hour);
     if (phase !== this.lastPhase) {
       if (this.lastPhase) this.hud.toast(phase === 'night' ? 'Night falls: rarer Streetmon come out' : phase === 'day' ? 'Morning' : 'The light is changing', 2500);
       this.lastPhase = phase;
     }
-    this.clockEl.textContent = `${clockText(this.hour)}  ${phase === 'day' ? 'Day' : phase === 'dusk' ? 'Dusk' : 'Night'}`;
+    this.clockEl.textContent = `${clockText(this.hour)}  ${phase === 'day' ? 'Day' : phase === 'dusk' ? 'Dusk' : 'Night'} · ${this.weather.label}`;
     const cap = this.bag.currentCapture();
-    const capText = this.party.members.length ? (cap ? `${cap.name} x${this.bag.count(cap.id)}  ·  C throw  V switch` : 'No capture items') : '';
+    const fxLine = effectsLine(this.itemFx);
+    const capText = (this.party.members.length ? (cap ? `${cap.name} x${this.bag.count(cap.id)}${platform.touch ? '  ·  THROW' : '  ·  C throw  V switch'}` : 'No capture items') : '') + (fxLine ? `\n${fxLine}` : '');
     if (this.captureEl.textContent !== capText) this.captureEl.textContent = capText;
     this.partyBar.update(this.party, !this.battles.locksPlayer);
     const mouse = this.input.pointerLocked ? null : this.input.mouseX >= 0 ? { x: this.input.mouseX, y: this.input.mouseY } : null;
@@ -1554,7 +1862,7 @@ export class Game {
     if (this.seenTimer <= 0) {
       this.seenTimer = 0.5;
       const pp = this.player.position;
-      for (const w of this.spawns.wild) if (!w.removed && Math.hypot(w.x - pp.x, w.z - pp.z) < 30) this.markSeen(w.spec.id);
+      for (const w of this.spawns.wild) if (!w.removed && !w.inPod && Math.hypot(w.x - pp.x, w.z - pp.z) < 30) this.markSeen(w.spec.id);
     }
     const p = this.player;
     const inp = this.input;
@@ -1566,6 +1874,14 @@ export class Game {
     }
     const moving = Math.hypot(p.velocity.x, p.velocity.z) > 0.5;
     const stealth = p.vehicle ? 'car' : !moving || inp.isDown('AltLeft', 'AltRight') ? 'walk' : inp.isDown('ShiftLeft', 'ShiftRight') ? 'sprint' : 'normal';
+    tickEffects(this.itemFx, dt);
+    const lead = this.party.lead;
+    Object.assign(this.spawns, spawnModifiers(this.itemFx, lead?.level ?? 0));
+    this.spawns.actsDone = this.quests ? this.quests.actsCompleted.size : 0;
+    this.spawns.strongest = this.party.members.reduce((m, c) => Math.max(m, c.level), 0);
+    catchSituation.night = phase === 'night' || this.hour < 6 || this.hour >= 20;
+    catchSituation.water = p.waterState !== 'dry' || (this.battles.active && this.battleInWater);
+    catchSituation.leadLevel = lead?.level ?? 0;
     this.spawns.update(dt, {
       player: this.focus(),
       stealth,
@@ -1573,7 +1889,7 @@ export class Game {
       camera: this.camera,
       time: phase,
       now: this.gameTime,
-      busy: p.dead || this.state !== 'playing' || !!this.trans || this.battles.active,
+      busy: p.dead || this.state !== 'playing' || !!this.trans || this.battles.active || !!this.interior || !!this.gangs?.inHideout,
       biome: this.layers.current,
       playerY: p.vehicle ? p.vehicle.position.y : p.feet.y,
     });
@@ -1597,7 +1913,11 @@ export class Game {
   // ------------------------------------------------------------------ battles
 
   startWildBattle(w: WildCreature): void {
-    if (this.battles.active || this.evolution.active || !this.party.canFight) return;
+    if (this.battles.active || this.evolution.active || !this.party.canFight || w.creature.hp <= 0) return;
+    // In the water (or the foe is): the fight stays on the water. Your Streetmon swim, hover or
+    // ride a life raft (see waterRide); you tread water.
+    const p0 = this.player;
+    this.battleInWater = !this.interior && (p0.waterState !== 'dry' || w.biome === 'pond' || !!this.waterAt(w.x, w.z));
     // Whatever was going on with it (an NPC hunt, a territory fight, a chase) is over.
     this.living?.onPlayerBattle(w);
     w.chase = undefined;
@@ -1628,6 +1948,7 @@ export class Game {
 
   private onBattleEnd(r: BattleResult): void {
     this.saveDirty = true;
+    this.battleInWater = false;
     this.numKeysCommand = true; // the next battle starts with the number keys on commands
     this.hud.setVisible(true);
     this.player.facingOverride = null;
@@ -1663,6 +1984,10 @@ export class Game {
       this.questBattleCd = 10;
       if (r.outcome === 'win') this.advance(id);
       else if (r.outcome === 'lose') this.blackOut();
+    } else if (r.kind === 'npc' && this.gangs.engaged) {
+      const won = r.outcome === 'win';
+      this.gangs.battleEnded(won);
+      if (r.outcome === 'lose') this.blackOut();
     } else if (r.kind === 'npc') {
       const c = this.npcPending;
       this.npcPending = null;
@@ -1849,6 +2174,7 @@ export class Game {
     this.markSeen(c.speciesId);
     const isNew = !this.dex.caught.has(c.speciesId);
     this.dex.caught.add(c.speciesId);
+    this.autosaveFor(isNew ? `New Streetmon: ${species(c.speciesId).name}` : `Caught ${displayName(c)}`);
     this.hud.toast(`${displayName(c)} ${where === 'party' ? 'joined your party' : 'went to the stash (party full)'}!${isNew ? ' New dex entry.' : ''}`, 3500);
     this.tut.fire('caught');
     if (where !== 'party') this.tut.fire('stashed');
@@ -1861,16 +2187,84 @@ export class Game {
   }
 
   /** C on foot: throw the selected capture item at the wild creature you're facing. */
+  /** Which pad map applies right now (src/core/Gamepad.ts). */
+  private padContext(): PadContext {
+    if (this.state !== 'playing') return 'ui';
+    if (this.cityMap?.isOpen) return 'map';
+    if (this.battles?.locksPlayer || this.evolution?.active || this.dialogue?.isOpen) return 'ui';
+    if (this.battles?.active) return 'battle';
+    return this.player?.vehicle ? 'car' : 'foot';
+  }
+
+  /** Hold T (LB on a pad) for the quick-select wheel; let go to pick. Not in fights. */
+  private quickWheelInput(): void {
+    const inp = this.input;
+    const p = this.player;
+    const can = !this.battles.active && !this.evolution.active && !p.dead && !this.throwing && !this.weaponHud.wheelOpen;
+    const held = inp.isDown('KeyT') && can;
+    const W = this.quickWheel;
+    if (held && !W.isOpen) {
+      W.open(this.quickEntries());
+      this.tut?.action('quickWheel');
+    } else if (W.isOpen && held) {
+      W.pointBy(inp.mouseDX, inp.mouseDY);
+      const r = this.padIn.lookNow;
+      const t = inp.stick;
+      if (Math.hypot(r.x, r.y) > 0.5) W.pointAt(r.x, r.y);
+      else if (t && Math.hypot(t.x, t.y) > 0.5) W.pointAt(t.x, -t.y);
+    } else if (W.isOpen) {
+      W.close(!can);
+    }
+  }
+
+  private quickEntries(): WheelEntry[] {
+    const out: WheelEntry[] = this.party.members.map((c, i) => ({
+      kind: 'mon' as const,
+      key: String(i),
+      label: displayName(c),
+      sub: c.hp <= 0 ? `Fainted · Lv ${c.level}` : `Lv ${c.level} · ${c.hp}/${maxHpOf(c)} HP`,
+      icon: this.icons.img(c.speciesId, !!c.shiny, 'qw-img'),
+      disabled: c.hp <= 0,
+      current: i === 0,
+    }));
+    const sel = this.bag.currentCapture()?.id;
+    for (const e of this.bag.captures()) out.push({ kind: 'item', key: e.item.id, label: e.item.name, sub: `×${e.count}${e.item.id === sel ? ' · selected' : ''}`, icon: `<span class="qw-emoji">${captureGlyph(e.item.id)}</span>`, current: e.item.id === sel });
+    return out;
+  }
+
+  private quickPick(e: WheelEntry): void {
+    if (e.kind === 'mon') {
+      const i = Number(e.key);
+      const c = this.party.members[i];
+      if (!c || i === 0) return;
+      this.party.makeLead(i);
+      this.saveDirty = true;
+      audio.ui();
+      this.hud.toast(`${displayName(c)} takes the lead.`, 1600);
+      return;
+    }
+    this.bag.selectedCapture = e.key;
+    if (this.player.dead || this.throwing || this.battles.active) return;
+    this.overworldThrow();
+  }
+
+  /**
+   * Throws the selected capture item at the wild Streetmon in front of you. From a car (the
+   * quick-select wheel) it goes out of the window at the nearest one, wider and further.
+   */
   private overworldThrow(): void {
     const it = this.bag.currentCapture();
     if (!it) {
       this.hud.toast('No capture items. Buy Cuffs, Crates or Nets at a Corner Clinic.', 2500);
       return;
     }
-    const p = this.player.position;
+    const car = this.player.vehicle;
+    const p = car ? car.position.clone().setY(car.position.y + 0.8) : this.player.position;
     const vh = this.rig.viewHeading;
     const fx = Math.cos(vh);
     const fz = -Math.sin(vh);
+    const reach = car ? 26 : 16;
+    const cone = car ? 1.25 : 0.45;
     let best: WildCreature | null = null;
     let bestScore = Infinity;
     for (const w of this.spawns.wild) {
@@ -1878,9 +2272,9 @@ export class Game {
       const dx = w.x - p.x;
       const dz = w.z - p.z;
       const d = Math.hypot(dx, dz);
-      if (d > 16) continue;
+      if (d > reach) continue;
       const ang = Math.acos(Math.max(-1, Math.min(1, (dx * fx + dz * fz) / Math.max(0.01, d))));
-      if (ang > 0.45 && d > 3) continue;
+      if (ang > cone && d > (car ? 6 : 3)) continue;
       const score = d + ang * 10;
       if (score < bestScore) {
         bestScore = score;
@@ -1888,10 +2282,14 @@ export class Game {
       }
     }
     if (!best || !best.inst) {
-      this.hud.toast('No wild Streetmon in front of you to throw at.', 1800);
+      this.hud.toast(car ? 'No wild Streetmon close enough to throw at.' : 'No wild Streetmon in front of you to throw at.', 1800);
       return;
     }
     const w = best;
+    if ((w.alt ?? 0) > 3.5) {
+      this.hud.toast(`The ${w.spec.name} is flying too high to reach. Get close and quiet and it'll come down.`, 2200);
+      return;
+    }
     const raidMult = this.raidWorld.catchMultiplier(w);
     if (raidMult === 0) {
       this.hud.toast(`${w.spec.name} is far too strong to catch now. Beat it first (B)!`, 2500);
@@ -1903,11 +2301,11 @@ export class Game {
     const roll = this.pityRoll(w.creature, it, false, raidMult > 1 ? catchChance(w.creature, it, false) * (raidMult - 1) : 0);
     w.pinned = true;
     this.throwing = true;
-    this.player.facingOverride = Math.atan2(-(w.z - p.z), w.x - p.x);
+    if (!car) this.player.facingOverride = Math.atan2(-(w.z - p.z), w.x - p.x);
     this.catcher.play(
       it.id,
       p.clone().setY(p.y + 0.6),
-      { pos: new THREE.Vector3(w.x, w.y, w.z), height: w.spec.model.height, root: w.inst?.root ?? null },
+      { pos: new THREE.Vector3(w.x, w.y + (w.alt ?? 0), w.z), height: w.spec.model.height, root: w.inst?.root ?? null },
       w.y,
       roll,
       (caught) => {
@@ -1979,8 +2377,11 @@ export class Game {
   private openClinic(): void {
     this.state = 'menu';
     if (this.input.pointerLocked) document.exitPointerLock();
+    // The clinic sells the everyday things; the black market, the deli and the garage the rest.
+    const elsewhere = new Set(['proteinShake', 'rabbitFoot', 'burner', 'repairKit', 'lockpick']);
     this.clinicMenu.open({
       captureLocked: this.captureLock(),
+      stock: [...DATA.items.values()].filter((it) => it.price > 0 && !elsewhere.has(it.id)).map((it) => ({ id: it.id, price: it.price })),
       bag: this.bag,
       money: () => this.money,
       spend: (n) => {
@@ -2018,7 +2419,8 @@ export class Game {
       savedAt: new Date().toISOString(),
       money: this.money,
       hour: this.hour,
-      player: this.player.dead ? null : { x: p.x, z: p.z, y: p.y },
+      // Saved inside a building: you load up at its door.
+      player: this.player.dead ? null : this.interior ? { x: this.interior.spot.x, z: this.interior.spot.z, y: 0.15 } : { x: p.x, z: p.z, y: p.y },
       weapons: this.weapons.inventory.serialize(),
       bag: this.bag.serialize(),
       party: this.party.members.map(creatureToJson),
@@ -2031,6 +2433,8 @@ export class Game {
       playTime: this.playTime,
       ...structuredClone(this.progress),
       garage: this.garageSave(),
+      raceRecords: this.races.serialize().records,
+      safehouses: structuredClone(this.safehouses),
       heists: this.heists.serialize(),
       streetEvents: this.streetEvents.serialize(),
       campaign: this.quests.serialize(),
@@ -2038,12 +2442,15 @@ export class Game {
       raids: this.raidWorld.raids.save(),
       cinematics: [...this.cineSeen],
       look: { ...this.playerLook },
+      world: { civic: this.civic, gangs: structuredClone(this.gangs.state), weather: this.weather.serialize() },
       map: { waypoint: this.cityMap.waypoint ? { ...this.cityMap.waypoint } : null, hidden: [...this.cityMap.hidden] },
     };
   }
 
   private applySave(d: SaveData): void {
     this.money = d.money;
+    this.safehouses = sanitizeSafehouses(d.safehouses, this.safeSpots);
+    this.safeView?.setOwned(this.safehouses.owned);
     this.raidWorld?.reset(d.raids);
     // Older saves: the intro and the acts they've reached count as seen.
     this.cineSeen = new Set(d.cinematics ?? ['intro', ...(d.campaign?.acts ?? [])]);
@@ -2072,7 +2479,7 @@ export class Game {
     this.progress = structuredClone({ layer: d.layer, pity: d.pity, stashesOpened: d.stashesOpened, quests: d.quests, reputation: d.reputation, manholesFound: d.manholesFound, sewerSeed: d.sewerSeed, streetCred: d.streetCred });
     if (this.races) {
       if (this.races.active) this.races.abort();
-      this.races.load({ streetCred: d.streetCred });
+      this.races.load({ streetCred: d.streetCred, records: d.raceRecords ?? {} });
     }
     if (this.heists) {
       if (this.heists.active || this.heists.state === 'PLANNING') this.heists.abandon();
@@ -2092,6 +2499,12 @@ export class Game {
       this.cityMap.setWaypoint(d.map.waypoint);
     }
     for (const st of this.roofPlan.stashes) this.roofView.setStashOpen(st.id, this.progress.stashesOpened.includes(st.id));
+    for (const m of [...this.mazes, ...this.deepMazes]) for (const c of m.caches) this.sewerView?.setCacheOpen(c.id, this.progress.stashesOpened.includes(c.id));
+    for (const c of this.streetCaches) this.streetCacheView?.setOpen(c.id, this.progress.stashesOpened.includes(c.id));
+    const wsave = (d.world && typeof d.world === 'object' ? d.world : {}) as Record<string, unknown>;
+    this.civic = typeof wsave['civic'] === 'number' ? clampCivic(wsave['civic']) : 0;
+    this.gangs?.load(parseGangState(wsave['gangs']));
+    this.weather.load(wsave['weather']);
     this.trainers.beaten.clear();
     for (const t of d.trainersBeaten) this.trainers.beaten.add(t);
     this.garageLoad(d.garage);
@@ -2122,16 +2535,41 @@ export class Game {
   /** Writes the save; returns false if storage isn't available. */
   saveGame(): boolean {
     if (this.state === 'title' || this.state === 'loading') return false;
-    return browserStore.write(JSON.stringify(this.buildSave()));
+    this.lastSaveAt = this.gameTime;
+    return saves.write(JSON.stringify(this.buildSave()));
+  }
+
+  /** Pushes the options to the camera, the audio and the HUD (and the menus' CSS scale). */
+  private applyOptions(): void {
+    const o = this.options;
+    if (this.rig) {
+      this.rig.lookSpeed = o.lookSpeed;
+      this.rig.invertY = o.invertY;
+    }
+    audio.setVolume(o.effects);
+    this.music.userVolume = o.music;
+    document.documentElement.style.setProperty('--hud-scale', String(o.hudSize));
   }
 
   private autosave(): void {
     if (this.state === 'title' || this.state === 'loading' || !this.party.members.length && !this.party.stash.length && !this.impound.length) return;
-    this.saveGame();
+    const ok = this.saveGame();
+    if (ok && this.autosaveNote) this.hud.saved(this.autosaveNote);
+    this.autosaveNote = null;
+  }
+
+  /**
+   * An autosave for a milestone (a safehouse, a heist pulled off, a race won, a new Streetmon):
+   * made as soon as nothing's in the way (not mid-battle or mid-throw) and shown with the
+   * indicator.
+   */
+  private autosaveFor(note: string): void {
+    this.autosaveNote = this.autosaveNote && this.autosaveNote !== note ? `${this.autosaveNote}, ${note}` : note;
+    this.saveDirty = true;
   }
 
   private savedSummary(): string | null {
-    const text = browserStore.read();
+    const text = saves.read();
     if (!text) return null;
     try {
       return describeSave(loadSave(text).data);
@@ -2141,10 +2579,11 @@ export class Game {
   }
 
   private exportSave(): void {
-    const blob = new Blob([JSON.stringify(this.buildSave(), null, 2)], { type: 'application/json' });
+    // A compressed save file (base64, so it survives email and copy-paste); Import reads it and plain JSON.
+    const blob = new Blob([saves.exportText(JSON.stringify(this.buildSave()))], { type: 'application/octet-stream' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `empire-streets-save-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `empire-streets-${new Date().toISOString().slice(0, 10)}.esave`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -2154,7 +2593,7 @@ export class Game {
   private importSave(text: string): string {
     if (this.battles.active || this.evolution.active) return 'Finish the fight first.';
     try {
-      const { data, warnings } = loadSave(text);
+      const { data, warnings } = loadSave(unpackSave(text).text);
       this.applySave(data);
       this.saveGame();
       return `Save imported.${warnings.length ? ` Repaired: ${warnings.slice(0, 3).join('; ')}` : ''}`;
@@ -2164,7 +2603,7 @@ export class Game {
   }
 
   private closeMenu(): void {
-    if (this.team.isOpen || this.clinicMenu.isOpen || this.dexScreen.isOpen || this.dialogue.isOpen || this.chopMenu.isOpen || this.heistMenu?.isOpen || this.wardrobe?.isOpen || this.story?.isOpen) return;
+    if (this.team.isOpen || this.clinicMenu.isOpen || this.casinoMenu?.isOpen || this.dexScreen.isOpen || this.dialogue.isOpen || this.chopMenu.isOpen || this.garageMenu?.isOpen || this.heistMenu?.isOpen || this.wardrobe?.isOpen || this.story?.isOpen) return;
     this.state = 'playing';
     // The key that closed the menu mustn't also act in the game (N would reopen the dex).
     this.input.endFrame();
@@ -2179,6 +2618,7 @@ export class Game {
       if (this.story.isOpen) this.story.key(code);
       else if (this.wardrobe.isOpen) this.wardrobe.key(code);
       else if (this.heistMenu.isOpen) this.heistMenu.key(code);
+      else if (this.garageMenu.isOpen) this.garageMenu.key(code);
       else if (this.chopMenu.isOpen) this.chopMenu.key(code);
       else if (this.dialogue.isOpen) this.dialogue.key(code);
       else if (this.dexScreen.isOpen) this.dexScreen.key(code);
@@ -2219,6 +2659,11 @@ export class Game {
     if (!lead || this.battles.active) return;
     const at = this.tmp.set(ped.x, ped.y, ped.z);
     const cop = ped.role === 'cop';
+    if (ped.role === 'gang') {
+      this.peds.damage(ped, 30, ped.x - this.player.position.x, ped.z - this.player.position.z, 3);
+      this.hud.toast(`${displayName(lead)} goes for the Gutter King!`, 1600);
+      return;
+    }
     if (cop) this.reportCrime('hitCop', at.x, at.z, 'cop');
     else this.crime('creatureAttack', at.clone(), 'civ');
     this.markCreatureCrime(lead);
@@ -2366,6 +2811,7 @@ export class Game {
           heist: !!this.heists?.active && this.heists.state !== 'SETUP',
           race: !!this.races?.active,
           sewer: this.layers?.current === 'sewer',
+          indoors: this.interior ? (this.interior.spot.kind === 'casino' ? 'casino' : 'room') : null,
           raid: this.raidWorld?.loud,
           cinematic: this.state === 'cinematic' ? this.cine.music : null,
         }),
@@ -2396,7 +2842,7 @@ export class Game {
     const out: Inspectable[] = [];
     for (const w of this.spawns.wild) {
       if (w.removed || !w.inst || w.pinned) continue;
-      out.push({ creature: w.creature, x: w.x, y: w.y, z: w.z, height: w.spec.model.height, owner: 'Wild' });
+      out.push({ creature: w.creature, x: w.x, y: w.y + (w.alt ?? 0), z: w.z, height: w.spec.model.height, owner: 'Wild' });
     }
     if (this.follower.summoned && this.follower.visible && this.follower.creature)
       out.push({ creature: this.follower.creature, x: this.follower.x, y: this.follower.y, z: this.follower.z, height: this.follower.height, owner: 'Yours' });
@@ -2429,7 +2875,7 @@ export class Game {
       if (w.removed || w.pinned || w.state === 'fainted' || !w.inst) continue;
       out.push({
         x: w.x,
-        y: w.y,
+        y: w.y + (w.alt ?? 0),
         z: w.z,
         height: w.spec.model.height * (w.sizeScale ?? 1),
         hit: (dmg) => {
@@ -2522,6 +2968,8 @@ export class Game {
   battleClear(x: number, z: number): boolean {
     const b = this.layers.current;
     const py = this.player.position.y;
+    // On the water any open water will do (and the bank too).
+    if (this.battleInWater && this.waterAt(x, z)) return !this.vehicles.cars.some((c) => !c.disposed && Math.hypot(c.position.x - x, c.position.z - z) < 2.6);
     if (b === 'street') {
       if (this.peds.blocked(x, z)) return false;
     } else {
@@ -2541,6 +2989,10 @@ export class Game {
   /** Ground height where scenes stand (battles, evolutions, the follower) in the player's layer. */
   groundAt(x: number, z: number): number {
     const b = this.layers.current;
+    if (this.battleInWater) {
+      const w = this.waterAt(x, z);
+      if (w) return w.surface;
+    }
     if (b === 'street') return this.peds.groundY(x, z);
     const g = this.spawns.layers[b]?.ground(x, z, this.player.position.y);
     // Off the edge of this roof or chamber: stay level with the player rather than drop to the street.
@@ -2558,7 +3010,7 @@ export class Game {
   private setLayer(b: Biome): void {
     this.layers.current = b;
     this.progress.layer = b;
-    this.env.setLayer(b);
+    this.env.setLayer(b === 'pond' ? 'street' : b);
     this.env.setTime(this.hour);
     const under = b === 'sewer';
     this.sewerView.under.visible = under;
@@ -2586,6 +3038,10 @@ export class Game {
   private roofUse(): { label: string; act: () => void } | null {
     const p = this.player;
     if (!p.onFoot || this.trans) return null;
+    const gu = this.gangs?.use();
+    if (gu) return gu;
+    const sc = this.streetCacheUse();
+    if (sc) return sc;
     const pos = p.position;
     const feetY = p.feet.y;
     const R = ROOFS.useRadius;
@@ -2597,6 +3053,8 @@ export class Game {
     }
     const mh = this.manholeNear();
     if (mh) return mh;
+    const su = this.sewerUse();
+    if (su) return su;
     for (const a of this.roofPlan.access) {
       if (close(a.street)) return { label: a.kind === 'elevator' ? 'Take the elevator to the roof' : 'Climb the fire escape', act: () => this.useAccess(a, 'up') };
       if (close(a.roof)) return { label: a.kind === 'elevator' ? 'Take the elevator down' : 'Climb down the fire escape', act: () => this.useAccess(a, 'down') };
@@ -2628,12 +3086,154 @@ export class Game {
   }
 
   /** The maze under a point, if any. */
-  mazeAt(x: number, z: number): Maze | null {
-    for (const m of this.mazes) {
+  /** The maze under a point, on the level nearest height `y` (default: where you are). */
+  mazeAt(x: number, z: number, y: number = this.player?.position.y ?? SEWER.floor): Maze | null {
+    let best: Maze | null = null;
+    for (const m of this.deepMazes.length ? [...this.mazes, ...this.deepMazes] : this.mazes) {
       const W = m.size * SEWER.block;
-      if (x >= m.x0 && x < m.x0 + W && z >= m.z0 && z < m.z0 + W) return m;
+      if (!(x >= m.x0 && x < m.x0 + W && z >= m.z0 && z < m.z0 + W)) continue;
+      if (!best || Math.abs(m.floor - y) < Math.abs(best.floor - y)) best = m;
+    }
+    return best;
+  }
+
+  /**
+   * Shafts down: in each district, from the dead end furthest from the hub on one level to the
+   * nearest dry block of the level below (and the ladder back up).
+   */
+  private linkShafts(): void {
+    this.shafts = [];
+    for (const top of this.mazes) {
+      const chain = [top, ...this.deepMazes.filter((d) => d.district === top.district).sort((a, b) => a.level - b.level)];
+      for (let n = 0; n < chain.length - 1; n++) {
+        const a = chain[n];
+        const b = chain[n + 1];
+        const hub = blockCentre(a, a.hub.i, a.hub.j);
+        const ends = a.deadEnds.filter((d) => !a.caches.some((c) => c.i === d.i && c.j === d.j) && !a.hazards.has(blockKey(d.i, d.j)) && !a.manholes.some((h) => Math.abs(h.i - d.i) + Math.abs(h.j - d.j) < 3));
+        const far = (p: { x: number; z: number }, q: { x: number; z: number }): number => Math.hypot(q.x - hub.x, q.z - hub.z) - Math.hypot(p.x - hub.x, p.z - hub.z);
+        let from = ends.map((d) => blockCentre(a, d.i, d.j)).sort(far)[0];
+        if (!from) {
+          // No spare dead end on this level: any quiet dry tunnel block well away from the hub.
+          const spare: Array<{ x: number; z: number }> = [];
+          for (let i = 1; i < a.size - 1; i++)
+            for (let j = 1; j < a.size - 1; j++) {
+              const k = blockKey(i, j);
+              if (!a.open[i][j] || a.pools.has(k) || a.hazards.has(k) || a.caches.some((c) => c.i === i && c.j === j) || a.manholes.some((h) => Math.abs(h.i - i) + Math.abs(h.j - j) < 3)) continue;
+              const c = blockCentre(a, i, j);
+              if (!propAt(a, c.x, c.z, 0.8) && !this.shafts.some((s) => Math.hypot(s.to.x - c.x, s.to.z - c.z) < 6)) spare.push(c);
+            }
+          from = spare.sort(far)[0];
+        }
+        if (!from) continue;
+        let to: { x: number; z: number } | null = null;
+        let bd = Infinity;
+        for (let i = 1; i < b.size - 1; i++)
+          for (let j = 1; j < b.size - 1; j++) {
+            if (!b.open[i][j] || b.pools.has(blockKey(i, j)) || b.hazards.has(blockKey(i, j))) continue;
+            const c = blockCentre(b, i, j);
+            if (propAt(b, c.x, c.z, 0.8) || b.caches.some((k) => k.i === i && k.j === j)) continue;
+            const d = Math.hypot(c.x - from.x, c.z - from.z);
+            if (d < bd) {
+              bd = d;
+              to = c;
+            }
+          }
+        if (to) this.shafts.push({ from: { ...from, floor: a.floor }, to: { ...to, floor: b.floor }, level: b.level, district: a.district });
+      }
+    }
+  }
+
+  /** Water under a point: the pond, or a pool in the sewer level you're on. */
+  private waterAt(x: number, z: number): { surface: number; depth: number; toxic?: boolean } | null {
+    if (inLake(this.layout.parkLake, x, z)) {
+      const lk = this.layout.parkLake;
+      return { surface: waveY(x, z, this.gameTime), depth: Math.max(0, depthAtLake(lk, x, z)) };
+    }
+    if (this.layers?.current !== 'sewer') return null;
+    const m = this.mazeAt(x, z);
+    const pool = m && poolAt(m, x, z);
+    if (!m || !pool) return null;
+    // Rooms and the gang hideout are built far below the mazes: no pools down there.
+    const feet = this.player?.feet?.y ?? m.floor;
+    if (this.interior || feet < m.floor - 5) return null;
+    return { surface: m.floor - SEWER.poolDrop, depth: pool.depth, toxic: pool.toxic };
+  }
+
+  /** Where to climb out of the water you're in: how far the edge is, which way, and the spot past it. */
+  private waterEdge(x: number, z: number): { d: number; nx: number; nz: number; outX: number; outZ: number; outY: number } | null {
+    if (inLake(this.layout.parkLake, x, z)) {
+      const e = nearestEdge(this.layout.parkLake, x, z);
+      const b = bankPoint(this.layout.parkLake, x, z);
+      return { d: e.d, nx: e.nx, nz: e.nz, outX: b.x, outZ: b.z, outY: 0.2 };
+    }
+    const m = this.mazeAt(x, z);
+    const e = m && poolEdge(m, x, z);
+    return e && m ? { ...e, outY: m.floor + 0.05 } : null;
+  }
+
+  /** E next to a shaft (down a level, or the ladder back up) or a cache. */
+  private sewerUse(): { label: string; act: () => void } | null {
+    if (this.layers.current !== 'sewer') return null;
+    const p = this.player.position;
+    const feet = this.player.feet.y;
+    for (const sh of this.shafts) {
+      if (Math.abs(feet - sh.from.floor) < 2 && Math.hypot(sh.from.x - p.x, sh.from.z - p.z) < 1.6)
+        return { label: `Climb down to the deep drains (level ${sh.level})`, act: () => this.useShaft(sh, 'down') };
+      if (Math.abs(feet - sh.to.floor) < 2 && Math.hypot(sh.to.x - p.x, sh.to.z + 0.9 - p.z) < 1.8)
+        return { label: `Climb back up to level ${sh.level - 1}`, act: () => this.useShaft(sh, 'up') };
+    }
+    for (const m of [...this.mazes, ...this.deepMazes]) {
+      if (Math.abs(feet - m.floor) > 2) continue;
+      for (const c of m.caches) {
+        if (this.progress.stashesOpened.includes(c.id)) continue;
+        if (Math.hypot(c.x - p.x, c.z - p.z) < 1.8) return { label: `Open the ${c.tier >= 3 ? 'sealed vault box' : c.tier === 2 ? 'drain lockbox' : 'lockbox'}`, act: () => this.openCache(c) };
+      }
     }
     return null;
+  }
+
+  private useShaft(sh: (typeof this.shafts)[number], dir: 'up' | 'down'): void {
+    // Too green for the deep levels: a warning first (press again to go anyway).
+    if (dir === 'down') {
+      const need = sh.level === 2 ? 15 : 28;
+      const best = Math.max(0, ...this.party.members.map((c) => c.level));
+      if (best < need && !(this.deepWarned && this.deepWarned.level === sh.level && this.gameTime - this.deepWarned.at < 6)) {
+        this.deepWarned = { level: sh.level, at: this.gameTime };
+        this.hud.toast(`Something big moves down there. Streetmon on level ${sh.level} are around Lv ${sh.level === 2 ? '25-40' : '40-60'}; yours are Lv ${best}. Press E again to go down anyway.`, 5000);
+        return;
+      }
+      this.deepWarned = null;
+    }
+    const t = dir === 'down' ? sh.to : sh.from;
+    const label = dir === 'down' ? (sh.level === 2 ? 'The deep drains' : 'The old cisterns') : sh.level - 1 === 1 ? 'The sewers' : 'The deep drains';
+    const ok = this.transition('sewer', { x: t.x, y: t.floor + 0.05, z: dir === 'down' ? t.z + 0.4 : t.z + 1.2 }, { seconds: 1.6, label });
+    if (ok) {
+      if (dir === 'down' && !this.progress.stashesOpened.includes(`depth:${sh.district}:${sh.level}`)) {
+        this.progress.stashesOpened.push(`depth:${sh.district}:${sh.level}`);
+        window.setTimeout(() => this.hud.toast(sh.level === 2 ? 'Deeper down: rarer Streetmon, and stronger. There are caches to find.' : 'The bottom level. Only the toughest Streetmon live this deep.', 4500), 1800);
+      }
+      window.setTimeout(() => this.hud.setSewerMap(this.mazeAt(t.x, t.z, t.floor)), 900);
+    }
+  }
+
+  /** A cache: cash and items, better the deeper it is. */
+  private openCache(c: Cache): void {
+    if (this.progress.stashesOpened.includes(c.id)) return;
+    this.progress.stashesOpened.push(c.id);
+    this.sewerView.setCacheOpen(c.id, true);
+    let seed = 0;
+    for (const ch of c.id) seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
+    const r = (): number => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296);
+    const cash = [0, 150, 600, 1600][c.tier] + Math.floor(r() * [0, 250, 700, 1500][c.tier]);
+    this.money += cash;
+    const items: Array<[string, number]> =
+      c.tier === 1 ? [[r() < 0.5 ? 'cuffs' : 'crate', 2]] : c.tier === 2 ? [['net', 2], [r() < 0.5 ? 'cage' : 'lure', 1]] : [['capturePod', 1], ['cage', 2]];
+    if (c.tier >= 2 && r() < (c.tier === 3 ? 0.8 : 0.35)) items.push([r() < 0.5 ? 'steelCase' : 'sparkPlug', 1]);
+    for (const [id, n] of items) if (DATA.items.has(id)) this.bag.add(id, n);
+    audio.cash();
+    audio.door();
+    this.hud.toast(`Cache: $${cash.toLocaleString('en-US')} and ${items.filter(([id]) => DATA.items.has(id)).map(([id, n]) => `${n} x ${itemSpec(id).name}`).join(', ')}.`, 4500);
+    this.saveDirty = true;
   }
 
   /** E at a manhole: down from the street, up the ladder from below. */
@@ -2663,7 +3263,7 @@ export class Game {
     for (const m of this.mazes)
       for (const h of m.manholes) {
         if (this.layers.current !== 'sewer' && feet < 1.5 && Math.hypot(h.x - pos.x, h.z - pos.z) < 1.4) return { label: 'Climb down the manhole', act: () => this.useManhole(m, h, 'down') };
-        if (this.layers.current === 'sewer') {
+        if (this.layers.current === 'sewer' && Math.abs(feet - m.floor) < 2) {
           const c = blockCentre(m, h.i, h.j);
           if (Math.hypot(c.x - pos.x, c.z - SEWER.block * 0.3 - pos.z) < 1.6) return { label: 'Climb the ladder to the street', act: () => this.useManhole(m, h, 'up') };
         }
@@ -2693,8 +3293,83 @@ export class Game {
    * A field item from the team screen. The Escape Rope: underground, up and out at the nearest
    * manhole (onto the pavement beside it). Returns why it can't be used, or null when it was.
    */
-  private useFieldItem(id: string): string | null {
-    if (id !== 'escapeRope') return null;
+  /**
+   * Heal and field items from the team screen. null: used, close the screen; "✓ …": used, stay
+   * open with the note; anything else: why not.
+   */
+  private useItem(id: string, target: Creature | null): string | null {
+    if (!DATA.items.has(id)) return null;
+    const it = itemSpec(id);
+    if (this.bag.count(id) <= 0) return `No ${it.name} left.`;
+    const p = this.player;
+    const used = (note: string, close = false): string | null => {
+      this.bag.take(id);
+      this.saveDirty = true;
+      if (close) {
+        this.hud.toast(note, 2600);
+        return null;
+      }
+      return `✓ ${note}`;
+    };
+    if (it.kind === 'heal') {
+      if (this.battles.active) return 'Not in the middle of a fight.';
+      const r = applyHeal(it, target, this.party.members, (c) => displayName(c));
+      if (!r.ok) return r.note;
+      audio.ui();
+      return used(r.note);
+    }
+    if (typeof it['playerHeal'] === 'number') {
+      if (p.health >= PLAYER.maxHealth) return "You're not hurt.";
+      p.health = Math.min(PLAYER.maxHealth, p.health + (it['playerHeal'] as number));
+      return used('You patch yourself up.');
+    }
+    if (typeof it['repel'] === 'number') {
+      if (!this.party.lead) return 'You need a lead Streetmon for the musk to mean anything.';
+      this.itemFx.repel = it['repel'] as number;
+      return used(`Wild Streetmon below Lv ${this.party.lead.level} keep their distance for a while.`, true);
+    }
+    if (typeof it['attract'] === 'number') {
+      this.itemFx.attract = it['attract'] as number;
+      return used('The bait is out. Expect company.', true);
+    }
+    if (typeof it['lucky'] === 'number') {
+      this.itemFx.lucky = it['lucky'] as number;
+      return used('You squeeze the rabbit\'s foot. Feeling lucky.', true);
+    }
+    if (typeof it['levelUp'] === 'number') {
+      if (!target) return 'Pick a Streetmon first.';
+      if (target.level >= 100) return `${displayName(target)} can't get any stronger.`;
+      const sp = species(target.speciesId);
+      const need = xpForLevel(sp.growth, target.level + 1) - target.xp;
+      const ev = gainXp(target, Math.max(1, need), { timeOfDay: phaseAt(this.hour), district: districtAt(this.layout, p.position.x, p.position.z) });
+      for (const e of ev) if (e.kind === 'evolve') this.evoQueue.push({ creature: e.creature, to: e.to });
+      return used(`${displayName(target)} downs the shake and grows to Lv ${target.level}!`);
+    }
+    if (typeof it['wantedDown'] === 'number') {
+      const w = this.wanted;
+      if (w.stars === 0) return "Nobody's looking for you.";
+      if (w.stars >= 5) return 'At five stars nobody picks up.';
+      w.stars -= 1;
+      w.heat = w.stars > 0 ? STAR_HEAT[w.stars - 1] : 0;
+      w.unseenFor = 0;
+      return used('A favour called in. One star off.', true);
+    }
+    if (it['repair']) {
+      const car = p.vehicle ?? this.lastDriven;
+      if (!car || car.disposed || car.destroyed) return 'No car to fix.';
+      if (!p.vehicle && Math.hypot(car.position.x - p.position.x, car.position.z - p.position.z) > 6) return 'Get next to the car first.';
+      if (car.health >= car.spec.health && !car.tyresPopped) return "It's running fine.";
+      car.health = car.spec.health;
+      car.tyresPopped = false;
+      car.flatFor = 0;
+      return used(`The ${car.spec.name} is good as new.`, true);
+    }
+    if (id === 'lockpick') return 'Use it at a locked box.';
+    return null;
+  }
+
+  private useFieldItem(id: string, target: Creature | null = null): string | null {
+    if (id !== 'escapeRope') return this.useItem(id, target);
     if (this.layers.current !== 'sewer') return 'The Escape Rope only works underground.';
     const p = this.player;
     if (p.dead || this.battles.active || this.evolution.active || this.trans) return "You can't use that right now.";
@@ -2738,11 +3413,12 @@ export class Game {
       }
     };
     if (hz.kind === 'sludge') {
-      p.takeDamage(SEWER.sludgeDps * h);
+      // Toxic sludge: wading eats your health, going under it eats it faster.
+      p.takeDamage(SEWER.sludgeDps * h * (p.swimming ? 2.2 : p.waterState === 'wading' ? 1.4 : 1), 'env');
       this.sedatedUntil = Math.max(this.sedatedUntil, performance.now() + 250);
       warn('Toxic sludge! Get out of it.');
     } else if (hz.kind === 'vent' && ventActive(hz, now)) {
-      p.takeDamage(SEWER.ventDps * h);
+      p.takeDamage(SEWER.ventDps * h, 'env');
       if (p.velocity.y <= 0) p.velocity.y = 3.2;
       warn('Scalding steam!');
     } else if (hz.kind === 'channel') {
@@ -2754,11 +3430,11 @@ export class Game {
 
   /** Flashlight, lantern glow, flicker in the dark zones, vents. */
   private updateSewer(dt: number): void {
-    const under = this.layers.current === 'sewer';
+    const under = this.layers.current === 'sewer' && !this.interior;
     this.sewerView.update(this.gameTime, (m, k) => {
       const hz = m.hazards.get(k);
       return !!hz && hz.kind === 'vent' && ventActive(hz, this.gameTime);
-    });
+    }, { x: this.player.position.x, y: this.player.feet?.y ?? this.player.position.y, z: this.player.position.z });
     if (!under) {
       this.flashlight.intensity = 0;
       this.lantern.intensity = 0;
@@ -2921,7 +3597,10 @@ export class Game {
       const near = under && Math.hypot(n.x - pos.x, n.z - pos.z) < 70;
       if (near && !n.model) {
         const skin = ['#8d5a3b', '#e0b48f', '#c08a5c', '#6b4530'][n.spec.id.length % 4];
-        const m = new Humanoid({ skin, shoes: '#2a2620', scale: n.spec.look.build === 'f' ? 0.96 : 1, ...n.spec.look });
+        // Sewer folk live rough: faded, grimy, layered (their own colours under the dirt).
+        let rs = [...n.spec.id].reduce((a, ch) => a * 31 + ch.charCodeAt(0), 7) >>> 0;
+        const rnd = (): number => ((rs = (Math.imul(rs, 1664525) + 1013904223) >>> 0) / 4294967296);
+        const m = new Humanoid(weatheredLook({ skin, shoes: '#2a2620', scale: n.spec.look.build === 'f' ? 0.96 : 1, ...n.spec.look }, rnd));
         this.scene.add(m.root);
         n.model = m;
       } else if (!near && n.model) {
@@ -3191,6 +3870,119 @@ export class Game {
    * Hard landings hurt: from about 9 m up, worse the faster you land; from about 35 m it kills.
    * A jump pad that misses its roof puts you back on the pad instead.
    */
+  /** Out of the pond onto the grass past the rim. `quick`: no fuss (a fight's starting). */
+  private climbOut(quick = false): void {
+    const p = this.player;
+    const e = this.waterEdge(p.position.x, p.position.z);
+    if (!e) return;
+    this.pond.ripple(p.position.x, p.position.z, 1.6);
+    this.splashFx(p.position.x, p.position.z, 0.6);
+    p.teleport(e.outX, e.outY, e.outZ);
+    if (!quick) audio.sfx('sfx_climb', 0);
+  }
+
+  /** Droplets and ripples where something hits the water (`size` 0.5 a stroke .. 3 a car). */
+  private splashFx(x: number, z: number, size: number): void {
+    const y = POND.surface + 0.05;
+    this.effects.burst({ x, y, z, count: Math.round(8 + size * 12), r: 0.85, g: 0.93, b: 1, speed: 1.6 + size * 1.4, up: 2.5 + size * 2, life: 0.8 + size * 0.15, size0: 0.07 + size * 0.03, size1: 0.03, additive: false, lift: -9 });
+    this.effects.burst({ x, y, z, count: Math.round(2 + size * 2), r: 0.9, g: 0.95, b: 1, speed: 0.6 + size * 0.4, up: 0.2, life: 1.2, size0: 0.4 * size, size1: 1.2 * size, alpha: 0.35, additive: false, drag: 1.5, flat: true });
+    this.pond.ripple(x, z, 0.8 + size * 1.4);
+  }
+
+  /** Every frame: splashes and strokes for you in the pond. */
+  private pondPlayer(dt: number): void {
+    const p = this.player;
+    if (p.splash > 0) {
+      const k = Math.min(3, p.splash / 3.5);
+      this.splashFx(p.position.x, p.position.z, 0.6 + k);
+      audio.sfx(k > 1.2 ? 'sfx_splash_big' : 'sfx_splash', p.position);
+      p.splash = 0;
+      this.tut?.action('swim');
+    }
+    if (p.onFoot && p.waterState !== 'dry') {
+      const moving = Math.hypot(p.velocity.x, p.velocity.z) > 0.4;
+      this.strokeClock -= dt;
+      if (this.strokeClock <= 0) {
+        this.strokeClock = p.swimming ? (moving ? 0.55 : 1.4) : moving ? 0.45 : 2;
+        this.pond.ripple(p.position.x, p.position.z, p.swimming ? 1.1 : 0.7);
+        if (moving) {
+          audio.sfx(p.swimming ? 'sfx_swim' : 'sfx_wade', p.position);
+          if (p.swimming) this.effects.burst({ x: p.position.x, y: POND.surface + 0.05, z: p.position.z, count: 4, r: 0.85, g: 0.93, b: 1, speed: 1.2, up: 1.6, life: 0.6, size0: 0.06, size1: 0.03, additive: false, lift: -9 });
+        }
+      }
+    }
+  }
+
+  /**
+   * Cars in the pond, every physics step: buoyancy at the corners of the underside (so it lists
+   * and noses down as it should), water drag, and flooding: it floats a few seconds, the engine
+   * drowns once the water's over it, and it settles on the bed. A sunk car is gone once you're
+   * well away (a car you own is towed to the Chop Shop).
+   */
+  private pondCars(h: number): void {
+    const L = this.layout.parkLake;
+    for (const c of [...this.vehicles.cars]) {
+      if (c.disposed) continue;
+      const pos = c.position;
+      let w = this.carWater.get(c);
+      if (!inLake(L, pos.x, pos.z, -4)) {
+        if (w) stepCarWater(w, 0, h);
+        continue;
+      }
+      if (!w) {
+        w = newCarWater();
+        this.carWater.set(c, w);
+      }
+      const q = c.quaternion;
+      const hx = c.spec.length / 2 - 0.15;
+      const hz = c.spec.width / 2 - 0.1;
+      const hy = (c.spec.height * 0.62 - c.spec.clearance) / 2;
+      const pts = [
+        [hx, -hy, hz],
+        [hx, -hy, -hz],
+        [-hx, -hy, hz],
+        [-hx, -hy, -hz],
+        [0, -hy, 0],
+      ].map(([x, y, z]) => this.tmp.set(x, y, z).applyQuaternion(q).add(pos).clone());
+      const inside = pts.map((p) => inLake(L, p.x, p.z));
+      const sub = submersion(
+        pts.map((p, i) => (inside[i] ? p.y : 99)),
+        c.spec.height,
+        waveY(pos.x, pos.z, this.gameTime),
+      );
+      const wasDry = w.wetFor === 0;
+      stepCarWater(w, sub.avg, h);
+      if (sub.avg <= 0) continue;
+      const lv = c.body.linvel();
+      const speed = Math.hypot(lv.x, lv.y, lv.z);
+      if (wasDry && sub.avg > 0.02 && speed > 2) {
+        const k = Math.min(3, 1 + speed / 6);
+        this.splashFx(pos.x, pos.z, k);
+        audio.sfx('sfx_splash_big', pos);
+        if (c === this.player.vehicle) this.hud.toast("You're in the pond!", 2000);
+      }
+      const mass = c.body.mass();
+      const lift = carLift(w);
+      pts.forEach((p, i) => {
+        const s = sub.each[i];
+        if (s <= 0) return;
+        c.body.applyImpulseAtPoint({ x: 0, y: (mass * 9.81 * lift * s * h) / pts.length, z: 0 }, { x: p.x, y: p.y, z: p.z }, true);
+      });
+      const a = sub.avg;
+      c.body.applyImpulse({ x: -lv.x * mass * POND.dragH * a * h, y: -lv.y * mass * POND.dragV * a * h, z: -lv.z * mass * POND.dragH * a * h }, true);
+      const av = c.body.angvel();
+      const k = Math.max(0, 1 - POND.dragSpin * a * h);
+      c.body.setAngvel({ x: av.x * k, y: av.y * k, z: av.z * k }, true);
+      if (w.stalled && c === this.player.vehicle && !this.floodTold.has(c)) {
+        this.floodTold.add(c);
+        this.hud.toast("The engine's flooded. Get out (F) and swim for it!", 3500);
+      }
+      if (w.stalled && c.driver && c.driver !== 'player') c.driver = null;
+      // Sunk and abandoned: gone once you're away from it.
+      if (w.flood >= 1 && c !== this.player.vehicle && Math.hypot(pos.x - this.player.position.x, pos.z - this.player.position.z) > 35) this.vehicles.remove(c);
+    }
+  }
+
   private checkFall(): void {
     const p = this.player;
     const lp = this.lastPad;
@@ -3209,7 +4001,7 @@ export class Game {
       this.kill('You fell from a roof');
       return;
     }
-    p.takeDamage((v - 13) * 9);
+    p.takeDamage((v - 13) * 9, 'env');
     this.rig.shake(0.02);
     audio.crash(Math.min(1, (v - 13) / 13), 0);
   }
@@ -3237,9 +4029,9 @@ export class Game {
       const h = car.heading;
       const cls = weightClassOf(car.spec.mass);
       for (const w of this.spawns.wild) {
-        if (w.removed || w.pinned || w.state === 'fainted' || !w.inst) continue;
+        if (w.removed || w.pinned || w.inPod || w.state === 'fainted' || w.creature.hp <= 0 || !w.inst) continue;
         if ((w.hitCooldownUntil ?? 0) > now) continue;
-        if (w.y > cp.y + 1.5 || w.y < cp.y - 3) continue; // over the roof, or another layer below
+        if (w.y + (w.alt ?? 0) > cp.y + 1.5 || w.y < cp.y - 3) continue; // over the roof (or flying), or another layer below
         const r = Math.max(0.3, w.spec.model.height * 0.4);
         if (Math.abs(w.x - cp.x) > halfL + r + 0.5 || Math.abs(w.z - cp.z) > halfL + r + 0.5) continue;
         const hit = carCircleContact(cp.x, cp.z, h, halfL, halfW, w.x, w.z, r);
@@ -3266,7 +4058,7 @@ export class Game {
           car.damage(60 + sp2 * 12);
           car.lastImpactAt = now;
           this.effects.impact(w.x, w.y + w.spec.model.height * 0.3, w.z, true);
-          audio.crash(Math.min(1, sp2 / 20), cp.distanceTo(this.camera.position));
+          audio.crash(Math.min(1, sp2 / 20), cp);
           if (mine) this.shakeCamera(Math.min(1, sp2 / 25));
           continue;
         }
@@ -3282,7 +4074,7 @@ export class Game {
         car.body.setLinvel({ x: lv.x * (1 - res.carSlow), y: lv.y, z: lv.z * (1 - res.carSlow) }, true);
         if (res.carDamage > 0) car.damage(res.carDamage);
         this.effects.impact(w.x, w.y + sp.model.height * 0.5, w.z, false);
-        audio.crash(Math.min(1, 0.15 + res.damage / 60), cp.distanceTo(this.camera.position));
+        audio.crash(Math.min(1, 0.15 + res.damage / 60), cp);
         if (mine && w.creature.hp <= 0) this.hud.toast(`You knocked out the wild ${sp.name}.`, 2000);
       }
       // Real-time battles: your car can hit the foe.
@@ -3511,6 +4303,8 @@ export class Game {
     if (!killed && now - last < 4000) return;
     this.reported.set(ped, now);
     const at = this.tmp.set(ped.x, ped.y, ped.z);
+    // Gutter Kings started it (or you're putting a stop to them): not a crime people report.
+    if (ped.role === 'gang') return;
     const cop = ped.role === 'cop';
     const kind: Crime = cop ? (killed ? 'killCop' : 'hitCop') : killed ? 'killPed' : 'hitPed';
     // A surviving victim reports it; an officer is a police witness.
@@ -3523,7 +4317,9 @@ export class Game {
     // Nobody up top sees or hears what happens in the sewers: no stars down there.
     if (this.layers.current === 'sewer') return;
     const before = this.wanted.stars;
-    this.wanted.report(kind, x, z, witness);
+    // Witnesses who like you look the other way for small things; ones who don't, call it in.
+    const added = this.wanted.report(kind, x, z, witness === 'civ' && Math.random() > civicTier(this.civic).witness ? 'none' : witness);
+    if (added > 0) this.repEvent(kind === 'killPed' ? 'pedKilled' : kind === 'killCop' || kind === 'hitCop' ? 'copHurt' : 'crime');
     if (this.wanted.stars > before) {
       audio.wantedUp();
       if (before === 0) this.hud.toast(witness === 'cop' ? 'The police saw that' : 'Someone called the police', 2500);
@@ -3534,7 +4330,8 @@ export class Game {
   private onPedDied(ped: Ped): void {
     const off = (): number => (Math.random() - 0.5) * 1.2;
     if (ped.role === 'cop') {
-      this.weapons.drop('weapon', 'pistol', 12 + Math.floor(Math.random() * 13), ped.x + off(), ped.y, ped.z + off());
+      // Guns come from shops, stashes and jobs: a fallen officer leaves ammo only if you carry a pistol already.
+      if (this.weapons.inventory.has('pistol')) this.weapons.drop('weapon', 'pistol', 12 + Math.floor(Math.random() * 13), ped.x + off(), ped.y, ped.z + off());
       this.weapons.drop('cash', 'cash', 20 + Math.floor(Math.random() * 60), ped.x + off(), ped.y, ped.z + off());
     } else if (Math.random() < 0.55) {
       this.weapons.drop('cash', 'cash', 5 + Math.floor(Math.random() * 55), ped.x + off(), ped.y, ped.z + off());
@@ -3567,10 +4364,16 @@ export class Game {
     const inp = this.input;
     const car = p.vehicle;
     if (car) {
-      car.input.throttle = inp.isDown('KeyW', 'ArrowUp') ? 1 : 0;
-      car.input.brake = inp.isDown('KeyS', 'ArrowDown') ? 1 : 0;
+      // Keys are all or nothing; a pad's triggers are analogue.
+      car.input.throttle = Math.max(inp.isDown('KeyW', 'ArrowUp') ? 1 : 0, inp.throttle);
+      car.input.brake = Math.max(inp.isDown('KeyS', 'ArrowDown') ? 1 : 0, inp.brake);
       car.input.steer = inp.axis(['KeyA', 'ArrowLeft'], ['KeyD', 'ArrowRight']);
       car.input.handbrake = inp.isDown('Space');
+      // A drowned engine: nothing happens when you put your foot down.
+      if (this.carWater.get(car)?.stalled) {
+        car.input.throttle = 0;
+        car.input.brake = Math.min(car.input.brake, 0.3);
+      }
       // On the start line during the countdown (or busted/wasted mid-race, or reading the map): held.
       if (this.raceHold || p.dead || this.cityMap.isOpen) {
         car.input.throttle = 0;
@@ -3585,9 +4388,18 @@ export class Game {
       const b = this.rig.groundBasis();
       const mx = b.fx * fwd + b.rx * strafe;
       const mz = b.fz * fwd + b.rz * strafe;
-      p.step(h, mx, mz, slow === 1 && inp.isDown('ShiftLeft', 'ShiftRight'), inp.isDown('AltLeft', 'AltRight') || slow < 1, this.jumpQueued);
+      // In the pond: at the edge, heading out (or jumping) climbs onto the bank.
+      if (!frozen && p.waterState !== 'dry' && !p.dead) {
+        const e = this.waterEdge(p.position.x, p.position.z);
+        const m = Math.hypot(mx, mz);
+        if (e && e.d <= POND.climbReach && (this.jumpQueued || (m > 0.2 && (mx * e.nx + mz * e.nz) / m > 0.45))) this.climbOut();
+      }
+      if (this.rollQueued && !frozen && !this.interiorBlocksRoll()) this.startDodge(mx, mz);
+      this.rollQueued = false;
+      p.step(h, mx, mz, slow === 1 && inp.isDown('ShiftLeft', 'ShiftRight') && p.dodge.winded <= 0, inp.isDown('AltLeft', 'AltRight') || slow < 1, this.jumpQueued);
       this.jumpQueued = false;
     }
+    this.pondCars(h);
 
     if (p.onFoot && !this.trans) this.checkJumpPads();
     this.vehicles.prePhysics(h);
@@ -3599,11 +4411,11 @@ export class Game {
     if (this.hitCooldown > 0) this.hitCooldown -= h;
     if (p.onFoot) this.checkRunOver();
     if (p.onFoot) this.checkFall();
-    if (p.onFoot && this.layers.current === 'sewer' && !this.trans) this.sewerHazards(h);
+    if (p.onFoot && this.layers.current === 'sewer' && !this.trans && !this.interior) this.sewerHazards(h);
 
     // Into the river: car or player.
     const fy = car ? car.position.y : p.position.y;
-    const floor = this.layers.current === 'sewer' && !car ? LAYERS.sewerFloor - 15 : WORLD.fallDeathY;
+    const floor = this.interior ? INTERIOR.floorY - 10 : this.gangs?.inHideout || this.gangs?.entering ? -115 : this.layers.current === 'sewer' && !car ? SEWER.levels[SEWER.levels.length - 1].floor - 15 : WORLD.fallDeathY;
     if (!p.dead && !this.trans && fy < floor) {
       if (car) car.markDestroyed();
       this.kill('You fell into the river');
@@ -3624,6 +4436,11 @@ export class Game {
       const closing = lv.x * toP.x + lv.z * toP.z;
       if (closing < 2) continue;
       this.hitCooldown = 1;
+      // Rolled clear: the car goes past (the i-frames take it).
+      if (p.dodge.invulnerable) {
+        p.dodgedHit = true;
+        break;
+      }
       audio.thud();
       p.knockBack(lv.x * 0.7 + toP.x * 2, 2 + closing * 0.25, lv.z * 0.7 + toP.z * 2, 2.2);
       if (p.takeDamage(closing * 4.5)) this.kill('Run over');
@@ -3661,7 +4478,7 @@ export class Game {
         const k = 1 - pd / radius;
         const dir = this.tmp.set(p.position.x - x, 0, p.position.z - z).normalize();
         p.knockBack(dir.x * 12 * k, 5 * k, dir.z * 12 * k, 2.5);
-        if (p.takeDamage(playerDamage * k)) this.kill(fromTank ? 'Hit by a tank shell' : 'Caught in an explosion');
+        if (p.takeDamage(playerDamage * k, 'blast')) this.kill(fromTank ? 'Hit by a tank shell' : 'Caught in an explosion');
       }
     }
   }
@@ -3681,7 +4498,9 @@ export class Game {
       listener: () => this.camera.position,
       shake: (a) => this.rig.shake(a),
       playerCar: () => this.player.vehicle,
+      isRacer: (c) => this.raceWorld?.isRacer(c) ?? false,
     });
+    this.tuneWorld.onPlayerHit = () => this.hud.toast('Spike strip! Slow puncture: you will lose speed for a few seconds.', 2500);
     const blocked = (ax: number, ay: number, az: number, bx: number, by: number, bz: number): boolean => this.tuneWorld.sightBlocked(ax, ay, az, bx, by, bz);
     this.police.sightBlocked = blocked;
     this.tanks.sightBlocked = blocked;
@@ -3691,21 +4510,19 @@ export class Game {
         takeStreetmon: (id) => this.takeForGarage(id),
         returnStreetmon: (id) => this.returnFromGarage(id),
         getBaseStats: (vid) => {
-          const s = this.rides.get(vid)?.spec ?? getSpec('taxi');
-          return { topSpeed: s.maxSpeed, acceleration: s.engineForce / s.mass, durability: s.health, mass: s.mass, grip: s.grip, steering: 1, radarRange: 105 };
+          // The car as built (bought parts included): the Streetmon tune goes on top of that.
+          const car = this.rides.get(vid);
+          const s = car?.spec ?? getSpec('taxi');
+          const e = upgradeEffect(car?.upgrades);
+          return { topSpeed: s.maxSpeed * e.topSpeed, acceleration: (s.engineForce * e.acceleration) / (s.mass * e.mass), durability: s.health * e.durability, mass: s.mass * e.mass, grip: s.grip * e.grip, steering: e.steering, radarRange: 105 };
         },
         applyStats: (vid, st) => {
           const car = this.rides.get(vid);
           if (!car) return;
           const m = st.multipliers;
-          car.mods.speed = m.topSpeed;
-          car.mods.accel = m.acceleration;
-          car.mods.grip = m.grip;
-          car.mods.steer = m.steering;
-          car.mods.armor = m.durability;
-          car.setMass(car.spec.mass * m.mass);
-          // Upgrade chips and blueprints go back on top of the new tune next frame.
-          this.carBonus.delete(car);
+          car.setLayer('tune', { speed: m.topSpeed, accel: m.acceleration, grip: m.grip, steer: m.steering, armor: m.durability });
+          car.tuneMass = m.mass;
+          car.refreshMass();
         },
         triggerAbility: (vid, ab, ctx) => {
           const car = this.rides.get(vid);
@@ -3718,6 +4535,704 @@ export class Game {
       },
     });
     this.chopMenu = new ChopShopMenu(this.container, this.icons);
+    this.garageMenu = new GarageMenu(this.container);
+    this.riders = new StreetmonRiders(this.creatureModels);
+    this.tuning.on('abilityStarted', (e: { vehicleId: string; abilityId: string; slot: string }) => this.riders.react(this.rides.get(e.vehicleId), e.slot, ABILITY_STYLE[e.abilityId] ?? 'blast'));
+  }
+
+  /** Who rides in one of your tuned cars (for the riders on its bodywork). */
+  private ridersOf(id: string): RiderSpec[] {
+    return this.tuning
+      .getSlots(id)
+      .filter((s) => s.streetmon)
+      .map((s) => ({ slot: s.slot, speciesId: s.streetmon!.speciesId, shiny: !!this.findCreature(s.streetmon!.id)?.shiny }));
+  }
+
+  /** On a road (the avenues and streets), rather than a block, park or pavement. */
+  private onRoad(x: number, z: number): boolean {
+    for (const r of this.layout.roads) {
+      const c = r.kind === 'ave' ? x : z;
+      const along = r.kind === 'ave' ? z : x;
+      if (Math.abs(c - r.center) <= r.width / 2 + 0.5 && along >= r.from && along <= r.to) return true;
+    }
+    return false;
+  }
+
+  // ------------------------------------------------------------------ Empire Motors and your cars
+
+  // ------------------------------------------------------------------ interiors and talk
+
+  /** What E does here: a building's door outside, or inside its exit, its people and its counters. */
+  private interiorUse(): { label: string; act: () => void } | null {
+    const p = this.player;
+    if (!p.onFoot || p.dead || this.trans) return null;
+    const pos = p.position;
+    const room = this.interior;
+    if (!room) {
+      if (this.layers.current !== 'street' || pos.y > 3) return null;
+      for (const r of this.rooms) {
+        if (Math.hypot(r.spot.x - pos.x, r.spot.z - pos.z) < INTERIOR.useRadius) return { label: `Go into ${r.spot.name}`, act: () => this.enterRoom(r) };
+      }
+      return null;
+    }
+    if (Math.hypot(room.exit.x - pos.x, room.exit.z - pos.z) < 1.6) return { label: 'Leave', act: () => this.leaveRoom() };
+    // The nearest thing wins, with a bias to the room's spots: a dealer stands at the table, and
+    // "Play blackjack" is what you came for, not a chat with them.
+    let person: { d: number; pp: { room: InteriorRoom; role: string; model: Humanoid; seed: number } } | null = null;
+    for (const pp of this.roomPeople) {
+      if (pp.room !== room) continue;
+      const m = pp.model.root.position;
+      const d = Math.hypot(m.x - pos.x, m.z - pos.z);
+      if (d < 1.9 && (!person || d < person.d)) person = { d, pp };
+    }
+    let spot: { d: number; sp: InteriorRoom['spots'][number] } | null = null;
+    for (const sp of room.spots) {
+      const d = Math.hypot(sp.x - pos.x, sp.z - pos.z);
+      if (d < 1.6 && (!spot || d < spot.d)) spot = { d, sp };
+    }
+    if (spot && (!person || spot.d < person.d + 0.6)) {
+      const sp = spot.sp;
+      return { label: sp.label, act: () => this.roomSpot(sp.kind) };
+    }
+    if (person) {
+      const pp = person.pp;
+      return { label: `Talk`, act: () => this.talkInRoom(pp) };
+    }
+    return null;
+  }
+
+  private enterRoom(r: InteriorRoom): void {
+    if (this.wanted.stars > 0) {
+      this.hud.toast("They lock the door when they see the cops behind you. Lose them first.", 2800);
+      return;
+    }
+    const ok = this.transition('sewer', r.spawn, {
+      seconds: 1.0,
+      label: r.spot.name,
+      done: () => {
+        this.sewerView.under.visible = false;
+        this.flashlight.intensity = 0;
+        this.lantern.intensity = 0;
+      },
+    });
+    if (!ok) return;
+    audio.door();
+    this.interior = r;
+    for (const x of this.rooms) x.root.visible = x === r;
+    this.spawns.enabled = false;
+    this.aiming = false;
+  }
+
+  private leaveRoom(): void {
+    const r = this.interior;
+    if (!r) return;
+    const s = r.spot;
+    const ok = this.transition('street', { x: s.x + s.nx * 1.2, y: 0.2, z: s.z + s.nz * 1.2 }, {
+      seconds: 1.0,
+      done: () => {
+        this.interior = null;
+        r.root.visible = false;
+        this.spawns.enabled = true;
+      },
+    });
+    if (ok) {
+      audio.door();
+      this.player.facing = Math.atan2(-s.nz, s.nx);
+    }
+  }
+
+  /** Every frame inside: the people there breathe and look about. */
+  private updateRoomPeople(dt: number): void {
+    const r = this.interior;
+    if (!r) return;
+    for (const pp of this.roomPeople) if (pp.room === r) pp.model.update(dt, 0, true);
+  }
+
+  private talkContext(metKey: string): TalkContext {
+    const p = this.player.position;
+    const near = <T extends { x: number; z: number }>(xs: readonly T[]): T | undefined => [...xs].sort((a, b) => Math.hypot(a.x - p.x, a.z - p.z) - Math.hypot(b.x - p.x, b.z - p.z))[0];
+    const forSale = near(this.safeSpots.filter((h) => !this.safehouses.owned.includes(h.id)));
+    const lead = this.party.lead;
+    const lk = this.layout.parkLake;
+    const deli = near(this.interiorSpots.filter((s) => s.kind === 'deli'));
+    const diner = near(this.interiorSpots.filter((s) => s.kind === 'diner'));
+    const docks = this.layout.docks?.length ? { name: p.x < 0 ? 'the West Ave Docks' : 'the East Ave Docks', x: p.x < 0 ? this.layout.land.x0 + 4 : this.layout.land.x1 - 4, z: p.x < 0 ? -232 : 80 } : undefined;
+    return {
+      hour: this.hour,
+      district: districtAt(this.layout, p.x, p.z),
+      wanted: this.wanted.stars,
+      money: this.money,
+      lead: lead ? { name: displayName(lead), species: species(lead.speciesId).name, level: lead.level } : null,
+      places: {
+        safehouseForSale: forSale ? { name: forSale.name, price: forSale.price, x: forSale.x, z: forSale.z } : undefined,
+        clinic: near(this.clinics.clinics),
+        deli: deli ? { name: deli.name, x: deli.x, z: deli.z } : undefined,
+        diner: diner ? { name: diner.name, x: diner.x, z: diner.z } : undefined,
+        docks,
+        pond: { x: (lk.x0 + lk.x1) / 2, z: (lk.z0 + lk.z1) / 2 },
+        chopShop: { x: this.chopSpot.x, z: this.chopSpot.z },
+      },
+      race: this.races.eligibleTracks?.()[0]?.name,
+      deepVisited: this.progress.stashesOpened.some((id) => id.startsWith('depth:')),
+      met: this.talked.get(metKey) ?? 0,
+    };
+  }
+
+  private talkToPed(ped: Ped): void {
+    const idx = this.peds.peds.indexOf(ped);
+    const key = `ped:${idx}`;
+    const tree = streetTalk(idx * 977 + 13, this.talkContext(key));
+    this.talked.set(key, (this.talked.get(key) ?? 0) + 1);
+    // They stop and face you.
+    ped.heading = Math.atan2(-(this.player.position.z - ped.z), this.player.position.x - ped.x);
+    this.runTalk(tree);
+  }
+
+  private talkInRoom(pp: { room: InteriorRoom; role: string; model: Humanoid; seed: number }): void {
+    const key = `room:${pp.room.spot.id}:${pp.role}:${pp.seed}`;
+    const tree = interiorTalk(pp.role, { name: pp.room.spot.name, kind: pp.room.spot.kind }, pp.seed, this.talkContext(key));
+    this.talked.set(key, (this.talked.get(key) ?? 0) + 1);
+    const pos = this.player.position;
+    pp.model.root.rotation.y = Math.atan2(-(pos.z - pp.model.root.position.z), pos.x - pp.model.root.position.x);
+    this.runTalk(tree);
+  }
+
+  /** Shows a conversation page by page; choices move on and may do something. */
+  private runTalk(tree: TalkTree): void {
+    this.state = 'menu';
+    if (this.input.pointerLocked) document.exitPointerLock();
+    const show = (id: string): void => {
+      const n = tree.nodes[id];
+      if (!n) {
+        this.dialogue.close();
+        return;
+      }
+      this.dialogue.show(
+        tree.speaker,
+        n.text,
+        n.choices.map((c) => c.label),
+        (i) => {
+          const c = n.choices[i];
+          if (!c) return;
+          const keepOpen = c.action ? this.talkAction(c.action) : true;
+          if (c.next === 'end' || !keepOpen) this.dialogue.close();
+          else show(c.next);
+        },
+        () => {
+          if (this.state === 'menu' && !this.clinicMenu.isOpen && !this.casinoMenu.isOpen && !this.wardrobe?.isOpen) this.closeMenu();
+        },
+      );
+    };
+    show(tree.start);
+  }
+
+  /** Does a conversation's action. Returns false when it opened something else (the dialogue closes). */
+  private talkAction(a: TalkAction): boolean {
+    switch (a.kind) {
+      case 'waypoint':
+        this.cityMap.setWaypoint({ x: a.x, z: a.z });
+        this.hud.toast(`Waypoint set: ${a.label}`, 2200);
+        return true;
+      case 'shop':
+        this.dialogue.close();
+        this.openDeli();
+        return false;
+      case 'eat':
+        if (this.money < 15) {
+          this.hud.toast("You can't afford it.", 1800);
+          return true;
+        }
+        this.money -= 15;
+        this.player.health = PLAYER.maxHealth;
+        audio.cash();
+        this.hud.toast('Hot food. Back to full health.', 2200);
+        return true;
+      case 'drink':
+        if (this.money < 3) return true;
+        this.money -= 3;
+        this.player.health = Math.min(PLAYER.maxHealth, this.player.health + 15);
+        audio.cash();
+        return true;
+      case 'casino':
+        this.openCasino(a.game);
+        return false;
+      case 'tip':
+        if (this.money >= a.money) {
+          this.money -= a.money;
+          audio.cash();
+        }
+        return true;
+      case 'wardrobe':
+        this.dialogue.close();
+        this.state = 'menu';
+        this.openWardrobe(false);
+        return false;
+      case 'sell':
+        this.dialogue.close();
+        this.openPawn();
+        return false;
+      case 'play':
+        this.playArcade();
+        return true;
+    }
+    return true;
+  }
+
+  /** A point of interest in a room (the counter, a booth, a washer, a cabinet, the notice board, the cooler). */
+  private roomSpot(kind: InteriorRoom['spots'][number]['kind']): void {
+    switch (kind) {
+      case 'counter':
+        if (this.interior?.spot.kind === 'diner') this.talkAction({ kind: 'eat' });
+        else if (this.interior?.spot.kind === 'pawn') this.openPawn();
+        else this.openDeli();
+        break;
+      case 'cooler':
+        if (this.money < 3) this.hud.toast('$3 for a drink. You\'re short.', 1800);
+        else {
+          this.talkAction({ kind: 'drink' });
+          this.hud.toast('Ice cold. +15 health.', 1800);
+        }
+        break;
+      case 'booth':
+        this.player.health = Math.min(PLAYER.maxHealth, this.player.health + 5);
+        this.hud.toast('You take the weight off your feet for a minute.', 2000);
+        break;
+      case 'washer':
+        this.state = 'menu';
+        this.openWardrobe(false);
+        break;
+      case 'cabinet':
+        this.playArcade();
+        break;
+      case 'slots':
+      case 'blackjack':
+      case 'roulette':
+      case 'poker':
+        this.openCasino(kind);
+        break;
+      case 'bar':
+        if (this.money < 8) this.hud.toast("Eight bucks a drink. You're short.", 1800);
+        else {
+          this.money -= 8;
+          this.player.health = Math.min(PLAYER.maxHealth, this.player.health + 20);
+          audio.cash();
+          this.hud.toast(['A Lucky Strike, on the rocks. +20 health.', 'Something blue with an umbrella in it. +20 health.', 'Lou slides you a soda water. "On the house." It isn\'t. +20 health.'][Math.floor(this.gameTime) % 3], 2400);
+        }
+        break;
+      case 'board':
+        this.hud.toast(
+          [
+            'NOTICE: Streetmon must not be fed in the break room. This means you, Devon.',
+            'Claims: flood damage from the Central Green pond is NOT covered. Do not drive into the pond.',
+            'Safety bulletin: deep drain access is restricted. Contractors report "very large" Streetmon below level 2.',
+            'Lost: one Hustlepup, answers to "Biscuit". Last seen near the Chop Shop.',
+          ][Math.floor(this.gameTime / 7) % 4],
+          5000,
+        );
+        break;
+    }
+  }
+
+  /** A seat at one of the Empire Royale's games (src/ui/CasinoMenu.ts). */
+  private openCasino(game: CasinoGame): void {
+    this.state = 'menu';
+    if (this.input.pointerLocked) document.exitPointerLock();
+    this.casinoMenu.open({
+      game,
+      money: () => this.money,
+      spend: (n) => {
+        if (this.money < n) return false;
+        this.money -= n;
+        this.saveDirty = true;
+        audio.ui();
+        return true;
+      },
+      earn: (n) => {
+        this.money += n;
+        this.saveDirty = true;
+        audio.cash();
+      },
+      onWin: (amount, what) => {
+        this.hud.toast(`The room cheers: $${amount.toLocaleString('en-US')} on ${what}!`, 3000);
+        this.repEvent('jackpot', Math.min(6, Math.floor(amount / 2000) + 1));
+      },
+      onClose: () => this.closeMenu(),
+    });
+  }
+
+  /** The deli's shelves: capture items, an escape rope, at street prices. */
+  private openDeli(): void {
+    this.state = 'menu';
+    if (this.input.pointerLocked) document.exitPointerLock();
+    this.clinicMenu.open({
+      captureLocked: this.captureLock(),
+      title: this.interior?.spot.name ?? 'Corner deli',
+      stock: [
+        { id: 'cuffs', price: 60 },
+        { id: 'crate', price: 140 },
+        { id: 'net', price: 260 },
+        { id: 'lure', price: 180 },
+        { id: 'escapeRope', price: 320 },
+        { id: 'streetSnack', price: 50 },
+        { id: 'energyDrink', price: 170 },
+        { id: 'firstAid', price: 110 },
+        { id: 'repairKit', price: 380 },
+        { id: 'lockpick', price: 330 },
+      ].filter((x) => DATA.items.has(x.id)),
+      bag: this.bag,
+      money: () => this.money,
+      spend: (amount) => {
+        if (this.money < amount) return false;
+        this.money -= amount;
+        this.saveDirty = true;
+        audio.cash();
+        return true;
+      },
+      onClose: () => this.closeMenu(),
+      onTeam: () => this.openTeam(),
+    });
+  }
+
+  /** Goldie buys your spare items at half what they cost. */
+  private openPawn(): void {
+    const owned = [...this.bag.counts.entries()].filter(([id, n]) => n > 0 && DATA.items.has(id) && (itemSpec(id).price ?? 0) > 0);
+    this.state = 'menu';
+    if (this.input.pointerLocked) document.exitPointerLock();
+    if (!owned.length) {
+      this.dialogue.show('Goldie', "You've got nothing I want, sweetheart. Come back with something shiny.", ['Fair enough.'], () => this.dialogue.close(), () => this.closeMenu());
+      return;
+    }
+    const show = (): void => {
+      const list = [...this.bag.counts.entries()].filter(([id, n]) => n > 0 && DATA.items.has(id) && (itemSpec(id).price ?? 0) > 0).slice(0, 3);
+      const offer = (id: string): number => Math.max(5, Math.round((itemSpec(id).price ?? 0) * 0.5));
+      this.dialogue.show(
+        'Goldie',
+        list.length ? 'Half what you paid, cash on the counter. Take it or leave it.' : 'That\'s everything. Pleasure doing business.',
+        [...list.map(([id, n]) => `Sell a ${itemSpec(id).name} for $${offer(id)} (you have ${n})`), 'Done'],
+        (i) => {
+          const e = list[i];
+          if (!e) return this.dialogue.close();
+          if (this.bag.take(e[0])) {
+            this.money += offer(e[0]);
+            audio.cash();
+            this.saveDirty = true;
+          }
+          show();
+        },
+        () => this.closeMenu(),
+        `$${this.money.toLocaleString('en-US')}`,
+      );
+    };
+    show();
+  }
+
+  /** A dollar in the racer cabinet: a short race against the high score. */
+  private playArcade(): void {
+    if (this.money < 1) {
+      this.hud.toast('No change. It takes a dollar.', 1800);
+      return;
+    }
+    this.money -= 1;
+    const lap = 41 + Math.random() * 12;
+    const best = 43.2;
+    if (lap < best) {
+      this.money += 20;
+      this.hud.toast(`${lap.toFixed(2)} s! A new high score on the Streetmon Racer: the machine pays out $20.`, 3500);
+    } else this.hud.toast(`${lap.toFixed(2)} s. The high score ("RUST", ${best} s) stands.`, 3000);
+    audio.ui();
+  }
+
+  /** The safehouse door you're standing at (on foot, street level), if any. */
+  private atSafehouse(): SafehouseSpot | null {
+    const p = this.player;
+    if (!p.onFoot || p.dead || this.layers.current !== 'street' || p.position.y > 3) return null;
+    for (const h of this.safeSpots) if (Math.hypot(p.position.x - h.x, p.position.z - h.z) < SAFEHOUSE.useRadius) return h;
+    return null;
+  }
+
+  /** E at a safehouse door: buy it, or go in (save, rest, sleep). */
+  private openSafehouse(h: SafehouseSpot): void {
+    if (this.battles.active || this.races.active || this.heists.active) {
+      this.hud.toast('Not now: finish what you started first.', 2500);
+      return;
+    }
+    if (!this.safehouses.owned.includes(h.id)) {
+      const price = h.price;
+      this.state = 'menu';
+      if (this.input.pointerLocked) document.exitPointerLock();
+      const offer = (note = ''): void =>
+        this.dialogue.show(
+          h.name,
+          `${note}For sale: a quiet place to call home in ${h.district[0].toUpperCase()}${h.district.slice(1)}. Go in to save, patch yourself up, rest your team and sleep. Get wasted and you'll wake up here. $${price.toLocaleString('en-US')}.`,
+          [`Buy it ($${price.toLocaleString('en-US')})`, 'Leave'],
+          (i) => {
+            if (i !== 0) return this.dialogue.close();
+            if (this.money < price) return offer(`You're $${(price - this.money).toLocaleString('en-US')} short. `);
+            this.money -= price;
+            this.safehouses.owned.push(h.id);
+            this.safeView.setOwned(this.safehouses.owned);
+            audio.cash();
+            this.hud.showBig('SAFEHOUSE BOUGHT', '#5dff8a', 2600);
+            this.dialogue.close();
+            this.enterSafehouse(h);
+          },
+          () => this.closeMenu(),
+          `$${this.money.toLocaleString('en-US')}`,
+        );
+      offer();
+      return;
+    }
+    this.enterSafehouse(h);
+  }
+
+  private enterSafehouse(h: SafehouseSpot): void {
+    if (this.wanted.stars > 0) {
+      this.hud.toast("Lose the cops first: you can't lead them to your door.", 3000);
+      return;
+    }
+    audio.door();
+    this.player.health = PLAYER.maxHealth;
+    this.party.healAll(magazine);
+    this.safehouses.last = h.id;
+    this.safehouses.visits[h.id] = (this.safehouses.visits[h.id] ?? 0) + 1;
+    this.autosaveNote = h.name;
+    this.autosave();
+    this.saveDirty = false;
+    this.state = 'menu';
+    if (this.input.pointerLocked) document.exitPointerLock();
+    const fmt = (hr: number): string => `${String(Math.floor(hr)).padStart(2, '0')}:00`;
+    this.dialogue.show(
+      h.name,
+      "Home. You're patched up, the team's rested, and the game is saved.",
+      [`Sleep till morning (${fmt(SAFEHOUSE.wakeMorning)})`, `Sleep till evening (${fmt(SAFEHOUSE.wakeEvening)})`, 'Head back out'],
+      (i) => {
+        if (i < 2) this.sleepTo(i === 0 ? SAFEHOUSE.wakeMorning : SAFEHOUSE.wakeEvening);
+        this.dialogue.close();
+      },
+      () => this.closeMenu(),
+      `Visits ${this.safehouses.visits[h.id]}`,
+    );
+  }
+
+  /** Sleeps through to `wake` o'clock (a new day if it passes midnight), then saves again. */
+  private sleepTo(wake: number): void {
+    const h = sleepHours(this.hour, wake);
+    const next = this.hour + h;
+    if (next >= 24) this.dayCount += Math.floor(next / 24);
+    this.hour = next % 24;
+    this.env.setTime(this.hour);
+    this.hud.toast(`You slept ${Math.round(h)} h.`, 2500);
+    this.autosaveNote = 'Slept';
+    this.autosave();
+  }
+
+  private atDealer(): boolean {
+    const p = this.player;
+    if (!p.onFoot || p.dead || this.layers.current !== 'street') return false;
+    const s = this.dealerSpot;
+    return Math.hypot(p.position.x - s.x, p.position.z - s.doorZ) < DEALERSHIP.useRadius;
+  }
+
+  /** Performance class of a car as it is now (parts included). */
+  private carClassOf(car: Car): { cls: CarClass; index: number } {
+    const e = upgradeEffect(car.upgrades);
+    const index = performanceIndex(car.spec, { topSpeed: e.topSpeed, acceleration: e.acceleration, grip: e.grip, mass: e.mass });
+    return { cls: classOf(index), index };
+  }
+
+  /** What the showroom pays for a car: 60% of its price and the parts on it. */
+  private carValue(car: Car): number {
+    let v = car.paid || car.spec.price;
+    const u = car.upgrades ?? NO_UPGRADES;
+    for (const part of Object.keys(u) as UpgradePart[]) for (let l = 0; l < u[part]; l++) v += upgradePrice(part, l, car.spec.price);
+    return Math.round((v * DEALERSHIP.sellShare) / 50) * 50;
+  }
+
+  /** Makes a car one of yours: it never despawns, it's saved, and the Chop Shop knows it. */
+  private adopt(car: Car, paid: number): string {
+    if (!car.tuneId) car.tuneId = `ride-${Date.now().toString(36)}-${Math.floor(Math.random() * 1e4).toString(36)}`;
+    car.bought = true;
+    car.paid = paid;
+    this.rides.set(car.tuneId, car);
+    this.tuning.registerVehicle(car.tuneId);
+    this.vehicles.owned.add(car);
+    this.saveDirty = true;
+    return car.tuneId;
+  }
+
+  private openDealer(): void {
+    if (this.state !== 'playing') return;
+    this.state = 'menu';
+    if (this.input.pointerLocked) document.exitPointerLock();
+    audio.door();
+    const S = this.dealerSpot;
+    const est = (spec: VehicleSpec): number => {
+      // 0-100 estimate from the engine's pull with the drag-off taper the car model uses.
+      let v = 0;
+      let t = 0;
+      while (v < 27.8 && t < 60) {
+        const k = Math.min(1, v / spec.maxSpeed);
+        v += ((spec.engineForce * (1 - k * k)) / spec.mass) * 0.05;
+        t += 0.05;
+      }
+      return t;
+    };
+    this.garageMenu.openDealer({
+      money: () => this.money,
+      forSale: () =>
+        VEHICLES.filter((v) => v.price > 0 && v.id !== 'beater')
+          .sort((a, b) => a.price - b.price)
+          .map((v) => {
+            const index = performanceIndex(v);
+            return { id: v.id, name: v.name, blurb: v.blurb ?? '', cls: classOf(index), index, topSpeedKmh: Math.round(v.maxSpeed * 3.6), zeroToHundred: est(v), drive: v.drive, seats: v.style === 'bus' ? 30 : v.style === 'limo' ? 8 : v.style === 'van' || v.style === 'ambulance' || v.style === 'pickup' ? 3 : v.style === 'sports' || v.style === 'supercar' ? 2 : 5, price: v.price, colors: v.colors };
+          }),
+      owned: () =>
+        [...this.rides.values()]
+          .filter((c) => !c.disposed && !c.destroyed && (c.bought || this.tuning.isTuned(c.tuneId ?? '')))
+          .map((c) => ({ id: c.tuneId!, name: c.spec.name, cls: this.carClassOf(c).cls, color: c.color, value: this.carValue(c), here: Math.hypot(c.position.x - S.x, c.position.z - S.z) < 40 && c !== this.player.vehicle, upgrades: Object.values(c.upgrades ?? NO_UPGRADES).reduce((a, b) => a + b, 0) })),
+      buy: (id, color) => {
+        const spec = getSpec(id);
+        if (this.money < spec.price) return { ok: false, reason: `You need $${spec.price.toLocaleString('en-US')}.` };
+        const d = S.delivery;
+        if (this.vehicles.cars.some((c) => !c.disposed && Math.hypot(c.position.x - d.x, c.position.z - d.z) < 5)) return { ok: false, reason: 'The delivery bay is blocked. Move the car out of it first.' };
+        this.money -= spec.price;
+        audio.cash();
+        const car = this.vehicles.spawn(spec, d.x, d.z, d.heading, color);
+        this.adopt(car, spec.price);
+        this.tut.fire('boughtCar');
+        return { ok: true };
+      },
+      sell: (id) => {
+        const car = this.rides.get(id);
+        if (!car || car.disposed) return { ok: false, reason: "That car isn't here." };
+        if (car === this.player.vehicle) return { ok: false, reason: 'Get out of it first.' };
+        const cash = this.carValue(car);
+        const back = this.tuning.removeVehicle(id);
+        this.rides.delete(id);
+        this.vehicles.owned.delete(car);
+        this.riders.set(car, []);
+        this.vehicles.remove(car);
+        this.money += cash;
+        audio.cash();
+        if (back.length) this.hud.toast(`${back.map((b) => (this.findCreature(b) ? displayName(this.findCreature(b)!) : 'Your Streetmon')).join(', ')} came back to your team.`, 3500);
+        this.saveDirty = true;
+        return { ok: true, cash };
+      },
+      onClose: () => this.closeMenu(),
+    });
+  }
+
+  /** The showroom keeps a couple of cars on display out front; stolen ones are replaced. */
+  private updateDisplayCars(dt: number): void {
+    this.displayCheck -= dt;
+    if (this.displayCheck > 0) return;
+    this.displayCheck = 2;
+    const S = this.dealerSpot;
+    for (const c of [...this.displayCars]) if (c.disposed || c.driver || Math.hypot(c.position.x - S.x, c.position.z - S.z) > 30) this.displayCars.delete(c);
+    const p = this.focus();
+    if (Math.hypot(p.x - S.x, p.z - S.z) > 160 || Math.hypot(p.x - S.x, p.z - S.z) < 25) return;
+    const picks = VEHICLES.filter((v) => v.price >= 20000 && v.style !== 'bus');
+    for (const b of S.bays) {
+      if (this.vehicles.cars.some((c) => !c.disposed && Math.hypot(c.position.x - b.x, c.position.z - b.z) < 5)) continue;
+      const spec = picks[Math.floor(Math.random() * picks.length)];
+      const car = this.vehicles.spawn(spec, b.x, b.z, b.heading, spec.colors[Math.floor(Math.random() * spec.colors.length)]);
+      car.input.park = true;
+      this.vehicles.owned.add(car);
+      this.displayCars.add(car);
+    }
+  }
+
+  /** Puts a wrecked car of yours in a Chop Shop bay, barely running, with its parts and paint. */
+  private towToShop(old: Car): boolean {
+    const s = this.chopSpot;
+    const dir = s.side > 0 ? 1 : -1;
+    const bays = [...s.bays, ...[3, 4, 5].map((k) => ({ x: s.x - dir * k * 7.5, z: s.z, heading: s.heading }))];
+    const bay = bays.find((b) => !this.vehicles.cars.some((c) => !c.disposed && c !== old && Math.hypot(c.position.x - b.x, c.position.z - b.z) < 5));
+    if (!bay) return false;
+    const car = this.vehicles.spawn(old.spec, bay.x, bay.z, bay.heading, old.color);
+    car.setUpgrades(old.upgrades);
+    car.health = Math.max(1, old.spec.health * 0.15);
+    car.tyresPopped = false;
+    car.input.park = true;
+    this.adopt(car, old.paid);
+    return true;
+  }
+
+  /** Parts and body shop for the car on the lift (from the Chop Shop screen). */
+  private openParts(car: Car): void {
+    const id = car.tuneId!;
+    const levels = (): UpgradeLevels => ({ ...(car.upgrades ?? NO_UPGRADES) });
+    const stockIndex = performanceIndex(car.spec);
+    this.garageMenu.openParts({
+      carName: car.spec.name,
+      cls: () => this.carClassOf(car).cls,
+      index: () => this.carClassOf(car).index,
+      money: () => this.money,
+      levels,
+      price: (part) => upgradePrice(part, levels()[part], car.spec.price || 8000),
+      buy: (part) => {
+        const lv = levels();
+        if (lv[part] >= MAX_LEVEL) return { ok: false, reason: 'Already maxed.' };
+        const price = upgradePrice(part, lv[part], car.spec.price || 8000);
+        if (this.money < price) return { ok: false, reason: `You need $${price.toLocaleString('en-US')}.` };
+        this.money -= price;
+        audio.cash();
+        lv[part]++;
+        car.setUpgrades(lv);
+        if (!car.bought) this.adopt(car, car.spec.price);
+        // The Streetmon tune is a multiplier on the built car: recompute from the new base.
+        this.tuning.recalculate(car.tuneId!);
+        this.saveDirty = true;
+        return { ok: true };
+      },
+      health: () => {
+        const missing = car.spec.health - car.health;
+        return { hp: car.health, max: car.spec.health, cost: missing > 1 ? Math.max(50, Math.round(((missing / car.spec.health) * (car.spec.price || 8000) * 0.12) / 10) * 10) : 0 };
+      },
+      repair: () => {
+        const missing = car.spec.health - car.health;
+        const cost = Math.max(50, Math.round(((missing / car.spec.health) * (car.spec.price || 8000) * 0.12) / 10) * 10);
+        if (this.money < cost) return { ok: false, reason: `You need $${cost}.` };
+        this.money -= cost;
+        audio.cash();
+        car.health = car.spec.health;
+        car.tyresPopped = false;
+        car.flatFor = 0;
+        return { ok: true };
+      },
+      colors: [...new Set([...car.spec.colors, '#ff3fa4', '#21e6ff', '#ffd23f', '#111111', '#f2f2f2', '#6a2cff'])],
+      color: () => car.color,
+      resprayCost: Math.max(100, Math.round((car.spec.price || 8000) * 0.02)),
+      respray: (color) => {
+        const cost = Math.max(100, Math.round((car.spec.price || 8000) * 0.02));
+        if (color === car.color) return { ok: false, reason: "It's already that colour." };
+        if (this.money < cost) return { ok: false, reason: `You need $${cost}.` };
+        this.money -= cost;
+        audio.cash();
+        car.respray(color);
+        return { ok: true };
+      },
+      stats: () => {
+        const e = upgradeEffect(car.upgrades);
+        const sp = car.spec;
+        return [
+          ['Performance index', `${Math.round(stockIndex)} (${classOf(stockIndex)})`, `${Math.round(this.carClassOf(car).index)} (${this.carClassOf(car).cls})`],
+          ['Top speed', `${Math.round(sp.maxSpeed * 3.6)} km/h`, `${Math.round(sp.maxSpeed * e.topSpeed * 3.6)} km/h`],
+          ['Pull', `${(sp.engineForce / sp.mass).toFixed(1)} m/s²`, `${((sp.engineForce * e.acceleration) / (sp.mass * e.mass)).toFixed(1)} m/s²`],
+          ['Grip', sp.grip.toFixed(2), (sp.grip * e.grip).toFixed(2)],
+          ['Brakes', '100%', `${Math.round(e.brakes * 100)}%`],
+          ['Steering', '100%', `${Math.round(e.steering * 100)}%`],
+          ['Weight', `${Math.round(sp.mass)} kg`, `${Math.round(sp.mass * e.mass)} kg`],
+          ['Durability', `${sp.health} HP`, `${Math.round(sp.health * e.durability)} HP`],
+          ['Nitrous', 'none', e.nitrous ? `${e.nitrous} s` : 'none'],
+        ];
+      },
+      onClose: () => {
+        // Back to the Chop Shop screen (it re-reads the car).
+        if (this.chopCar && this.rides.has(id)) this.openChopMenu(this.chopCar);
+        else this.closeMenu();
+      },
+    });
   }
 
   /** A Streetmon wherever it is (party, stash or riding in a car), as the tuning system sees it. */
@@ -3796,21 +5311,29 @@ export class Game {
     this.fadeEl.style.transition = 'opacity 0.6s';
     this.fadeEl.style.opacity = '1';
     this.chopLift = 1;
-    const id = car.tuneId;
     window.setTimeout(() => {
-      this.chopMenu.open({
-        carName: car.spec.name,
-        slots: () => this.tuning.getSlots(id),
-        stats: () => this.tuning.getVehicleStats(id),
-        candidates: () =>
-          [...this.party.members.map((c) => [c, 'party'] as const), ...this.party.stash.map((c) => [c, 'stash'] as const)].map(([c, where]) => ({ ...this.streetmonInfo(c.uid)!, where, shiny: c.shiny })),
-        canSlot: (slot: SlotName, mid: string) => this.tuning.canSlot(slot, mid),
-        slot: (slot: SlotName, mid: string) => this.tuning.slotStreetmon(id, slot, mid),
-        unslot: (slot: SlotName) => this.tuning.unslotStreetmon(id, slot),
-        onClose: () => this.closeChopShop(),
-      });
+      this.openChopMenu(car);
       this.fadeEl.style.opacity = '0';
     }, 650);
+  }
+
+  private openChopMenu(car: Car): void {
+    const id = car.tuneId!;
+    this.chopMenu.open({
+      carName: car.spec.name,
+      slots: () => this.tuning.getSlots(id),
+      stats: () => this.tuning.getVehicleStats(id),
+      candidates: () =>
+        [...this.party.members.map((c) => [c, 'party'] as const), ...this.party.stash.map((c) => [c, 'stash'] as const)].map(([c, where]) => ({ ...this.streetmonInfo(c.uid)!, where, shiny: c.shiny })),
+      canSlot: (slot: SlotName, mid: string) => this.tuning.canSlot(slot, mid),
+      slot: (slot: SlotName, mid: string) => this.tuning.slotStreetmon(id, slot, mid),
+      unslot: (slot: SlotName) => this.tuning.unslotStreetmon(id, slot),
+      onParts: () => {
+        this.chopMenu.close(false);
+        this.openParts(car);
+      },
+      onClose: () => this.closeChopShop(),
+    });
   }
 
   private closeChopShop(): void {
@@ -3819,10 +5342,10 @@ export class Game {
     this.chopLift = 0;
     this.fadeEl.style.opacity = '0';
     if (car?.tuneId) {
-      if (this.tuning.isTuned(car.tuneId)) {
+      if (this.tuning.isTuned(car.tuneId) || car.bought) {
         this.vehicles.owned.add(car);
         const n = this.tuning.abilities(car.tuneId).length;
-        this.hud.toast(`Tuned! ${n ? 'Your Streetmon ride along: see the panel above the speedometer.' : ''}`, 3500);
+        if (this.tuning.isTuned(car.tuneId)) this.hud.toast(`Tuned! ${n ? 'Your Streetmon ride along: see the panel above the speedometer.' : ''}`, 3500);
       } else {
         // Nothing installed: it's just a car again.
         this.tuning.removeVehicle(car.tuneId);
@@ -3839,6 +5362,33 @@ export class Game {
   private updateTuning(dt: number): void {
     this.tuning.update(dt);
     this.tuneWorld.update(dt);
+    // Your tuned rides show who's in them (within sight; far-off ones let their models go).
+    this.ridersCheck -= dt;
+    if (this.ridersCheck <= 0) {
+      this.ridersCheck = 0.25;
+      const cam = this.camera.position;
+      for (const [id, car] of this.rides) {
+        if (car.disposed || car.destroyed) continue;
+        this.riders.set(car, car.position.distanceTo(cam) < 220 && this.layers.current !== 'sewer' ? this.ridersOf(id) : []);
+      }
+      for (const car of this.riders.cars()) if (!this.rides.has(car.tuneId ?? '') && !this.raceWorld.isRacer(car)) this.riders.set(car, []);
+    }
+    this.riders.update(dt, this.camera.position);
+    this.dealerView.update(this.gameTime);
+    this.updateDisplayCars(dt);
+    // The surface under every driven car: grass and dirt have less grip (rally cars keep most).
+    for (const c of this.vehicles.cars) {
+      if (c.disposed || !c.driver) continue;
+      const off = c.position.y < 3 && rectContains(this.layout.park, c.position.x, c.position.z) && !this.onRoad(c.position.x, c.position.z);
+      c.surfaceGrip = off ? c.spec.offroad ?? 0.7 : 1;
+    }
+    const mine = this.player.vehicle;
+    this.hud.setNitro(mine && mine.nitro.capacity > 0 ? { charge01: mine.nitro.fraction, active: mine.nitro.active } : null);
+    if (mine?.nitro.active && Math.random() < 0.6) {
+      const f = mine.forward(this.tmp);
+      const back = mine.spec.length / 2 + 0.1;
+      this.effects.muzzle(mine.position.x - f.x * back, mine.position.y + 0.05, mine.position.z - f.z * back, 1.1);
+    }
     this.chopView.update(this.gameTime, this.chopLift);
     // A wrecked (or lost) ride gives its Streetmon back.
     for (const [id, car] of [...this.rides]) {
@@ -3847,7 +5397,13 @@ export class Game {
         const back = this.tuning.removeVehicle(id);
         this.rides.delete(id);
         this.vehicles.owned.delete(car);
-        if (back.length) this.hud.toast(`Your tuned ${car.spec.name} is wrecked. ${back.map((b) => (this.findCreature(b) ? displayName(this.findCreature(b)!) : 'Your Streetmon')).join(', ')} made it back to your team.`, 4500);
+        this.riders.set(car, []);
+        const who = back.map((b) => (this.findCreature(b) ? displayName(this.findCreature(b)!) : 'Your Streetmon')).join(', ');
+        if (car.bought) {
+          // A car you own is towed to the Chop Shop: it comes back wrecked (repair it there).
+          const w = this.towToShop(car);
+          this.hud.toast(`Your ${car.spec.name} was wrecked and towed to the Chop Shop${w ? '' : ' (it will be there once a bay is free)'}.${back.length ? ` ${who} made it back to your team.` : ''}`, 5000);
+        } else if (back.length) this.hud.toast(`Your tuned ${car.spec.name} is wrecked. ${who} made it back to your team.`, 4500);
       }
     }
     const car = this.player.vehicle;
@@ -3866,7 +5422,11 @@ export class Game {
   /** Minimap: the Chop Shop, your rides, and (with Early Warning Radar) everything it picks up. */
   private tuningMarkers(): Array<{ x: number; z: number; color: string; size: number }> {
     if (this.layers.current === 'sewer') return [];
-    const out = [{ x: this.chopSpot.x, z: this.chopSpot.z, color: '#ff3fa4', size: 10 }];
+    const out = [
+      { x: this.chopSpot.x, z: this.chopSpot.z, color: '#ff3fa4', size: 10 },
+      { x: this.dealerSpot.x, z: this.dealerSpot.doorZ, color: '#21e6ff', size: 10 },
+      ...this.safeSpots.filter((h) => this.safehouses.owned.includes(h.id)).map((h) => ({ x: h.x, z: h.z, color: '#5dff8a', size: 8 })),
+    ];
     for (const car of this.rides.values()) if (car !== this.player.vehicle && !car.disposed && this.tuning.isTuned(car.tuneId ?? '')) out.push({ x: car.position.x, z: car.position.z, color: '#ffd6f0', size: 7 });
     const car = this.player.vehicle;
     const tid = car?.tuneId;
@@ -3886,17 +5446,35 @@ export class Game {
   private garageSave(): SaveData['garage'] {
     const saved = this.tuning.serialize();
     const rides: SaveData['garage']['rides'] = [];
-    for (const [id, slots] of Object.entries(saved.vehicles)) {
-      const car = this.rides.get(id);
+    for (const [id, car] of this.rides) {
       if (!car || car.destroyed || car.disposed) continue;
-      rides.push({ id, spec: car.spec.id, color: car.color, slots: { ...slots } });
+      const slots = saved.vehicles[id] ?? { engineBay: null, trunk: null, roofRack: null };
+      // Not tuned and not bought (someone's car on the lift): it isn't yours to keep.
+      if (!car.bought && !Object.values(slots).some(Boolean)) continue;
+      const p = car.position;
+      const onStreet = p.y < 3 && p.y > -1;
+      rides.push({
+        id,
+        spec: car.spec.id,
+        color: car.color,
+        slots: { ...slots },
+        upgrades: car.upgrades ? { ...car.upgrades } : undefined,
+        paid: car.paid || undefined,
+        health: Math.round(car.health),
+        at: onStreet ? { x: Math.round(p.x * 10) / 10, z: Math.round(p.z * 10) / 10, heading: Math.round(car.heading * 100) / 100 } : undefined,
+      });
     }
     return { rides, streetmon: [...this.garageMon.values()].map(creatureToJson) };
   }
 
   /** Brings tuned rides back (parked in the bays by the Chop Shop) with their Streetmon. */
   private garageLoad(g: SaveData['garage']): void {
-    for (const car of this.rides.values()) this.vehicles.owned.delete(car);
+    for (const car of this.rides.values()) {
+      this.vehicles.owned.delete(car);
+      this.riders.set(car, []);
+      // The cars from before the load go (a save imported mid-game would otherwise double them).
+      if (!car.disposed && car !== this.player.vehicle) this.vehicles.remove(car);
+    }
     this.rides.clear();
     this.garageMon.clear();
     for (const c of g.streetmon) this.garageMon.set(c.uid, c);
@@ -3904,8 +5482,15 @@ export class Game {
     const dir = s.side > 0 ? 1 : -1;
     g.rides.forEach((r, i) => {
       const bay = s.bays[i] ?? { x: s.x - dir * (i + 1) * 7.5, z: s.z, heading: s.heading };
-      const car = this.vehicles.spawn(getSpec(r.spec), bay.x, bay.z, bay.heading, r.color);
+      // Where it was left, unless something is parked there now; else a Chop Shop bay.
+      const at = r.at && !this.vehicles.cars.some((c) => !c.disposed && Math.hypot(c.position.x - r.at!.x, c.position.z - r.at!.z) < 4) ? r.at : bay;
+      for (const c of [...this.vehicles.cars]) if (!c.disposed && !c.driver && Math.hypot(c.position.x - at.x, c.position.z - at.z) < 5) this.vehicles.remove(c);
+      const car = this.vehicles.spawn(getSpec(r.spec), at.x, at.z, at.heading, r.color);
       car.tuneId = r.id;
+      car.bought = !!r.paid;
+      car.paid = r.paid ?? 0;
+      if (r.upgrades) car.setUpgrades(sanitizeUpgrades(r.upgrades));
+      if (r.health !== undefined) car.health = Math.max(1, Math.min(car.spec.health, r.health));
       this.rides.set(r.id, car);
       this.vehicles.owned.add(car);
     });
@@ -4006,6 +5591,7 @@ export class Game {
     this.heists.on('resolved', (r) => {
       this.saveDirty = true;
       if (r.ok) {
+        this.autosaveFor('Heist complete');
         this.hud.showBig('SCORE!', '#4be37a', 3200);
         const parts = [`$${r.cash.toLocaleString('en-US')}`];
         if (r.spoiled) parts.push(`$${r.spoiled.toLocaleString('en-US')} lost to dye packs`);
@@ -4127,6 +5713,350 @@ export class Game {
       };
     const f = this.focus();
     this.colliderStream.refresh(f.x, f.z);
+  }
+
+  /** What the weather does each frame: the sky and light, grip, sight, the crowd, wild Streetmon, the grass. */
+  private wetMats: { ground: THREE.MeshStandardMaterial | null; sidewalk: THREE.MeshStandardMaterial | null; markings: THREE.MeshStandardMaterial | null } | null = null;
+
+  private applyWeather(dt: number): void {
+    const w = this.weather.params();
+    const fx = weatherEffects(w);
+    const n = this.hoodNow;
+    this.env.applyAtmosphere({ cloud: w.cloud, fog: w.fog, rain: w.rain, flash: this.weather.flash, tint: n?.tint ?? 0xffffff, haze: n?.haze ?? 0 });
+    CAR_WEATHER.grip = fx.grip;
+    VISION.car.range = this.visionBase.car * fx.vision;
+    VISION.foot.range = this.visionBase.foot * fx.vision;
+    VISION.patrol.range = this.visionBase.patrol * fx.vision;
+    if (!this.crowdBase.peds) this.crowdBase = { peds: this.peds.maxPeds, cars: this.traffic.maxCars };
+    this.peds.maxPeds = Math.max(8, Math.round(this.crowdBase.peds * fx.crowd));
+    this.spawns.typeBoost = fx.types;
+    FLORA_WIND.time.value += dt * (1 + w.wind * 1.5);
+    FLORA_WIND.strength.value = 0.25 + w.wind * 0.9;
+    // Wet streets: the asphalt goes dark and glossy (it reflects the sky and the lamps), the
+    // pavement less so, and the paint on the markings sheens up.
+    if (!this.wetMats) {
+      const find = (name: string): THREE.MeshStandardMaterial | null => (this.cityRoot?.getObjectByName(name) as THREE.Mesh | undefined)?.material as THREE.MeshStandardMaterial | null;
+      this.wetMats = { ground: find('ground'), sidewalk: find('sidewalk'), markings: find('markings') };
+    }
+    const wet = w.wet;
+    const wm = this.wetMats;
+    if (wm.ground) {
+      wm.ground.roughness = 1 - 0.6 * wet;
+      wm.ground.color.setScalar(1 - 0.55 * wet);
+    }
+    if (wm.sidewalk) {
+      wm.sidewalk.roughness = 1 - 0.35 * wet;
+      wm.sidewalk.color.setScalar(1 - 0.35 * wet);
+    }
+    if (wm.markings) wm.markings.roughness = 0.7 - 0.45 * wet;
+    // Thunder follows the flash (further storms rumble later and softer).
+    if (this.weather.flash === 1 && this.layers.current !== 'sewer') window.setTimeout(() => audio.explosion?.({ x: this.camera.position.x + 400, y: 200, z: this.camera.position.z + 300 }), 700 + Math.random() * 1500);
+  }
+
+  /** Crossing into a named neighbourhood: its name on screen, its light, its people. */
+  private updateNeighbourhood(dt: number): void {
+    if (this.layers.current !== 'street' && this.layers.current !== 'roof') return;
+    const f = this.focus();
+    const n = this.hood.update(neighbourhoodAt(this.layout, f.x, f.z), dt);
+    if (!n) return;
+    const first = this.hoodNow === null;
+    this.hoodNow = n;
+    if (!first || this.gameTime > 3) this.hud.showDistrict(n.name, n.tagline);
+  }
+
+  /** People say things as you pass (speech bubbles), now and then. */
+  private updateChatter(dt: number): void {
+    this.chatterIn -= dt;
+    if (this.chatterIn > 0 || this.battles.locksPlayer) return;
+    const seed = Math.floor(Math.random() * 1e6);
+    const pos = this.player.position;
+    const head = (x: () => number, y: () => number, z: () => number) => () => ({ x: x(), y: y(), z: z() });
+    if (this.interior) {
+      const ppl = this.roomPeople.filter((pp) => pp.room === this.interior && Math.hypot(pp.model.root.position.x - pos.x, pp.model.root.position.z - pos.z) < 18);
+      this.chatterIn = chatterGap(this.interior.spot.kind === 'casino' ? 'casino' : 'room', seed);
+      const pp = ppl[seed % Math.max(1, ppl.length)];
+      const line = pp ? roomChatter(pp.role, seed) : '';
+      if (pp && line) this.bubbles.say(`room-${pp.role}-${pp.seed}`, head(() => pp.model.root.position.x, () => pp.model.root.position.y + 2.05, () => pp.model.root.position.z), line, pp.role === 'gambler' && /!/.test(line) ? 'shout' : 'say');
+      // The casino floor rings.
+      if (this.interior.spot.kind === 'casino' && seed % 4 === 0) audio.ui();
+      return;
+    }
+    if (this.layers.current === 'sewer') {
+      this.chatterIn = chatterGap('sewer', seed);
+      const n = this.people.find((q) => q.model && Math.hypot(q.x - pos.x, q.z - pos.z) < 16);
+      if (n) this.bubbles.say(`sewer-${n.spec.id}`, () => ({ x: n.x, y: n.y + 2.05, z: n.z }), sewerChatter(seed), 'say');
+      return;
+    }
+    this.chatterIn = chatterGap('street', seed);
+    const near = this.peds.peds.filter((q) => q.role === 'civ' && (q.state === 'walk' || q.state === 'wait') && Math.hypot(q.x - pos.x, q.z - pos.z) < 22);
+    if (!near.length) return;
+    const q = near[seed % near.length];
+    const d = Math.hypot(q.x - pos.x, q.z - pos.z);
+    const line = streetChatter(seed, {
+      hour: this.hour,
+      weather: this.weather.dominant,
+      mood: civicTier(this.civic).mood,
+      wanted: this.wanted.stars,
+      district: this.hoodNow?.name ?? '',
+      districtLine: this.hoodNow ? this.hoodNow.lines[seed % this.hoodNow.lines.length] : undefined,
+      near: d < 5,
+      gangFight: !!this.gangs?.fighting,
+    });
+    if (line) this.bubbles.say(`ped-${this.peds.peds.indexOf(q)}`, () => (q.state === 'dead' ? null : { x: q.x, y: q.y + 2.05, z: q.z }), line, this.gangs?.fighting ? 'shout' : 'say');
+  }
+
+  /** Fuel drums and transformer boxes: where they stand, and what they do when they go. */
+  private setupHazards(): void {
+    this.hazards = new EnvHazards({
+      scene: this.scene,
+      world: this.world,
+      wet: () => this.weather.params().wet,
+      time: () => this.gameTime,
+      blast: (x, y, z, r, dmg) => {
+        this.effects.explosion(x, y, z);
+        audio.explosion({ x, y, z });
+        for (const q of this.peds.peds) {
+          if (q.state === 'dead' || Math.abs(q.y - y) > 4) continue;
+          const d = Math.hypot(q.x - x, q.z - z);
+          if (d < r) this.peds.damage(q, dmg * (1 - d / r), q.x - x, q.z - z, 9 * (1 - d / r) + 3);
+        }
+        for (const c of this.vehicles.cars) if (!c.disposed && Math.hypot(c.position.x - x, c.position.z - z) < r) c.damage(dmg * 2, 'explosive');
+        this.weapons.creatureBlast?.(x, z, r, dmg);
+        this.onExplosion(x, y, z, r, dmg);
+        this.crime('explosion', this.tmp.set(x, y, z));
+      },
+      shock: (x, y, z, r, dmg, stun) => {
+        this.effects.sparks(x, y + 0.6, z, 30);
+        audio.bulletHit(true, { x, y, z });
+        for (const q of this.peds.peds) {
+          if (q.state === 'dead' || Math.abs(q.y - y) > 3) continue;
+          const d = Math.hypot(q.x - x, q.z - z);
+          if (d >= r) continue;
+          this.peds.damage(q, dmg * (1 - d / (r * 1.4)), q.x - x, q.z - z, 0);
+          if ((q.state as string) !== 'dead') {
+            q.state = 'down';
+            q.timer = stun;
+          }
+        }
+        this.weapons.creatureBlast?.(x, z, r, dmg * 0.6);
+        const p = this.player;
+        if (!p.vehicle && Math.hypot(p.position.x - x, p.position.z - z) < r && Math.abs(p.feet.y - y) < 2) {
+          p.knockBack(0, 1, 0, stun * 0.5);
+          if (p.takeDamage(dmg * 0.5, 'env')) this.kill('Electrocuted');
+        }
+        if (this.weather.params().wet > 0.3) this.hud.toast('The wet street carries the charge!', 1600);
+      },
+    });
+    const spots: HazardSpot[] = [];
+    // Drums: in the alleys (by the dumpsters), on the docks, on the gang corners.
+    for (const a of this.layout.alleys ?? []) {
+      const r = a.rect;
+      const long = r.x1 - r.x0 > r.z1 - r.z0;
+      spots.push({ kind: 'drum', x: long ? r.x0 + (r.x1 - r.x0) * 0.7 : r.x1 - 0.6, y: this.peds.groundY(long ? r.x0 + (r.x1 - r.x0) * 0.7 : r.x1 - 0.6, long ? r.z1 - 0.6 : r.z0 + (r.z1 - r.z0) * 0.7), z: long ? r.z1 - 0.6 : r.z0 + (r.z1 - r.z0) * 0.7 });
+    }
+    for (const t of this.gangs.turfs) for (const [dx, dz] of [[3.2, 1.2], [-2.6, 2.2]] as Array<[number, number]>) if (!this.peds.blocked(t.x + dx, t.z + dz)) spots.push({ kind: 'drum', x: t.x + dx, y: this.peds.groundY(t.x + dx, t.z + dz), z: t.z + dz });
+    // Transformer boxes: one on a sidewalk every few blocks.
+    this.layout.blocks.forEach((b, i) => {
+      if (i % 7 !== 3) return;
+      const x = b.x0 + 1.0;
+      const z = (b.z0 + b.z1) / 2 + 3;
+      if (!this.peds.blocked(x, z) && !this.layout.buildings.some((bb) => x > bb.rect.x0 - 0.5 && x < bb.rect.x1 + 0.5 && z > bb.rect.z0 - 0.5 && z < bb.rect.z1 + 0.5)) spots.push({ kind: 'transformer', x, y: this.peds.groundY(x, z), z });
+    });
+    this.hazards.add(spots, this.cityRoot);
+    this.gangs.addHazards = (h, parent) => this.hazards.add(h, parent);
+  }
+
+  /** Rolls in a shop or office would only knock the furniture over: in rooms you can't roll. */
+  private interiorBlocksRoll(): boolean {
+    return !!this.interior && this.interior.spot.kind !== 'casino';
+  }
+
+  /** Roll or (with a gun up) dive toward the way you're pushing. */
+  private startDodge(mx: number, mz: number): void {
+    const p = this.player;
+    const gun = this.aiming && isRanged(this.weapons.current);
+    const kind = gun ? 'dive' : 'roll';
+    if (p.tryDodge(kind, mx, mz)) {
+      audio.sfx(gun ? 'sfx_dive' : 'sfx_roll', p.position);
+      this.tut.fire('rolled');
+      return;
+    }
+    // Why not (once in a while, not on every press).
+    if (this.gameTime - this.rollNoteAt > 2.5 && p.onFoot && !p.rolling) {
+      this.rollNoteAt = this.gameTime;
+      if (p.dodge.winded > 0 || p.dodge.stamina < 10) this.hud.toast('Winded: catch your breath first.', 1200);
+    }
+  }
+
+  /** Stamina bar under the health bar: shows when you've used some, flashes when a hit is dodged. */
+  private updateStaminaHud(): void {
+    const p = this.player;
+    if (!this.staminaEl) {
+      this.staminaEl = document.createElement('div');
+      this.staminaEl.className = 'stamina';
+      this.staminaEl.innerHTML = '<div class="st-fill"></div><span class="st-label">DODGED</span>';
+      this.hud.el.appendChild(this.staminaEl);
+    }
+    const el = this.staminaEl;
+    const st = p.dodge.stamina / 100;
+    const show = p.onFoot && (st < 0.999 || p.dodge.winded > 0);
+    el.style.opacity = show ? '1' : '0';
+    (el.firstElementChild as HTMLDivElement).style.width = `${(st * 100).toFixed(1)}%`;
+    el.classList.toggle('winded', p.dodge.winded > 0);
+    if (p.dodgedHit) {
+      p.dodgedHit = false;
+      el.classList.remove('dodged');
+      void el.offsetWidth;
+      el.classList.add('dodged');
+      el.style.opacity = '1';
+    }
+  }
+
+  /** The Gutter Kings, speech bubbles, the street weapon stashes. */
+  private setupGangs(): void {
+    this.bubbles = new Bubbles(this.container);
+    this.gangs = new GangWorld({
+      scene: this.scene,
+      world: this.world,
+      peds: this.peds,
+      weapons: this.weapons,
+      effects: this.effects,
+      layout: this.layout,
+      bubbles: this.bubbles,
+      player: () => {
+        const p = this.player;
+        const at = p.vehicle ? p.vehicle.position : p.position;
+        return { x: at.x, y: at.y, z: at.z, feetY: p.vehicle ? at.y : p.feet.y, moving: Math.hypot(p.velocity.x, p.velocity.z) > 1 || !!p.vehicle, inCar: !!p.vehicle, dead: p.dead, onFoot: p.onFoot };
+      },
+      layer: () => this.layers.current,
+      hurtPlayer: (amount, cause, fx, fz) => {
+        const p = this.player;
+        if (p.vehicle) {
+          p.vehicle.damage(amount * 2.5, 'bullet');
+          return;
+        }
+        this.effects.blood(p.position.x, p.position.y + 0.7, p.position.z, p.position.x - fx, p.position.z - fz, 5);
+        if (p.takeDamage(amount)) this.kill(cause);
+      },
+      copFiresAtPlayer: (cop) => this.onOfficerFire(cop, 0.35),
+      bestLevel: () => Math.max(0, ...this.party.members.map((c) => c.level)),
+      streetCred: () => this.races?.streetCred ?? 0,
+      wanted: () => this.wanted.stars,
+      toast: (t, ms) => this.hud.toast(t, ms ?? 3000),
+      big: (t, c) => this.hud.showBig(t, c, 2600),
+      startBattle: (m, intro) => this.startGangBattle(m, intro),
+      battleActive: () => this.battles.active,
+      battleTurnBased: () => this.battles.mode === 'turn',
+      rep: (ev) => this.repEvent(ev),
+      reward: (cash, items, weapon) => {
+        const got: string[] = [];
+        if (cash > 0) {
+          this.money += cash;
+          got.push(`$${cash.toLocaleString('en-US')}`);
+          audio.cash();
+        }
+        for (const [id, n] of items) {
+          if (!DATA.items.has(id)) continue;
+          this.bag.add(id, n);
+          got.push(`${n} x ${itemSpec(id).name}`);
+        }
+        if (weapon) {
+          this.weapons.inventory.give(weapon[0], weapon[1]);
+          got.push(`a ${weapon[0].toUpperCase()}`);
+        }
+        this.saveDirty = true;
+        return got.length ? `You get ${got.join(', ')}.` : '';
+      },
+      transition: (to, label) => this.transition('sewer', to, { seconds: 1.4, label }),
+      dirty: () => {
+        this.saveDirty = true;
+      },
+    });
+    // The crowned door: a quiet dead end on Downtown's deepest level.
+    const deep = this.deepMazes.find((m) => m.district === 'downtown' && m.level === 3) ?? this.deepMazes.find((m) => m.level === 3);
+    if (deep) {
+      const used = (i: number, j: number): boolean => deep.caches.some((c) => c.i === i && c.j === j) || this.shafts.some((s) => Math.hypot(s.to.x - blockCentre(deep, i, j).x, s.to.z - blockCentre(deep, i, j).z) < 4 || Math.hypot(s.from.x - blockCentre(deep, i, j).x, s.from.z - blockCentre(deep, i, j).z) < 4);
+      let ends = deep.deadEnds.filter((d) => !used(d.i, d.j) && !deep.pools.has(blockKey(d.i, d.j)));
+      if (!ends.length) {
+        // No spare dead end: any quiet tunnel block with a blank wall to put the door in.
+        ends = [];
+        for (let i = 1; i < deep.size - 1; i++)
+          for (let j = 1; j < deep.size - 1; j++) {
+            if (!deep.open[i][j] || used(i, j) || deep.pools.has(blockKey(i, j)) || deep.hazards.has(blockKey(i, j))) continue;
+            const walls = [deep.open[i + 1][j], deep.open[i - 1][j], deep.open[i][j + 1], deep.open[i][j - 1]].filter((o) => !o).length;
+            if (walls >= 2 && !propAt(deep, blockCentre(deep, i, j).x, blockCentre(deep, i, j).z, 1.2)) ends.push({ i, j });
+          }
+      }
+      const hub = blockCentre(deep, deep.hub.i, deep.hub.j);
+      const e = ends.sort((a, b) => Math.hypot(blockCentre(deep, b.i, b.j).x - hub.x, blockCentre(deep, b.i, b.j).z - hub.z) - Math.hypot(blockCentre(deep, a.i, a.j).x - hub.x, blockCentre(deep, a.i, a.j).z - hub.z))[0];
+      if (e) {
+        const c = blockCentre(deep, e.i, e.j);
+        // The wall opposite the dead end's one opening.
+        const dirs: Array<[number, number]> = [
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1],
+        ];
+        // Face the door out of a wall, toward an open neighbour (the opposite side if that's solid).
+        const openDir = dirs.find(([di, dj]) => deep.open[e.i + di]?.[e.j + dj] && !deep.open[e.i - di]?.[e.j - dj]) ?? dirs.find(([di, dj]) => !deep.open[e.i - di]?.[e.j - dj]) ?? [1, 0];
+        const wall: [number, number] = [-openDir[0], -openDir[1]];
+        this.gangs.placeDoor({ x: c.x + wall[0] * (SEWER.block / 2 - 0.08), y: deep.floor, z: c.z + wall[1] * (SEWER.block / 2 - 0.08), nx: openDir[0], nz: openDir[1] });
+      }
+    }
+    // Weapon stashes down the alleys.
+    this.streetCaches = planStreetCaches(this.layout);
+    this.streetCacheView = buildStreetCaches(this.streetCaches, (x, z) => this.peds.groundY(x, z));
+    this.cityRoot.add(this.streetCacheView.root);
+  }
+
+  /** A weapon stash down an alley: search it (or pick the padlock). */
+  private streetCacheUse(): { label: string; act: () => void } | null {
+    if (this.layers.current !== 'street' || this.interior) return null;
+    const p = this.player.position;
+    const c = this.streetCaches.find((k) => Math.hypot(k.x - p.x, k.z - p.z) < 1.8 && !this.progress.stashesOpened.includes(k.id));
+    if (!c) return null;
+    if (c.locked && this.bag.count('lockpick') <= 0) return { label: 'A padlocked crate (needs a Lockpick Set)', act: () => this.hud.toast('Padlocked. A Lockpick Set would do it: the deli and the black market sell them.', 2600) };
+    return {
+      label: c.locked ? 'Pick the padlock' : 'Search the duffel bag',
+      act: () => {
+        if (c.locked) this.bag.take('lockpick');
+        this.progress.stashesOpened.push(c.id);
+        this.streetCacheView?.setOpen(c.id, true);
+        this.weapons.inventory.give(c.weapon, c.rounds);
+        this.money += c.cash;
+        audio.cash();
+        this.hud.toast(`Stash: a ${c.weapon.toUpperCase()}${c.rounds ? ` with ${c.rounds} rounds` : ''} and $${c.cash}.`, 3200);
+        this.saveDirty = true;
+      },
+    };
+  }
+
+  /** A Gutter King sets his Streetmon on yours: always real time, so the shooting carries on round you. */
+  private startGangBattle(m: GangMember, intro: string): boolean {
+    const p = this.player;
+    if (this.battles.active || this.evolution.active || !this.party.canFight || !p.onFoot || p.dead || this.trans) return false;
+    this.aiming = false;
+    this.battles.mode = 'realtime';
+    this.rig.yaw = Math.atan2(-(m.ped.z - p.position.z), m.ped.x - p.position.x) - Math.PI;
+    this.battleLook.copy(p.position);
+    this.battles.setPlayer(p.position);
+    this.battles.startTeam(this.party, { kind: 'npc', name: m.name, intro, team: m.team, foePos: new THREE.Vector3(m.ped.x, 0, m.ped.z), canRun: !m.boss, ped: m.ped });
+    return true;
+  }
+
+  /** Reputation: Street Cred (shared with the racing league) and Civic standing move together. */
+  repEvent(ev: RepEvent, times = 1): void {
+    const before = civicTier(this.civic).name;
+    const r = applyRep(this.races?.streetCred ?? 0, this.civic, ev, times);
+    if (this.races) {
+      this.races.streetCred = r.street;
+      this.progress.streetCred = r.street;
+    }
+    this.civic = r.civic;
+    const after = civicTier(this.civic).name;
+    if (after !== before) this.hud.toast(`People see you differently now: ${after}.`, 3000);
+    this.saveDirty = true;
   }
 
   /** Legendary raids: the world side, wired to the game. */
@@ -4572,8 +6502,13 @@ export class Game {
     if (this.input.wasPressed('KeyJ') && Q.cycleTracked()) this.hud.toast(`Tracking: ${Q.quest(Q.tracked!)?.title}`, 1800);
     // Tracker.
     const h = Q.hud();
-    if (!h || this.battles.locksPlayer) {
-      this.hud.setQuestPanel(null);
+    const gangLine = this.gangs?.stepText() ?? '';
+    // (On a phone the job panel shares the top-left corner with the foe's battle bar.)
+    if (!h || this.battles.locksPlayer || (platform.touch && this.battles.active)) {
+      if (gangLine && !this.battles.locksPlayer) {
+        const [title, obj] = gangLine.split(': ');
+        this.hud.setQuestPanel(`<div class="qp-act">Detective Alvarez</div><div class="qp-title">${title}</div><div class="qp-obj">${obj}</div><div class="qp-league">${repLine(this.races.streetCred, this.civic)}</div>`, false);
+      } else this.hud.setQuestPanel(null);
       return;
     }
     const esc = (t: string): string => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
@@ -4584,7 +6519,8 @@ export class Game {
         `<div class="qp-obj">${esc(h.objective)}${h.count ? ` (${h.count})` : ''}</div>` +
         `<div class="qp-row"><span>Step ${h.step} of ${h.steps}</span><span>${Q.activeQuests.size > 1 ? 'J: next job' : ''}</span></div>` +
         timer +
-        `<div class="qp-league">USRL ${esc(div.name)} · ${this.races.streetCred} Street Cred</div>`,
+        (gangLine ? `<div class="qp-obj qp-side">${esc(gangLine)}</div>` : '') +
+        `<div class="qp-league">USRL ${esc(div.name)} · ${esc(repLine(this.races.streetCred, this.civic))}</div>`,
       h.boss,
     );
   }
@@ -4734,9 +6670,13 @@ export class Game {
     const b = this.quests.boss(bossId);
     if (!b) return;
     const fit = this.party.canFight;
+    // Scouting: what they're bringing, so you can pick your team (and come back better prepared).
+    const scout = b.team.map(([sp, lv]) => `${species(sp).name} Lv ${lv} (${species(sp).types.map((t) => typeInfo(t).name).join('/')})`).join(', ');
+    const able = this.party.members.filter((m) => m.hp > 0).length;
+    const note = `Their team: ${scout}. You have ${able} able to fight${able < b.team.length ? ': catch another, or bring one back from the stash or out of a car first' : ''}.`;
     this.dialogue.show(
       b.name,
-      fit ? b.intro : `${b.intro}\n\n(You have no Streetmon able to fight. Heal up at a clinic first.)`,
+      fit ? `${b.intro}\n\n${note}` : `${b.intro}\n\n(You have no Streetmon able to fight. Heal up at a clinic first.)`,
       fit ? ['Fight!', 'Not yet.'] : ['Leave.'],
       (i) => {
         this.dialogue.close();
@@ -4849,9 +6789,12 @@ export class Game {
   private updateStreetEvents(dt: number): void {
     const p = this.player;
     const pos = this.focus();
+    // (Street events wait until Mama's welcome is done: the first minutes are for learning to
+    // walk, talk and catch, not a timed outbreak panel 600 m away.)
     const busy =
       this.state !== 'playing' ||
       p.dead ||
+      this.quests.status(STARTER_QUEST) !== 'done' ||
       this.battles.active ||
       this.evolution.active ||
       this.heists.active ||
@@ -4889,10 +6832,9 @@ export class Game {
       want.steer *= m.steering ?? 1;
       want.armor *= m.durability ?? 1;
     }
-    const had = this.carBonus.get(car) ?? { speed: 1, accel: 1, grip: 1, steer: 1, armor: 1 };
-    if ((Object.keys(want) as Array<keyof typeof want>).every((k) => Math.abs(want[k] - had[k]) < 1e-9)) return;
-    for (const k of Object.keys(want) as Array<keyof typeof want>) car.mods[k] *= want[k] / had[k];
-    this.carBonus.set(car, want);
+    const had = car.layer('bonus');
+    if (had && (Object.keys(want) as Array<keyof typeof want>).every((k) => Math.abs(want[k] - (had[k] ?? 1)) < 1e-9)) return;
+    car.setLayer('bonus', want);
   }
 
   private renderEventHud(list: EventHud[]): void {
@@ -4977,7 +6919,7 @@ export class Game {
   }
 
   /** Heist keys. Returns true when a key was used. */
-  private heistKeys(p: Player, padPress: (b: number) => boolean): boolean {
+  private heistKeys(p: Player): boolean {
     const inp = this.input;
     const H = this.heists;
     const pos = this.focus();
@@ -4985,12 +6927,13 @@ export class Game {
     if (H.active) {
       const R = H.config.roles;
       const tunedSpikes = !!p.vehicle?.tuneId && this.tuning.hasAbility(p.vehicle.tuneId, 'spikeStripDispenser');
-      if (inp.wasPressed('KeyZ') || padPress(R.hacker.ability?.gamepadButton ?? 2)) {
+      void R;
+      if (inp.wasPressed('KeyZ')) {
         const r = H.useAbility('hacker', ctx);
         if (!r.ok) this.hud.toast(r.reason, 1800);
         return true;
       }
-      if ((inp.wasPressed('KeyX') && !tunedSpikes) || (!p.vehicle && padPress(R.smoke.ability?.gamepadButton ?? 1))) {
+      if (inp.wasPressed('KeyX') && !tunedSpikes) {
         const r = H.useAbility('smoke', ctx);
         if (!r.ok) this.hud.toast(r.reason, 1800);
         return true;
@@ -5054,7 +6997,7 @@ export class Game {
         if (this.alarmBellT <= 0) {
           this.alarmBellT = 0.75;
           const c = H.centre(H.job.target);
-          audio.sfx('sfx_alarm_bell', this.camera.position.distanceTo(this.tmp.set(c.x, 2, c.z)));
+          audio.sfx('sfx_alarm_bell', { x: c.x, y: 2, z: c.z });
         }
       }
     } else hud = H.update(dt, { x: pos.x, z: pos.z, inVehicle: !!car, stars: this.wanted.stars, dead: p.dead });
@@ -5314,7 +7257,8 @@ export class Game {
       out.push({ icon: 'wanted', x: this.wanted.lastKnown.x, z: this.wanted.lastKnown.z, r: s });
     }
     for (const w of this.spawns.wild) {
-      if (w.removed || w.biome !== (this.layers.current ?? 'street')) continue;
+      // (One in a trainer's pod is invisible: no dot for it.)
+      if (w.removed || w.inPod || layerOfBiome(w.biome) !== (this.layers.current ?? 'street')) continue;
       out.push(w.creature.shiny ? { icon: 'streetmonShiny', x: w.x, z: w.z } : { icon: 'streetmon', x: w.x, z: w.z, color: typeInfo(w.spec.types[0]).color });
     }
     const kindIcon: Record<string, string> = { bankVault: 'heistBankVault', armoredTruck: 'heistArmoredTruck', jewelryStore: 'heistJewelryStore', checkCashing: 'heistCheckCashing' };
@@ -5324,6 +7268,11 @@ export class Game {
     for (const a of this.roofPlan.access) out.push({ icon: a.kind === 'fireEscape' ? 'fireEscape' : 'elevator', x: a.street.x, z: a.street.z });
     for (const g of this.roofPlan.garages) out.push({ icon: 'garage', x: g.footX, z: (g.lane.z0 + g.lane.z1) / 2 });
     out.push({ icon: 'chopShop', x: this.chopSpot.x, z: this.chopSpot.z, label: 'Chop Shop' });
+    out.push({ icon: 'dealership', x: this.dealerSpot.x, z: this.dealerSpot.doorZ, label: 'Empire Motors' });
+    for (const h of this.safeSpots) {
+      const own = this.safehouses.owned.includes(h.id);
+      out.push({ icon: own ? 'safehouse' : 'safehouseForSale', x: h.x, z: h.z, label: own ? h.name : `${h.name} ($${h.price.toLocaleString('en-US')})` });
+    }
     for (const t of this.races.config.tracks)
       if (t.organizer) out.push({ icon: (t.minStreetCred ?? 0) <= this.races.streetCred ? 'raceOrganizer' : 'raceLocked', x: t.organizer.x, z: t.organizer.z, label: t.name });
     for (const c of this.clinics.clinics) out.push({ icon: 'clinic', x: c.x, z: c.z });
@@ -5369,6 +7318,49 @@ export class Game {
     }
   }
 
+  /**
+   * Rival racers' Streetmon for a race, scaled by its tier (the higher of the track's USRL division
+   * and yours); the HUD lists who's running what.
+   */
+  private rivalLoadoutsFor(trackId: string, drivers: Array<{ name: string; streetmon?: string[] }>): RivalLoadout[] {
+    const div = this.quests.divisionFor(this.questCtx());
+    const owner = (leagueConfig.divisions as Array<{ rank: number; tracks?: string[] }>).find((d) => (d.tracks ?? []).includes(trackId));
+    const tier = raceTier(owner?.rank ?? 1, div?.rank ?? 1);
+    const ivs = { hp: 15, attack: 15, defense: 15, speed: 15, loud: 15 };
+    const out = rivalLoadouts(drivers, tier, {
+      config: this.tuning.config,
+      species: [...DATA.species.values()].filter((sp) => !sp.human).map((sp) => ({ id: sp.id, name: sp.name, types: sp.types, stage: sp.stage, legendary: !!sp.legendary })),
+      statsOf: (id, level) => calcStats(species(id), level, ivs),
+      rng: Math.random,
+    });
+    const armed = out.filter((l) => l.slots.length);
+    const short = (n: string): string => n.replace(/"[^"]*" /, '').split(' ')[0];
+    const ab = (id: string | null): string => (id ? this.tuning.config.abilities[id]?.name ?? id : 'no ability');
+    if (armed.length)
+      window.setTimeout(
+        () => this.hud.toast(`${tierInfo(tier).name} race: ${armed.map((l) => `${short(l.driver)} runs ${l.slots.map((x) => `${x.name} (${ab(x.ability)})`).join(' + ')}`).join('; ')}.`, 6000),
+        400,
+      );
+    return out;
+  }
+
+  private rivalToastAt = 0;
+
+  /** A rival's Streetmon uses its ability (the same effects as yours). */
+  private fireRivalAbility(car: Car, s: RivalSlot, driver: string): void {
+    if (!s.ability) return;
+    const cfg = this.tuning.config.abilities[s.ability];
+    if (!cfg) return;
+    const ok = this.tuneWorld.trigger(car, { ...cfg, id: s.ability, slot: s.slot, power: s.power, streetmon: s.info } as never, { strength: Math.abs(car.speed) * 0.6 });
+    if (!ok) return;
+    this.riders.react(car, s.slot, ABILITY_STYLE[s.ability] ?? 'blast');
+    const near = this.player.vehicle ? car.position.distanceTo(this.player.vehicle.position) < 80 : false;
+    if (near && this.gameTime > this.rivalToastAt) {
+      this.rivalToastAt = this.gameTime + 4;
+      this.hud.toast(`${driver.replace(/"[^"]*" /, '')}'s ${s.name}: ${cfg.name}!`, 2200);
+    }
+  }
+
   /** Builds the race manager (rules, from streetRaceManager.js) and its world side (RaceWorld). */
   private setupRaces(): void {
     this.raceWorld = new RaceWorld({
@@ -5381,6 +7373,11 @@ export class Game {
       playerCar: () => this.player.vehicle,
       inSmoke: (x, y, z) => this.tuneWorld.inSmoke(x, y, z),
       visible: (x, z) => this.raceVisible(x, z),
+      rivals: {
+        loadouts: (track, drivers) => this.rivalLoadoutsFor(track.id, drivers),
+        fire: (car, slot, driver) => this.fireRivalAbility(car, slot, driver),
+        riders: (car, list) => this.riders.set(car, list),
+      },
     });
     const rw = this.raceWorld;
     this.races = new StreetRaceManager({
@@ -5394,6 +7391,8 @@ export class Game {
         updateRacers: (dt, info) => rw.updateRacers(dt, info),
         racerPosition: (id) => rw.racerPosition(id),
         removeRacers: () => rw.removeRacers(),
+        removeRacer: (id) => rw.removeRacer(id),
+        carClass: () => (this.player.vehicle ? this.carClassOf(this.player.vehicle).cls : null),
         placePlayer: (slot) => {
           const car = this.player.vehicle;
           if (!car) return false;
@@ -5443,6 +7442,16 @@ export class Game {
       audio.sfx('sfx_race_beep', 0);
     });
     this.races.on('go', () => audio.sfx('sfx_race_go', 0));
+    this.races.on('lap', (e: { lap: number; time: number; best: number }) => {
+      const r = this.races.race;
+      if (!r || r.track.laps < 2) return;
+      const rec = this.races.records[r.track.id]?.bestLap;
+      this.hud.toast(`Lap ${e.lap}: ${this.raceClock(e.time)}${rec !== undefined && e.time < rec ? ' · new best lap!' : ''}`, 2200);
+    });
+    this.races.on('knockout', (e: { name: string; player: boolean; lap: number }) => {
+      this.hud.showBig(e.player ? 'KNOCKED OUT' : `${e.name.replace(/"[^"]*" /, '')} OUT`, e.player ? '#d32f2f' : '#ffb36b', 1600);
+      audio.sfx('sfx_checkpoint', 0);
+    });
     this.races.on('checkpoint', (e) => {
       audio.sfx('sfx_checkpoint', 0);
       if (e.index < e.total && this.races.race && this.races.race.track.laps > 1) {
@@ -5455,6 +7464,7 @@ export class Game {
       this.progress.streetCred = this.races.streetCred;
       this.saveDirty = true;
       const ord = (n: number): string => `${n}${n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th'}`;
+      if (r.place === 1) this.autosaveFor('Race won');
       if (r.place !== null) {
         this.hud.showBig(r.place === 1 ? 'YOU WIN!' : `${ord(r.place)} PLACE`, r.place === 1 ? '#4be37a' : r.place <= 3 ? '#ffd23f' : '#aab3c0', 3500);
         const bits = [r.cash ? `+$${r.cash}` : 'no prize', r.cred ? `+${r.cred} Street Cred` : ''].filter(Boolean).join(', ');
@@ -5462,11 +7472,11 @@ export class Game {
         const nowOpen = this.races.eligibleTracks().filter((t) => (t.minStreetCred ?? 0) > this.races.streetCred - r.cred);
         if (nowOpen.length) window.setTimeout(() => this.hud.toast(`New race unlocked: ${nowOpen.map((t) => t.name).join(', ')}.`, 4000), 2500);
       } else {
-        const why: Record<string, string> = { time: 'Out of time.', abandoned: 'You left your car.', lost: 'You went way off the course.', quit: 'You pulled out.', busted: 'Busted.', wasted: 'Wasted.' };
+        const why: Record<string, string> = { time: 'Out of time.', abandoned: 'You left your car.', lost: 'You went way off the course.', quit: 'You pulled out.', busted: 'Busted.', wasted: 'Wasted.', knockedOut: 'Knocked out: last across the line at the end of the lap.' };
         if (r.reason !== 'busted' && r.reason !== 'wasted') this.hud.showBig('RACE OVER', '#d32f2f', 3000);
         this.hud.toast(`${why[r.reason] ?? 'Race over.'} No prize, and the heat from the race is gone.`, 4000);
       }
-      if (this.player.vehicle) this.vehicles.owned.delete(this.player.vehicle);
+      if (this.player.vehicle && !this.rides.has(this.player.vehicle.tuneId ?? '')) this.vehicles.owned.delete(this.player.vehicle);
     });
   }
 
@@ -5580,7 +7590,7 @@ export class Game {
     const car = p.vehicle;
     const pos = this.focus();
     const freeRoam = !this.battles.active && !this.evolution.active && this.layers.current === 'street' && !this.trans && !p.dead && !this.chopCar && pos.y < 6 && this.heists.state === 'IDLE';
-    const hud = this.races.update(dt, { inVehicle: !!car && !car.destroyed, x: pos.x, z: pos.z, speed: car ? Math.abs(car.speed) : 0, freeRoam, dead: p.dead });
+    const hud = this.races.update(dt, { inVehicle: !!car && !car.destroyed, x: pos.x, z: pos.z, speed: car ? Math.abs(car.speed) : 0, freeRoam, dead: p.dead, driftAngle: car ? (car.slip * 180) / Math.PI : 0 });
     this.raceWorld.update(dt, pos, () => this.layers.current === 'street');
     this.renderRaceHud(hud);
   }
@@ -5591,8 +7601,14 @@ export class Game {
       const t = h.track;
       const d = Math.round(Math.hypot(t.start.x - this.focus().x, t.start.z - this.focus().z));
       if (!h.accepted) {
+        const mode = modeOf(t);
+        const solo = mode === 'timeTrial' || mode === 'drift';
+        const medals = t.medals ? (mode === 'timeTrial' ? `Gold ${this.raceClock(t.medals.gold)} · Silver ${this.raceClock(t.medals.silver)} · Bronze ${this.raceClock(t.medals.bronze)}` : `Gold ${t.medals.gold} · Silver ${t.medals.silver} · Bronze ${t.medals.bronze} pts`) : '';
+        const rec = h.record;
+        const recText = rec ? (mode === 'drift' ? (rec.score !== undefined ? `Your best: ${rec.score} pts` : '') : rec.best !== undefined ? `Your best: ${this.raceClock(rec.best)}` : '') : '';
+        const mine = this.player.vehicle ? this.carClassOf(this.player.vehicle).cls : null;
         this.hud.setRacePanel(
-          `<div class="rp-name">${this.races.offer?.source === 'organizer' ? 'Street race' : 'Street race nearby'}</div><div class="rp-offer"><b>${esc(t.name)}</b><br>$${t.entryFee} to enter · $${t.payouts.first} / $${t.payouts.second} / $${t.payouts.third}<br>${t.laps > 1 ? `${t.laps} laps · ` : ''}${d} m away<br><kbd>Y</kbd> race &nbsp; <kbd>Backspace</kbd> no thanks</div>` +
+          `<div class="rp-name">${this.races.offer?.source === 'organizer' ? 'Street race' : 'Street race nearby'} · ${MODE_NAMES[mode]}</div><div class="rp-offer"><b>${esc(t.name)}</b>${t.maxClass ? ` <span class="rp-class">Class ${t.maxClass}${mine ? ` (yours: ${mine})` : ''}</span>` : ''}<br>$${t.entryFee} to enter · $${t.payouts.first} / $${t.payouts.second} / $${t.payouts.third}${solo ? ' (gold / silver / bronze)' : ''}<br>${t.laps > 1 ? `${t.laps} laps · ` : ''}${d} m away${medals ? `<br><small>${medals}</small>` : ''}${recText ? `<br><small>${recText}</small>` : ''}<br><kbd>Y</kbd> race &nbsp; <kbd>Backspace</kbd> no thanks</div>` +
             (h.expires01 < 1 ? `<div class="rp-bar"><i style="width:${Math.round(h.expires01 * 100)}%"></i></div>` : ''),
         );
       } else
@@ -5607,15 +7623,31 @@ export class Game {
         .map((x, i) => `<div class="${x.player ? 'me' : ''}"><span>${i + 1}.</span><span>${esc(x.name)}</span></div>`)
         .join('');
       const low = h.timeLeft < 20;
+      const solo = h.mode === 'timeTrial' || h.mode === 'drift';
+      let head = `<div class="rp-pos">${h.place}<small>/${h.alive}</small></div>`;
+      let extra = '';
+      if (h.mode === 'timeTrial' && h.medals) {
+        const next = h.time <= h.medals.gold ? ['Gold', h.medals.gold] : h.time <= h.medals.silver ? ['Silver', h.medals.silver] : h.time <= h.medals.bronze ? ['Bronze', h.medals.bronze] : null;
+        head = `<div class="rp-pos rp-medal">${next ? next[0] : 'No medal'}</div>`;
+        extra = next ? `<div class="rp-row"><span>${next[0]} until</span><span>${this.raceClock(next[1] as number)}</span></div>` : '';
+        if (h.record?.best !== undefined) extra += `<div class="rp-row"><span>Your best</span><span>${this.raceClock(h.record.best)}</span></div>`;
+      } else if (h.mode === 'drift' && h.medals) {
+        const medal = h.score >= h.medals.gold ? 'Gold' : h.score >= h.medals.silver ? 'Silver' : h.score >= h.medals.bronze ? 'Bronze' : null;
+        head = `<div class="rp-pos">${h.score}<small> pts${medal ? ` · ${medal}` : ''}</small></div>`;
+        extra = `<div class="rp-row"><span>Chain</span><span class="${h.chain > 0.3 ? 'rp-hot' : ''}">x${(1 + Math.min(3, h.chain / 2)).toFixed(1)}</span></div><div class="rp-row"><span>Next medal</span><span>${h.score < h.medals.bronze ? h.medals.bronze : h.score < h.medals.silver ? h.medals.silver : h.score < h.medals.gold ? h.medals.gold : 'all yours'}</span></div>`;
+      }
+      if (h.laps > 1) extra += `<div class="rp-row"><span>Lap time</span><span>${this.raceClock(h.lapTime)}${h.bestLap !== null ? ` <small>best ${this.raceClock(h.bestLap)}</small>` : ''}</span></div>`;
+      if (h.mode === 'knockout' && h.out.length) extra += `<div class="rp-row"><span>Out</span><span>${esc(h.out.map((n) => n.replace(/"[^"]*" /, '').split(' ')[0]).join(', '))}</span></div>`;
       this.hud.setRacePanel(
-        `<div class="rp-name">${esc(h.track.name)}</div>
-        <div class="rp-pos">${h.place}<small>/${h.of}</small></div>
+        `<div class="rp-name">${esc(h.track.name)} · ${MODE_NAMES[h.mode]}</div>
+        ${head}
         <div class="rp-row"><span>Checkpoint</span><span>${h.checkpoint}/${h.totalCheckpoints}</span></div>
         ${h.laps > 1 ? `<div class="rp-row"><span>Lap</span><span>${h.lap}/${h.laps}</span></div>` : ''}
         <div class="rp-row"><span>Time</span><span>${this.raceClock(h.time)}</span></div>
         <div class="rp-row"><span>Left</span><span class="${low ? 'rp-low' : ''}">${Math.ceil(h.timeLeft)} s</span></div>
+        ${extra}
         ${h.outOfCar > 0 ? `<div class="rp-row rp-low"><span>Back in a car!</span><span>${Math.ceil(15 - h.outOfCar)} s</span></div>` : ''}
-        <div class="rp-list">${list}</div>`,
+        ${solo ? '' : `<div class="rp-list">${list}</div>`}`,
       );
       const r = this.races.race!;
       const idx = r.racers[0].passed;
@@ -5626,8 +7658,12 @@ export class Game {
     }
     if (h.state === 'RESOLVED') {
       const r = h.result;
+      const solo = r.mode === 'timeTrial' || r.mode === 'drift';
+      const medal = solo && r.place !== null ? ['', 'Gold!', 'Silver', 'Bronze', 'No medal'][Math.min(4, r.place)] : null;
+      const headline = r.place === null ? '<b>Race over</b>' : solo ? `<b>${medal}</b>` : `<b>${r.place === 1 ? 'Winner!' : `Finished ${r.place}${r.place === 2 ? 'nd' : r.place === 3 ? 'rd' : 'th'}`}</b>`;
+      const detail = r.mode === 'drift' ? `${r.score} pts` : `in ${this.raceClock(r.time)}`;
       this.hud.setRacePanel(
-        `<div class="rp-name">${esc(r.track.name)}</div><div class="rp-offer">${r.place !== null ? `<b>${r.place === 1 ? 'Winner!' : `Finished ${r.place}${r.place === 2 ? 'nd' : r.place === 3 ? 'rd' : 'th'}`}</b> in ${this.raceClock(r.time)}<br>${r.cash ? `+$${r.cash}` : 'No prize'}${r.cred ? ` · +${r.cred} Street Cred` : ''}` : '<b>Race over</b><br>No prize'}<br>Street Cred: ${this.races.streetCred}</div>`,
+        `<div class="rp-name">${esc(r.track.name)} · ${MODE_NAMES[r.mode]}</div><div class="rp-offer">${headline} ${r.reason === 'finished' ? detail : ''}${r.reason === 'knockedOut' ? ' (knocked out)' : ''}<br>${r.cash ? `+$${r.cash}` : 'No prize'}${r.cred ? ` · +${r.cred} Street Cred` : ''}${r.newRecord ? '<br><b class="rp-hot">New record!</b>' : ''}${r.bestLap !== null && r.track.laps > 1 ? `<br>Best lap ${this.raceClock(r.bestLap)}` : ''}<br>Street Cred: ${this.races.streetCred}</div>`,
       );
       this.hud.setRaceMap(null);
       return;
@@ -5683,7 +7719,7 @@ export class Game {
     const r = S.radius;
     this.effects.explosion(x, y, z);
     this.living?.explosion(x, z, r);
-    audio.explosion(this.camera.position.distanceTo(this.tmp.set(x, y, z)));
+    audio.explosion({ x, y, z });
     for (const c of this.vehicles.cars) {
       if (c.destroyed) continue;
       const d = Math.max(0, c.position.distanceTo(this.tmp.set(x, y, z)) - c.spec.width / 2);
@@ -5743,14 +7779,14 @@ export class Game {
         c.health = 0;
         c.markDestroyed();
         this.effects.sparks(c.position.x, c.position.y + 0.6, c.position.z, 14);
-        audio.crash(1, c.position.distanceTo(this.camera.position));
+        audio.crash(1, c.position);
       } else c.damage(C.carDps * dt);
     }
     // Wild Streetmon: a crush hit and knocked aside.
     const now = performance.now();
     const v = (C.creatureImpactKmh / 3.6) * 1;
     for (const w of this.spawns.wild) {
-      if (w.removed || w.pinned || w.y > 1.5 || (w.hitCooldownUntil ?? 0) > now) continue;
+      if (w.removed || w.pinned || w.y + (w.alt ?? 0) > 1.5 || (w.hitCooldownUntil ?? 0) > now) continue;
       const rr = Math.max(0.3, w.spec.model.height * 0.4);
       const hit = carCircleContact(t.x, t.z, t.h, halfL, halfW, w.x, w.z, rr);
       if (!hit) continue;
@@ -5783,7 +7819,7 @@ export class Game {
         this.tankBumpAt = now + 1000;
         const side = hit.nx * -fz + hit.nz * fx >= 0 ? 1 : -1;
         p.knockBack(-fz * side * 7 + hit.nx * 2, 3, fx * side * 7 + hit.nz * 2, 1.2);
-        if (p.takeDamage(C.playerDamage)) this.kill('Crushed by a tank');
+        if (p.takeDamage(C.playerDamage, 'env')) this.kill('Crushed by a tank');
       }
     }
   }
@@ -5794,7 +7830,7 @@ export class Game {
     const side = Math.hypot(this.focus().x - (t.x + rx * 4), this.focus().z - (t.z + rz * 4)) < Math.hypot(this.focus().x - (t.x - rx * 4), this.focus().z - (t.z - rz * 4)) ? 1 : -1;
     this.weapons.drop('weapon', 'rifle', 120, t.x + rx * 4 * side, 0.15, t.z + rz * 4 * side);
     this.weapons.drop('weapon', 'molotov', 3, t.x + rx * 4 * side + t.forwardX * 1.5, 0.15, t.z + rz * 4 * side + t.forwardZ * 1.5);
-    audio.explosion(this.camera.position.distanceTo(this.tmp.set(t.x, 1.5, t.z)));
+    audio.explosion({ x: t.x, y: 1.5, z: t.z });
     this.hud.toast('Tank destroyed! It dropped its weapons.', 3500);
     this.crime('killCop', this.tmp.set(t.x, 1, t.z));
   }
@@ -5804,6 +7840,9 @@ export class Game {
   private enterVehicle(car: Car): void {
     const p = this.player;
     if (car.disposed || car.destroyed) return;
+    this.lastDriven = car;
+    car.input.park = false;
+    this.displayCars.delete(car);
     const isPolice = car.spec.style === 'police';
     if (isPolice && (this.traffic.isAi(car) || this.police.isUnitCar(car))) {
       // Taking a police car with officers in it: they jump out and come after you.
@@ -5842,6 +7881,8 @@ export class Game {
     const p = this.player;
     const car = p.vehicle;
     if (!car) return;
+    car.visual.body.visible = true;
+    car.boost = false;
     const spot = this.findExitSpot(car);
     if (!spot) {
       this.hud.toast('No room to get out', 1200);
@@ -5868,7 +7909,7 @@ export class Game {
       // Bailing out at speed: tumble and get hurt.
       const lv = car.body.linvel();
       p.knockBack(lv.x * 0.6, 1.5, lv.z * 0.6, 1.8);
-      if (p.takeDamage(Math.abs(car.speed) * 1.5)) this.kill('Bailed out too fast');
+      if (p.takeDamage(Math.abs(car.speed) * 1.5, 'env')) this.kill('Bailed out too fast');
     }
   }
 
@@ -5904,13 +7945,16 @@ export class Game {
     }
     this.battles?.abort();
     const p = this.player;
+    p.dodge.reset();
     if (!p.dead) {
       p.health = 0;
       p.dead = true;
     }
     if (this.respawnAt > performance.now()) return;
     this.respawnAt = performance.now() + 4500;
-    this.respawnPoint = this.layout.playerSpawn;
+    // Back at the last safehouse you used (or the start of the game).
+    const home = this.safeSpots.find((h) => h.id === this.safehouses.last && this.safehouses.owned.includes(h.id));
+    this.respawnPoint = home ? { x: home.x, z: home.z } : this.layout.playerSpawn;
     const fee = Math.min(this.money, 100);
     this.money -= fee;
     if (fee > 0) window.setTimeout(() => this.hud.toast(`Hospital bill: $${fee}`, 3000), 1500);
@@ -5967,8 +8011,11 @@ export class Game {
       const c = this.heists.centre(this.heists.job.target);
       if (Math.hypot(c.x - at.x, c.z - at.z) < this.heists.job.target.location.radius * 1.5) this.heists.reportNoise(kind);
     }
+    // Shooting back at the Gutter Kings in a gang fight isn't what the police are there for.
+    if (kind === 'gunfire' && this.gangs?.fighting) return;
+    if (w === 'civ' && Math.random() > civicTier(this.civic).witness) w = 'none';
     const before = this.wanted.stars;
-    this.wanted.report(kind, at.x, at.z, w);
+    if (this.wanted.report(kind, at.x, at.z, w) > 0 && kind !== 'gunfire') this.repEvent(kind === 'killPed' ? 'pedKilled' : kind === 'killCop' || kind === 'hitCop' ? 'copHurt' : 'crime');
     if (this.wanted.stars > before) {
       audio.wantedUp();
       if (before === 0) this.hud.toast(w === 'cop' ? 'The police saw that' : 'Someone called the police', 2500);
@@ -5976,7 +8023,7 @@ export class Game {
   }
 
   private onPedHit(ped: Ped, byPlayer: boolean, killed: boolean): void {
-    if (!byPlayer) return;
+    if (!byPlayer || ped.role === 'gang') return;
     const at = this.tmp.set(ped.x, ped.y, ped.z);
     if (ped.role === 'cop') this.crime(killed ? 'killCop' : 'hitCop', at, 'civ');
     else this.crime(killed ? 'killPed' : 'hitPed', at, killed ? null : 'civ');
@@ -6023,7 +8070,15 @@ export class Game {
       this.wanted.update(dt * SEWER.searchMult, false, focus.x, focus.z);
     } else if (!p.dead && !(this.battles.active && this.battles.kind === 'police')) {
       const armed = (p.onFoot && isRanged(this.weapons.current)) || this.creatureCrime;
+      const arrestBefore = this.police.arrestRaw;
       this.police.update(dt, { pos: focus, vx, vz, car: car, onFoot: p.onFoot, armed }, this.camera);
+      // Rolling doesn't shake off an officer mid-arrest (it holds while you roll), and a winded
+      // player is easier to cuff.
+      if (p.onFoot && arrestBefore > 0) {
+        const now = this.police.arrestRaw;
+        if (p.rolling && now < arrestBefore) this.police.arrestRaw = arrestBefore;
+        else if (p.dodge.winded > 0 && now > arrestBefore) this.police.arrestRaw = arrestBefore + (now - arrestBefore) * ROLL.windedArrest;
+      }
       this.wanted.update(dt, this.police.seen || this.tanks.seesPlayer, focus.x, focus.z);
     }
     this.camera.updateMatrixWorld();
@@ -6110,6 +8165,9 @@ export class Game {
     this.camera.position.sub(this.shakeOff);
     this.shakeOff.set(0, 0, 0);
     this.updateCameraPose(dt);
+    // Never under the pond's surface (the camera rides just above the waves).
+    const cp = this.camera.position;
+    if (inLake(this.layout.parkLake, cp.x, cp.z, -0.6)) cp.y = Math.max(cp.y, waveY(cp.x, cp.z, this.gameTime) + 0.35);
     if (this.shakeAmt > 0.001 && this.state !== 'paused') {
       const a = this.shakeAmt * this.shakeAmt * 0.35;
       this.shakeOff.set((Math.random() - 0.5) * a, (Math.random() - 0.5) * a, (Math.random() - 0.5) * a);
@@ -6150,7 +8208,11 @@ export class Game {
       return;
     }
     if (p.vehicle) {
-      this.rig.updateCar(dt, p.vehicle.visual.root.position, p.vehicle.heading, p.vehicle.speed, this.input.mouseIdleMs);
+      const v = p.vehicle;
+      this.rig.updateCar(dt, v.visual.root.position, v.heading, v.speed, this.input.mouseIdleMs, { length: v.spec.length, height: v.spec.height, quaternion: v.visual.root.quaternion });
+      // In the bonnet view the car's own body would fill the screen.
+      const hide = this.rig.carView === 'hood';
+      if (v.visual.body.visible === hide) v.visual.body.visible = !hide;
     } else {
       const w = this.weapons.current;
       this.rig.updateFoot(dt, p.model.root.position.clone().setY(p.model.root.position.y + 0.85), this.aiming && isRanged(w), w.zoomFov ?? 0);
@@ -6160,6 +8222,7 @@ export class Game {
   private updateHudAndAudio(dt: number): void {
     const p = this.player;
     const car = p.vehicle;
+    if (this.touchUi) this.touchUi.setMode(this.state !== 'playing' ? (this.state === 'paused' ? 'menu' : 'hidden') : this.battles.locksPlayer ? 'battle' : car ? 'car' : 'foot');
     const focus = this.focus();
     const cam = this.camera;
     const look = cam.getWorldDirection(this.tmp);
@@ -6186,13 +8249,27 @@ export class Game {
           : raid
             ? `B  Fight ${w.spec.name} (legendary, Lv ${w.creature.level}) with the trainers`
             : `B  Battle the wild ${w.spec.name} (Lv ${w.creature.level})`;
+    } else if (p.onFoot && !this.interior && this.wanted.stars < 3 && this.nearestPerson(2.2)?.role === 'civ' && !this.enterableCar()) {
+      prompt = this.party.canFight && this.party.lead ? `E  Talk   ·   B  Set ${displayName(this.party.lead)} on them` : 'E  Talk';
     } else if (p.onFoot && this.party.canFight && this.party.lead && this.nearestPerson(4.5)) {
       const ped = this.nearestPerson(4.5)!;
       prompt = `B  Set ${displayName(this.party.lead)} on ${ped.role === 'cop' ? 'the officer' : 'this person'} (a crime)`;
+    } else if (this.atDealer()) {
+      prompt = 'E  Empire Motors: buy and sell cars';
+    } else if (this.atSafehouse()) {
+      const h = this.atSafehouse()!;
+      prompt = this.safehouses.owned.includes(h.id) ? `E  ${h.name}: save, rest, sleep` : `E  ${h.name}: for sale, $${h.price.toLocaleString('en-US')}`;
     } else if (p.onFoot && this.shops.shopAt(p.position.x, p.position.z)) {
       prompt = `E  ${SHOP_NAME}`;
     } else if (p.onFoot && this.roofUse()) {
       prompt = `E  ${this.roofUse()!.label}`;
+    } else if (p.onFoot && this.interiorUse()) {
+      prompt = `E  ${this.interiorUse()!.label}`;
+    } else if (p.onFoot && p.waterState !== 'dry') {
+      const e = this.waterEdge(p.position.x, p.position.z);
+      prompt = e && e.d < POND.climbReach + 0.6 ? 'Space  Climb out' : p.swimming ? 'Shift  Swim faster' : '';
+    } else if (car && this.carWater.get(car)?.stalled) {
+      prompt = "F  Get out: the engine's flooded";
     } else if (p.onFoot) {
       const near = this.enterableCar();
       if (near) {
@@ -6206,6 +8283,11 @@ export class Game {
     } else if (car && this.atChopLift(car) && !this.races.active) {
       prompt = this.wanted.stars > 0 ? "The Chop Shop won't open while the cops are on you" : 'E  Lower into the Underground Chop Shop';
     }
+    if (this.touchUi) {
+      this.touchUi.setContext(prompt);
+      this.touchUi.setButtonShown('yes', this.races.state === 'PROMPT' && !this.races.offer?.accepted);
+    }
+    this.updateStaminaHud();
     this.hud.update({
       health01: p.health / PLAYER.maxHealth,
       inCar: !!car,
@@ -6215,10 +8297,10 @@ export class Game {
       vehicleHealth01: car ? car.health01 : 1,
       x: focus.x,
       z: focus.z,
-      layer: layerLabel(this.layers.current),
+      layer: this.interior ? this.interior.spot.name : layerLabel(this.layers.current),
       viewHeading,
       heading: car ? car.heading : p.facing,
-      prompt,
+      prompt: this.input.device === 'pad' ? padPrompt(prompt, this.padIn.context, { heist: this.padIn.inHeist }) : prompt,
       fps: this.fps,
       stars: this.wanted.stars,
       searching: this.wanted.searching,
@@ -6230,6 +8312,7 @@ export class Game {
       markers: [
         ...this.spawns.markers(p.position),
         ...this.raidWorld.markers(),
+        ...this.gangs.markers(),
         ...this.eventMarkers(),
         ...this.campaignMinimap(),
         ...this.questMarkers(),
@@ -6269,14 +8352,38 @@ export class Game {
       audio.updateCar(false, 0, 1, 0, 1, 0, dt);
       if (p.onFoot && p.grounded) audio.footstep(Math.hypot(p.velocity.x, p.velocity.z));
     }
-    let sirenDist = 1;
-    let sirenOn = false;
-    for (const c of this.vehicles.cars) {
-      if (!c.sirenOn) continue;
-      sirenOn = true;
-      sirenDist = Math.min(sirenDist, c.position.distanceTo(cam.position) / 300);
+    if (this.spatial) {
+      // 3D: engines and squeal for the AI cars around you, sirens on the police units.
+      const engines: EngineSource[] = [];
+      const sirens: SirenSource[] = [];
+      for (const c of this.vehicles.cars) {
+        if (c.destroyed || c.disposed) continue;
+        if (c.sirenOn) sirens.push({ key: c, position: c.position });
+        if (c === car || !c.driver) continue;
+        engines.push({ key: c, position: c.position, speed: c.speed, maxSpeed: c.spec.maxSpeed, gears: c.spec.gears, throttle: Math.max(0, c.input.throttle), slip: c.rearSlip, pitch: clamp((1500 / c.spec.mass) ** 0.22, 0.72, 1.25) });
+      }
+      this.spatial.update(dt, engines, sirens);
+    } else {
+      let sirenDist = 1;
+      let sirenOn = false;
+      for (const c of this.vehicles.cars) {
+        if (!c.sirenOn) continue;
+        sirenOn = true;
+        sirenDist = Math.min(sirenDist, c.position.distanceTo(cam.position) / 300);
+      }
+      audio.updateSiren(sirenOn, dt, clamp(sirenDist, 0, 1));
     }
-    audio.updateSiren(sirenOn, dt, clamp(sirenDist, 0, 1));
+  }
+
+  /** The 3D sound layer, made once the audio engine exists (after the first click). */
+  private ensureSpatial(): void {
+    if (this.spatial || !audio.context) return;
+    try {
+      this.spatial = new SpatialAudio(this.camera, { hrtf: !platform.touch, engines: platform.touch ? 3 : 5, oneShots: platform.touch ? 12 : 20 });
+      audio.setSpatial(this.spatial);
+    } catch (e) {
+      console.warn('3D audio unavailable', e);
+    }
   }
 }
 
@@ -6318,4 +8425,10 @@ function makeBubble(): THREE.Sprite {
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false }));
   s.scale.setScalar(0.55);
   return s;
+}
+
+/** A little picture for a capture item on the quick-select wheel. */
+function captureGlyph(id: string): string {
+  const g: Record<string, string> = { cuffs: '⛓️', crate: '📦', net: '🕸️', lure: '🪝', cage: '🧰', capturePod: '🟣' };
+  return g[id] ?? '🎯';
 }

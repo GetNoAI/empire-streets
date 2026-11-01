@@ -55,8 +55,13 @@ export class CameraRig {
     this.camera.getWorldDirection(dir);
   }
 
+  /** Player options: look speed multiplier and inverted vertical look. */
+  lookSpeed = 1;
+  invertY = false;
+
   addMouse(dx: number, dy: number, inCar: boolean, sensitivityScale = 1): void {
-    const s = CAMERA.mouseSensitivity * sensitivityScale;
+    const s = CAMERA.mouseSensitivity * sensitivityScale * this.lookSpeed;
+    if (this.invertY) dy = -dy;
     if (inCar) {
       this.carYawOffset = wrapAngle(this.carYawOffset - dx * s);
     } else {
@@ -96,8 +101,35 @@ export class CameraRig {
     return wrapAngle(this.yaw + Math.PI);
   }
 
+  /** Driving view: a near or far chase camera, or a bonnet camera (V cycles them). */
+  carView: 'chase' | 'far' | 'hood' = 'chase';
+
+  cycleCarView(): 'chase' | 'far' | 'hood' {
+    this.carView = this.carView === 'chase' ? 'far' : this.carView === 'far' ? 'hood' : 'chase';
+    return this.carView;
+  }
+
   /** Chase cam. `heading` is the car's heading, `speed` its forward speed. */
-  updateCar(dt: number, target: THREE.Vector3, heading: number, speed: number, mouseIdleMs: number): void {
+  updateCar(dt: number, target: THREE.Vector3, heading: number, speed: number, mouseIdleMs: number, hood?: { length: number; height: number; quaternion: THREE.Quaternion }): void {
+    if (this.carView === 'hood' && hood) {
+      // On the bonnet, looking down the road; the mouse glances around and eases back.
+      if (mouseIdleMs > 1200) this.carYawOffset *= 1 - damp(3, dt);
+      const yaw = wrapAngle(heading + Math.PI + this.carYawOffset);
+      this.yaw = wrapAngle(this.yaw + wrapAngle(yaw - this.yaw) * damp(mouseIdleMs > 200 ? 10 : 18, dt));
+      const sp = Math.abs(speed);
+      const local = new THREE.Vector3(hood.length * 0.32, hood.height * 0.62, 0).applyQuaternion(hood.quaternion);
+      this.pos.copy(target).add(local);
+      this.pivot.copy(this.pos);
+      const fwd = new THREE.Vector3(-Math.cos(this.yaw), 0, Math.sin(this.yaw));
+      this.look.copy(this.pos).addScaledVector(fwd, 20).setY(this.pos.y + 0.4 - this.pitch * 6);
+      this.camera.position.copy(this.pos);
+      this.initialised = true;
+      this.camera.lookAt(this.look);
+      const fov = CAMERA.baseFov + 6 + clamp(sp / 50, 0, 1) * CAMERA.maxFovBoost;
+      this.camera.fov += (fov - this.camera.fov) * damp(6, dt);
+      this.camera.updateProjectionMatrix();
+      return;
+    }
     if (mouseIdleMs > 1500) this.carYawOffset *= 1 - damp(2.5, dt);
     // Behind the car = heading + PI. Reversing looks forward to see where you're going.
     const behind = heading + Math.PI + this.carYawOffset;
@@ -106,9 +138,10 @@ export class CameraRig {
     const desiredPitch = 0.16 + clamp(Math.abs(speed) / 60, 0, 1) * -0.04;
     if (mouseIdleMs > 1500) this.pitch += (desiredPitch - this.pitch) * damp(2, dt);
     const sp = Math.abs(speed);
-    const wantDist = CAMERA.carDistance + clamp(sp / 40, 0, 1) * 2.5;
+    const far = this.carView === 'far' ? 1.55 : 1;
+    const wantDist = (CAMERA.carDistance + clamp(sp / 40, 0, 1) * 2.5) * far;
     this.dist += (wantDist - this.dist) * damp(3, dt);
-    const pivot = new THREE.Vector3(target.x, target.y + CAMERA.carHeight * 0.55, target.z);
+    const pivot = new THREE.Vector3(target.x, target.y + CAMERA.carHeight * 0.55 * far, target.z);
     this.pivot.copy(pivot);
     const dir = new THREE.Vector3(Math.cos(this.yaw) * Math.cos(this.pitch), Math.sin(this.pitch), -Math.sin(this.yaw) * Math.cos(this.pitch));
     const d = this.clearDistance(pivot, dir, this.dist);

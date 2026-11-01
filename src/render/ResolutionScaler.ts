@@ -1,3 +1,4 @@
+import { platform } from '../mobile/Platform';
 /**
  * Dynamic quality (engine-free, unit-tested): when frames run long because the GPU can't keep up
  * (high-DPI screens with bloom and shadows are the usual cause), quality steps down; when there's
@@ -23,12 +24,12 @@ export const RES = {
   /** Pixel-ratio step (fine on 1x screens, coarser on high-DPI ones) and the floor. */
   step: 0.25,
   fineStep: 0.125,
-  min: 0.875,
+  min: platform.minScale,
   /** The floor is also never below this share of the screen's own ratio. */
-  minShare: 0.62,
+  minShare: platform.touch ? 0.4 : 0.62,
   /** Shadow map sizes: full, then the reduced one tried before any resolution step. */
-  shadowFull: 2048,
-  shadowLow: 1024,
+  shadowFull: platform.shadow,
+  shadowLow: Math.min(1024, platform.shadow),
   /** After a change, wait this long before judging again (s). */
   settle: 2.5,
   /** Only GPU-bound frames count: the CPU part must be under this share of the interval. */

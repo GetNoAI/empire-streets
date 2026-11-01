@@ -2,514 +2,4423 @@
   "_comment": "Streetmon species. base: HP / Attack / Defense / Speed / Loud (Loud sets how far away they notice you and how easily they're found). ammo: magazine size (Gun types). growth: XP curve (fast / medium / slow). tier: 1-3, scales the XP they give. catchRate: 3 (hard) to 255 (easy). learnset: [level, moveId] (level 1 moves are known from the start; a creature keeps at most 4). evolution: method level {level} | item {item} | condition {minLevel, timeOfDay?, district?}. spawn: districts (uptown, midtown, downtown, park, waterfront; the FIRST is its home district, where it is most common, the others get a few strays), times (day, dusk, night), rarity (common, uncommon, rare; legendary = never spawns on its own, see legendaries.json), levels [min, max], temperament (wander, flee, aggro; aggro ones only go for you in the park, on the roofs and in the sewers: elsewhere on the street they keep to themselves unless provoked). model: procedural low-poly model id + palette (hex); height in metres.",
   "species": [
     {
-      "id": "strapback", "dex": 1, "name": "Strapback", "types": ["gun"], "stage": 1, "line": "strapback",
-      "base": { "hp": 45, "attack": 60, "defense": 45, "speed": 55, "loud": 60 }, "ammo": 6,
-      "growth": "medium", "tier": 1, "catchRate": 120,
-      "learnset": [[1, "pistolWhip"], [1, "snapShot"], [1, "reload"], [5, "doubleTap"], [9, "steadyAim"], [13, "ricochet"], [18, "tracerRound"], [24, "buckshot"]],
-      "evolution": [{ "to": "holster", "method": "level", "level": 16 }],
-      "spawn": { "districts": ["downtown", "park"], "times": ["dusk", "night"], "rarity": "uncommon", "levels": [3, 9], "temperament": "aggro" },
-      "model": { "height": 0.85, "weightKg": 30, "palette": { "primary": "#4a4f57", "secondary": "#2f3238", "accent": "#ff7a1a", "eye": "#ff8a00" } },
+      "id": "strapback",
+      "dex": 1,
+      "name": "Strapback",
+      "types": [
+        "gun"
+      ],
+      "stage": 1,
+      "line": "strapback",
+      "base": {
+        "hp": 45,
+        "attack": 60,
+        "defense": 45,
+        "speed": 55,
+        "loud": 60
+      },
+      "ammo": 6,
+      "growth": "medium",
+      "tier": 1,
+      "catchRate": 120,
+      "learnset": [
+        [
+          1,
+          "pistolWhip"
+        ],
+        [
+          1,
+          "snapShot"
+        ],
+        [
+          1,
+          "reload"
+        ],
+        [
+          5,
+          "doubleTap"
+        ],
+        [
+          9,
+          "steadyAim"
+        ],
+        [
+          13,
+          "ricochet"
+        ],
+        [
+          18,
+          "tracerRound"
+        ],
+        [
+          24,
+          "buckshot"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "holster",
+          "method": "level",
+          "level": 16
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "downtown",
+          "park"
+        ],
+        "times": [
+          "dusk",
+          "night"
+        ],
+        "rarity": "uncommon",
+        "levels": [
+          3,
+          9
+        ],
+        "temperament": "aggro"
+      },
+      "model": {
+        "height": 0.85,
+        "weightKg": 30,
+        "palette": {
+          "primary": "#4a4f57",
+          "secondary": "#2f3238",
+          "accent": "#ff7a1a",
+          "eye": "#ff8a00"
+        }
+      },
       "description": "A hooded street kid wrapped in gun tape. Its eye slits glow orange when it's about to shoot."
     },
     {
-      "id": "holster", "dex": 2, "name": "Holster", "types": ["gun"], "stage": 2, "line": "strapback",
-      "base": { "hp": 65, "attack": 80, "defense": 60, "speed": 70, "loud": 65 }, "ammo": 8,
-      "growth": "medium", "tier": 2, "catchRate": 45,
-      "learnset": [[1, "pistolWhip"], [1, "snapShot"], [1, "reload"], [1, "doubleTap"], [20, "suppressingFire"], [26, "buckshot"], [32, "longShot"]],
-      "evolution": [{ "to": "hardcase", "method": "item", "item": "steelCase" }],
-      "spawn": { "districts": ["downtown", "park"], "times": ["night"], "rarity": "rare", "levels": [18, 26], "temperament": "aggro" },
-      "model": { "height": 1.4, "weightKg": 55, "palette": { "primary": "#4a4f57", "secondary": "#6b4a2f", "accent": "#ff7a1a", "eye": "#ff8a00" } },
+      "id": "holster",
+      "dex": 2,
+      "name": "Holster",
+      "types": [
+        "gun"
+      ],
+      "stage": 2,
+      "line": "strapback",
+      "base": {
+        "hp": 65,
+        "attack": 80,
+        "defense": 60,
+        "speed": 70,
+        "loud": 65
+      },
+      "ammo": 8,
+      "growth": "medium",
+      "tier": 2,
+      "catchRate": 45,
+      "learnset": [
+        [
+          1,
+          "pistolWhip"
+        ],
+        [
+          1,
+          "snapShot"
+        ],
+        [
+          1,
+          "reload"
+        ],
+        [
+          1,
+          "doubleTap"
+        ],
+        [
+          20,
+          "suppressingFire"
+        ],
+        [
+          26,
+          "buckshot"
+        ],
+        [
+          32,
+          "longShot"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "hardcase",
+          "method": "item",
+          "item": "steelCase"
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "downtown",
+          "park"
+        ],
+        "times": [
+          "night"
+        ],
+        "rarity": "rare",
+        "levels": [
+          18,
+          26
+        ],
+        "temperament": "aggro"
+      },
+      "model": {
+        "height": 1.4,
+        "weightKg": 55,
+        "palette": {
+          "primary": "#4a4f57",
+          "secondary": "#6b4a2f",
+          "accent": "#ff7a1a",
+          "eye": "#ff8a00"
+        }
+      },
       "description": "Carries a pouch on each hip and never says what's in them."
     },
     {
-      "id": "hardcase", "dex": 3, "name": "Hardcase", "types": ["gun", "concrete"], "stage": 3, "line": "strapback",
-      "base": { "hp": 90, "attack": 100, "defense": 105, "speed": 55, "loud": 70 }, "ammo": 10,
-      "growth": "medium", "tier": 3, "catchRate": 15,
-      "learnset": [[1, "pistolWhip"], [1, "snapShot"], [1, "reload"], [1, "slabSlam"], [1, "emptyTheClip"], [40, "brace"], [46, "jackhammer"], [52, "longShot"]],
+      "id": "hardcase",
+      "dex": 3,
+      "name": "Hardcase",
+      "types": [
+        "gun",
+        "concrete"
+      ],
+      "stage": 3,
+      "line": "strapback",
+      "base": {
+        "hp": 90,
+        "attack": 100,
+        "defense": 105,
+        "speed": 55,
+        "loud": 70
+      },
+      "ammo": 10,
+      "growth": "medium",
+      "tier": 3,
+      "catchRate": 15,
+      "learnset": [
+        [
+          1,
+          "pistolWhip"
+        ],
+        [
+          1,
+          "snapShot"
+        ],
+        [
+          1,
+          "reload"
+        ],
+        [
+          1,
+          "slabSlam"
+        ],
+        [
+          1,
+          "emptyTheClip"
+        ],
+        [
+          40,
+          "brace"
+        ],
+        [
+          46,
+          "jackhammer"
+        ],
+        [
+          52,
+          "longShot"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": [], "times": [], "rarity": "rare", "levels": [40, 50], "temperament": "aggro" },
-      "model": { "height": 2.0, "weightKg": 180, "palette": { "primary": "#3d424a", "secondary": "#9a9a94", "accent": "#ff7a1a", "eye": "#ff8a00" } },
+      "spawn": {
+        "districts": [],
+        "times": [],
+        "rarity": "rare",
+        "levels": [
+          40,
+          50
+        ],
+        "temperament": "aggro"
+      },
+      "model": {
+        "height": 2.0,
+        "weightKg": 180,
+        "palette": {
+          "primary": "#3d424a",
+          "secondary": "#9a9a94",
+          "accent": "#ff7a1a",
+          "eye": "#ff8a00"
+        }
+      },
       "description": "Its torso is a hard case with a latch. Nobody has seen it open."
     },
     {
-      "id": "slugger", "dex": 4, "name": "Slugger", "types": ["gun"], "stage": 1, "line": "slugger",
-      "base": { "hp": 70, "attack": 85, "defense": 70, "speed": 60, "loud": 85 }, "ammo": 6,
-      "growth": "slow", "tier": 2, "catchRate": 60,
-      "learnset": [[1, "snapShot"], [1, "reload"], [1, "pistolWhip"], [8, "ricochet"], [15, "doubleTap"], [22, "emptyTheClip"], [30, "buckshot"]],
-      "evolution": [{ "to": "bigshot", "method": "level", "level": 30 }],
-      "spawn": { "districts": ["waterfront", "downtown", "park"], "times": ["night"], "rarity": "rare", "levels": [10, 20], "temperament": "aggro" },
-      "model": { "height": 0.9, "weightKg": 40, "palette": { "primary": "#c9a13b", "secondary": "#1d1d1f", "accent": "#ff7a1a", "eye": "#ff8a00" } },
+      "id": "slugger",
+      "dex": 4,
+      "name": "Slugger",
+      "types": [
+        "gun"
+      ],
+      "stage": 1,
+      "line": "slugger",
+      "base": {
+        "hp": 70,
+        "attack": 85,
+        "defense": 70,
+        "speed": 60,
+        "loud": 85
+      },
+      "ammo": 6,
+      "growth": "slow",
+      "tier": 2,
+      "catchRate": 60,
+      "learnset": [
+        [
+          1,
+          "snapShot"
+        ],
+        [
+          1,
+          "reload"
+        ],
+        [
+          1,
+          "pistolWhip"
+        ],
+        [
+          8,
+          "ricochet"
+        ],
+        [
+          15,
+          "doubleTap"
+        ],
+        [
+          22,
+          "emptyTheClip"
+        ],
+        [
+          30,
+          "buckshot"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "bigshot",
+          "method": "level",
+          "level": 30
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "waterfront",
+          "downtown",
+          "park"
+        ],
+        "times": [
+          "night"
+        ],
+        "rarity": "rare",
+        "levels": [
+          10,
+          20
+        ],
+        "temperament": "aggro"
+      },
+      "model": {
+        "height": 0.9,
+        "weightKg": 40,
+        "palette": {
+          "primary": "#c9a13b",
+          "secondary": "#1d1d1f",
+          "accent": "#ff7a1a",
+          "eye": "#ff8a00"
+        }
+      },
       "description": "A low brass hound with a revolver cylinder on each shoulder. Six rounds, then trouble."
     },
     {
-      "id": "longshot", "dex": 5, "name": "Longshot", "types": ["gun"], "stage": 1, "line": "longshot",
-      "base": { "hp": 40, "attack": 70, "defense": 35, "speed": 65, "loud": 30 }, "ammo": 3,
-      "growth": "medium", "tier": 1, "catchRate": 100,
-      "learnset": [[1, "snapShot"], [1, "reload"], [1, "steadyAim"], [7, "tracerRound"], [14, "ricochet"], [21, "longShot"]],
-      "evolution": [{ "to": "overwatch", "method": "level", "level": 28 }],
-      "spawn": { "districts": ["waterfront", "park"], "times": ["day", "dusk"], "rarity": "uncommon", "levels": [4, 12], "temperament": "flee" },
-      "model": { "height": 1.0, "weightKg": 18, "palette": { "primary": "#6b7a3a", "secondary": "#eeeeea", "accent": "#ff7a1a", "eye": "#ffb347" } },
+      "id": "longshot",
+      "dex": 5,
+      "name": "Longshot",
+      "types": [
+        "gun"
+      ],
+      "stage": 1,
+      "line": "longshot",
+      "base": {
+        "hp": 40,
+        "attack": 70,
+        "defense": 35,
+        "speed": 65,
+        "loud": 30
+      },
+      "ammo": 3,
+      "growth": "medium",
+      "tier": 1,
+      "catchRate": 100,
+      "learnset": [
+        [
+          1,
+          "snapShot"
+        ],
+        [
+          1,
+          "reload"
+        ],
+        [
+          1,
+          "steadyAim"
+        ],
+        [
+          7,
+          "tracerRound"
+        ],
+        [
+          14,
+          "ricochet"
+        ],
+        [
+          21,
+          "longShot"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "overwatch",
+          "method": "level",
+          "level": 28
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "waterfront",
+          "park"
+        ],
+        "times": [
+          "day",
+          "dusk"
+        ],
+        "rarity": "uncommon",
+        "levels": [
+          4,
+          12
+        ],
+        "temperament": "flee"
+      },
+      "model": {
+        "height": 1.0,
+        "weightKg": 18,
+        "palette": {
+          "primary": "#6b7a3a",
+          "secondary": "#eeeeea",
+          "accent": "#ff7a1a",
+          "eye": "#ffb347"
+        }
+      },
       "description": "A thin heron that watches the river through a scope eye."
     },
     {
-      "id": "overwatch", "dex": 6, "name": "Overwatch", "types": ["gun"], "stage": 2, "line": "longshot",
-      "base": { "hp": 60, "attack": 105, "defense": 50, "speed": 85, "loud": 35 }, "ammo": 4,
-      "growth": "medium", "tier": 2, "catchRate": 30,
-      "learnset": [[1, "snapShot"], [1, "reload"], [1, "steadyAim"], [1, "longShot"], [34, "suppressingFire"], [42, "emptyTheClip"]],
+      "id": "overwatch",
+      "dex": 6,
+      "name": "Overwatch",
+      "types": [
+        "gun"
+      ],
+      "stage": 2,
+      "line": "longshot",
+      "base": {
+        "hp": 60,
+        "attack": 105,
+        "defense": 50,
+        "speed": 85,
+        "loud": 35
+      },
+      "ammo": 4,
+      "growth": "medium",
+      "tier": 2,
+      "catchRate": 30,
+      "learnset": [
+        [
+          1,
+          "snapShot"
+        ],
+        [
+          1,
+          "reload"
+        ],
+        [
+          1,
+          "steadyAim"
+        ],
+        [
+          1,
+          "longShot"
+        ],
+        [
+          34,
+          "suppressingFire"
+        ],
+        [
+          42,
+          "emptyTheClip"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": ["waterfront"], "times": ["day", "dusk"], "rarity": "rare", "levels": [28, 35], "temperament": "flee" },
-      "model": { "height": 1.6, "weightKg": 70, "palette": { "primary": "#55622c", "secondary": "#eeeeea", "accent": "#ff7a1a", "eye": "#ffb347" } },
+      "spawn": {
+        "districts": [
+          "waterfront"
+        ],
+        "times": [
+          "day",
+          "dusk"
+        ],
+        "rarity": "rare",
+        "levels": [
+          28,
+          35
+        ],
+        "temperament": "flee"
+      },
+      "model": {
+        "height": 1.6,
+        "weightKg": 70,
+        "palette": {
+          "primary": "#55622c",
+          "secondary": "#eeeeea",
+          "accent": "#ff7a1a",
+          "eye": "#ffb347"
+        }
+      },
       "description": "Plants its tripod legs on a roof edge and doesn't move for hours."
     },
     {
-      "id": "cinderblock", "dex": 7, "name": "Cinderblock", "types": ["concrete"], "stage": 1, "line": "cinderblock",
-      "base": { "hp": 60, "attack": 55, "defense": 75, "speed": 25, "loud": 20 },
-      "growth": "slow", "tier": 1, "catchRate": 140,
-      "learnset": [[1, "slabSlam"], [1, "brace"], [6, "rebarJab"], [11, "brokenGlass"], [17, "rubbleDrop"], [24, "foundation"]],
-      "evolution": [{ "to": "overpass", "method": "level", "level": 30 }],
-      "spawn": { "districts": ["uptown", "midtown"], "times": ["day", "dusk", "night"], "rarity": "common", "levels": [2, 8], "temperament": "wander" },
-      "model": { "height": 0.9, "weightKg": 120, "palette": { "primary": "#8d8f91", "secondary": "#5a5c5e", "accent": "#a5522a", "eye": "#ffe9a8" } },
+      "id": "cinderblock",
+      "dex": 7,
+      "name": "Cinderblock",
+      "types": [
+        "concrete"
+      ],
+      "stage": 1,
+      "line": "cinderblock",
+      "base": {
+        "hp": 60,
+        "attack": 55,
+        "defense": 75,
+        "speed": 25,
+        "loud": 20
+      },
+      "growth": "slow",
+      "tier": 1,
+      "catchRate": 140,
+      "learnset": [
+        [
+          1,
+          "slabSlam"
+        ],
+        [
+          1,
+          "brace"
+        ],
+        [
+          6,
+          "rebarJab"
+        ],
+        [
+          11,
+          "brokenGlass"
+        ],
+        [
+          17,
+          "rubbleDrop"
+        ],
+        [
+          24,
+          "foundation"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "overpass",
+          "method": "level",
+          "level": 30
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "uptown",
+          "midtown"
+        ],
+        "times": [
+          "day",
+          "dusk",
+          "night"
+        ],
+        "rarity": "common",
+        "levels": [
+          2,
+          8
+        ],
+        "temperament": "wander"
+      },
+      "model": {
+        "height": 0.9,
+        "weightKg": 120,
+        "palette": {
+          "primary": "#8d8f91",
+          "secondary": "#5a5c5e",
+          "accent": "#a5522a",
+          "eye": "#ffe9a8"
+        }
+      },
       "description": "A stack of cinder blocks that decided to walk. Usually found on building sites."
     },
     {
-      "id": "overpass", "dex": 8, "name": "Overpass", "types": ["concrete"], "stage": 2, "line": "cinderblock",
-      "base": { "hp": 100, "attack": 90, "defense": 120, "speed": 30, "loud": 35 },
-      "growth": "slow", "tier": 3, "catchRate": 25,
-      "learnset": [[1, "slabSlam"], [1, "brace"], [1, "rubbleDrop"], [1, "brokenGlass"], [34, "jackhammer"], [44, "spanCollapse"]],
+      "id": "overpass",
+      "dex": 8,
+      "name": "Overpass",
+      "types": [
+        "concrete"
+      ],
+      "stage": 2,
+      "line": "cinderblock",
+      "base": {
+        "hp": 100,
+        "attack": 90,
+        "defense": 120,
+        "speed": 30,
+        "loud": 35
+      },
+      "growth": "slow",
+      "tier": 3,
+      "catchRate": 25,
+      "learnset": [
+        [
+          1,
+          "slabSlam"
+        ],
+        [
+          1,
+          "brace"
+        ],
+        [
+          1,
+          "rubbleDrop"
+        ],
+        [
+          1,
+          "brokenGlass"
+        ],
+        [
+          34,
+          "jackhammer"
+        ],
+        [
+          44,
+          "spanCollapse"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": ["waterfront"], "times": ["night"], "rarity": "rare", "levels": [30, 38], "temperament": "wander" },
-      "model": { "height": 2.2, "weightKg": 400, "palette": { "primary": "#8d8f91", "secondary": "#5a5c5e", "accent": "#a5522a", "eye": "#ffe9a8" } },
+      "spawn": {
+        "districts": [
+          "waterfront"
+        ],
+        "times": [
+          "night"
+        ],
+        "rarity": "rare",
+        "levels": [
+          30,
+          38
+        ],
+        "temperament": "wander"
+      },
+      "model": {
+        "height": 2.2,
+        "weightKg": 400,
+        "palette": {
+          "primary": "#8d8f91",
+          "secondary": "#5a5c5e",
+          "accent": "#a5522a",
+          "eye": "#ffe9a8"
+        }
+      },
       "description": "A walking bridge span. Traffic rumbles across its back in its dreams."
     },
     {
-      "id": "curbstone", "dex": 9, "name": "Curbstone", "types": ["concrete"], "stage": 1, "line": "curbstone",
-      "base": { "hp": 55, "attack": 60, "defense": 95, "speed": 40, "loud": 15 },
-      "growth": "medium", "tier": 1, "catchRate": 150,
-      "learnset": [[1, "slabSlam"], [1, "curbRoll"], [5, "brace"], [12, "brokenGlass"], [19, "rubbleDrop"], [27, "foundation"]],
-      "evolution": [{ "to": "curbcrusher", "method": "level", "level": 24 }],
-      "spawn": { "districts": ["uptown"], "times": ["day", "dusk"], "rarity": "common", "levels": [2, 10], "temperament": "flee" },
-      "model": { "height": 0.6, "weightKg": 60, "palette": { "primary": "#9a9a96", "secondary": "#6e6e6a", "accent": "#f2c230", "eye": "#1b1b1b" } },
+      "id": "curbstone",
+      "dex": 9,
+      "name": "Curbstone",
+      "types": [
+        "concrete"
+      ],
+      "stage": 1,
+      "line": "curbstone",
+      "base": {
+        "hp": 55,
+        "attack": 60,
+        "defense": 95,
+        "speed": 40,
+        "loud": 15
+      },
+      "growth": "medium",
+      "tier": 1,
+      "catchRate": 150,
+      "learnset": [
+        [
+          1,
+          "slabSlam"
+        ],
+        [
+          1,
+          "curbRoll"
+        ],
+        [
+          5,
+          "brace"
+        ],
+        [
+          12,
+          "brokenGlass"
+        ],
+        [
+          19,
+          "rubbleDrop"
+        ],
+        [
+          27,
+          "foundation"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "curbcrusher",
+          "method": "level",
+          "level": 24
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "uptown"
+        ],
+        "times": [
+          "day",
+          "dusk"
+        ],
+        "rarity": "common",
+        "levels": [
+          2,
+          10
+        ],
+        "temperament": "flee"
+      },
+      "model": {
+        "height": 0.6,
+        "weightKg": 60,
+        "palette": {
+          "primary": "#9a9a96",
+          "secondary": "#6e6e6a",
+          "accent": "#f2c230",
+          "eye": "#1b1b1b"
+        }
+      },
       "description": "An armadillo of kerb stones. Curls into a ball and waits for the danger to drive past."
     },
     {
-      "id": "rebarb", "dex": 10, "name": "Rebarb", "types": ["concrete", "gun"], "stage": 1, "line": "rebarb",
-      "base": { "hp": 60, "attack": 80, "defense": 80, "speed": 50, "loud": 45 }, "ammo": 5,
-      "growth": "medium", "tier": 2, "catchRate": 70,
-      "learnset": [[1, "rebarJab"], [1, "reload"], [1, "spikeVolley"], [9, "brace"], [16, "ricochet"], [23, "brokenGlass"], [31, "jackhammer"]],
-      "evolution": [{ "to": "barricade", "method": "level", "level": 30 }],
-      "spawn": { "districts": ["downtown", "park"], "times": ["day", "dusk", "night"], "rarity": "uncommon", "levels": [8, 16], "temperament": "aggro" },
-      "model": { "height": 0.7, "weightKg": 45, "palette": { "primary": "#4b4d50", "secondary": "#35373a", "accent": "#a63d2a", "eye": "#ffd27a" } },
+      "id": "rebarb",
+      "dex": 10,
+      "name": "Rebarb",
+      "types": [
+        "concrete",
+        "gun"
+      ],
+      "stage": 1,
+      "line": "rebarb",
+      "base": {
+        "hp": 60,
+        "attack": 80,
+        "defense": 80,
+        "speed": 50,
+        "loud": 45
+      },
+      "ammo": 5,
+      "growth": "medium",
+      "tier": 2,
+      "catchRate": 70,
+      "learnset": [
+        [
+          1,
+          "rebarJab"
+        ],
+        [
+          1,
+          "reload"
+        ],
+        [
+          1,
+          "spikeVolley"
+        ],
+        [
+          9,
+          "brace"
+        ],
+        [
+          16,
+          "ricochet"
+        ],
+        [
+          23,
+          "brokenGlass"
+        ],
+        [
+          31,
+          "jackhammer"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "barricade",
+          "method": "level",
+          "level": 30
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "downtown",
+          "park"
+        ],
+        "times": [
+          "day",
+          "dusk",
+          "night"
+        ],
+        "rarity": "uncommon",
+        "levels": [
+          8,
+          16
+        ],
+        "temperament": "aggro"
+      },
+      "model": {
+        "height": 0.7,
+        "weightKg": 45,
+        "palette": {
+          "primary": "#4b4d50",
+          "secondary": "#35373a",
+          "accent": "#a63d2a",
+          "eye": "#ffd27a"
+        }
+      },
       "description": "A porcupine bristling with steel rods. It fires them when cornered."
     },
     {
-      "id": "doubleshift", "dex": 11, "name": "Double Shift", "types": ["grind"], "stage": 1, "line": "doubleshift",
-      "base": { "hp": 50, "attack": 55, "defense": 45, "speed": 70, "loud": 40 },
-      "growth": "fast", "tier": 1, "catchRate": 160,
-      "learnset": [[1, "hustle"], [1, "clockIn"], [4, "shoulderCheck"], [9, "doubleShift"], [15, "grindDown"], [21, "overtimeShift"]],
-      "evolution": [{ "to": "overtime", "method": "condition", "minLevel": 22, "timeOfDay": "night" }],
-      "spawn": { "districts": ["midtown", "uptown"], "times": ["day", "dusk"], "rarity": "common", "levels": [2, 8], "temperament": "wander" },
-      "model": { "height": 0.9, "weightKg": 28, "palette": { "primary": "#2ec4a6", "secondary": "#f3ead2", "accent": "#1b3b36", "eye": "#1b1b1b" } },
+      "id": "doubleshift",
+      "dex": 11,
+      "name": "Double Shift",
+      "types": [
+        "grind"
+      ],
+      "stage": 1,
+      "line": "doubleshift",
+      "base": {
+        "hp": 50,
+        "attack": 55,
+        "defense": 45,
+        "speed": 70,
+        "loud": 40
+      },
+      "growth": "fast",
+      "tier": 1,
+      "catchRate": 160,
+      "learnset": [
+        [
+          1,
+          "hustle"
+        ],
+        [
+          1,
+          "clockIn"
+        ],
+        [
+          4,
+          "shoulderCheck"
+        ],
+        [
+          9,
+          "doubleShift"
+        ],
+        [
+          15,
+          "grindDown"
+        ],
+        [
+          21,
+          "overtimeShift"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "overtime",
+          "method": "condition",
+          "minLevel": 22,
+          "timeOfDay": "night"
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "midtown",
+          "uptown"
+        ],
+        "times": [
+          "day",
+          "dusk"
+        ],
+        "rarity": "common",
+        "levels": [
+          2,
+          8
+        ],
+        "temperament": "wander"
+      },
+      "model": {
+        "height": 0.9,
+        "weightKg": 28,
+        "palette": {
+          "primary": "#2ec4a6",
+          "secondary": "#f3ead2",
+          "accent": "#1b3b36",
+          "eye": "#1b1b1b"
+        }
+      },
       "description": "A wiry runner with a clock on its belly. Evolves if it levels up while working the night shift."
     },
     {
-      "id": "overtime", "dex": 12, "name": "Overtime", "types": ["grind"], "stage": 2, "line": "doubleshift",
-      "base": { "hp": 75, "attack": 90, "defense": 65, "speed": 100, "loud": 45 },
-      "growth": "fast", "tier": 2, "catchRate": 45,
-      "learnset": [[1, "hustle"], [1, "clockIn"], [1, "doubleShift"], [1, "grindDown"], [28, "burnout"], [36, "secondWind"]],
+      "id": "overtime",
+      "dex": 12,
+      "name": "Overtime",
+      "types": [
+        "grind"
+      ],
+      "stage": 2,
+      "line": "doubleshift",
+      "base": {
+        "hp": 75,
+        "attack": 90,
+        "defense": 65,
+        "speed": 100,
+        "loud": 45
+      },
+      "growth": "fast",
+      "tier": 2,
+      "catchRate": 45,
+      "learnset": [
+        [
+          1,
+          "hustle"
+        ],
+        [
+          1,
+          "clockIn"
+        ],
+        [
+          1,
+          "doubleShift"
+        ],
+        [
+          1,
+          "grindDown"
+        ],
+        [
+          28,
+          "burnout"
+        ],
+        [
+          36,
+          "secondWind"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": ["midtown"], "times": ["night"], "rarity": "rare", "levels": [22, 30], "temperament": "wander" },
-      "model": { "height": 1.5, "weightKg": 60, "palette": { "primary": "#2ec4a6", "secondary": "#f3ead2", "accent": "#e8505b", "eye": "#1b1b1b" } },
+      "spawn": {
+        "districts": [
+          "midtown"
+        ],
+        "times": [
+          "night"
+        ],
+        "rarity": "rare",
+        "levels": [
+          22,
+          30
+        ],
+        "temperament": "wander"
+      },
+      "model": {
+        "height": 1.5,
+        "weightKg": 60,
+        "palette": {
+          "primary": "#2ec4a6",
+          "secondary": "#f3ead2",
+          "accent": "#e8505b",
+          "eye": "#1b1b1b"
+        }
+      },
       "description": "Two clock faces, front and back. Has never once clocked out."
     },
     {
-      "id": "hustlepup", "dex": 13, "name": "Hustlepup", "types": ["grind"], "stage": 1, "line": "hustlepup",
-      "base": { "hp": 55, "attack": 65, "defense": 50, "speed": 75, "loud": 55 },
-      "growth": "fast", "tier": 1, "catchRate": 180,
-      "learnset": [[1, "hustle"], [1, "shoulderCheck"], [6, "clockIn"], [12, "shakedown"], [18, "grindDown"], [26, "secondWind"]],
-      "evolution": [{ "to": "hustlehound", "method": "level", "level": 22 }],
-      "spawn": { "districts": ["park", "uptown"], "times": ["day", "dusk"], "rarity": "common", "levels": [2, 9], "temperament": "wander" },
-      "model": { "height": 0.6, "weightKg": 22, "palette": { "primary": "#d9a62e", "secondary": "#6b4a2f", "accent": "#3b6ea5", "eye": "#1b1b1b" } },
+      "id": "hustlepup",
+      "dex": 13,
+      "name": "Hustlepup",
+      "types": [
+        "grind"
+      ],
+      "stage": 1,
+      "line": "hustlepup",
+      "base": {
+        "hp": 55,
+        "attack": 65,
+        "defense": 50,
+        "speed": 75,
+        "loud": 55
+      },
+      "growth": "fast",
+      "tier": 1,
+      "catchRate": 180,
+      "learnset": [
+        [
+          1,
+          "hustle"
+        ],
+        [
+          1,
+          "shoulderCheck"
+        ],
+        [
+          6,
+          "clockIn"
+        ],
+        [
+          12,
+          "shakedown"
+        ],
+        [
+          18,
+          "grindDown"
+        ],
+        [
+          26,
+          "secondWind"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "hustlehound",
+          "method": "level",
+          "level": 22
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "park",
+          "uptown"
+        ],
+        "times": [
+          "day",
+          "dusk"
+        ],
+        "rarity": "common",
+        "levels": [
+          2,
+          9
+        ],
+        "temperament": "wander"
+      },
+      "model": {
+        "height": 0.6,
+        "weightKg": 22,
+        "palette": {
+          "primary": "#d9a62e",
+          "secondary": "#6b4a2f",
+          "accent": "#3b6ea5",
+          "eye": "#1b1b1b"
+        }
+      },
       "description": "A scrappy dog hauling a backpack twice its size. Delivers anything, anywhere."
     },
     {
-      "id": "cashew", "dex": 14, "name": "Cashew", "types": ["grind"], "stage": 1, "line": "cashew",
-      "base": { "hp": 50, "attack": 50, "defense": 55, "speed": 85, "loud": 35 },
-      "growth": "fast", "tier": 1, "catchRate": 170,
-      "learnset": [[1, "hustle"], [1, "coinToss"], [7, "clockIn"], [13, "shakedown"], [20, "overtimeShift"], [28, "grindDown"]],
-      "evolution": [{ "to": "jackpot", "method": "level", "level": 22 }],
-      "spawn": { "districts": ["park"], "times": ["day", "dusk"], "rarity": "common", "levels": [2, 10], "temperament": "flee" },
-      "model": { "height": 0.5, "weightKg": 6, "palette": { "primary": "#e2b33c", "secondary": "#4f8a3c", "accent": "#f7d76b", "eye": "#1b1b1b" } },
+      "id": "cashew",
+      "dex": 14,
+      "name": "Cashew",
+      "types": [
+        "grind"
+      ],
+      "stage": 1,
+      "line": "cashew",
+      "base": {
+        "hp": 50,
+        "attack": 50,
+        "defense": 55,
+        "speed": 85,
+        "loud": 35
+      },
+      "growth": "fast",
+      "tier": 1,
+      "catchRate": 170,
+      "learnset": [
+        [
+          1,
+          "hustle"
+        ],
+        [
+          1,
+          "coinToss"
+        ],
+        [
+          7,
+          "clockIn"
+        ],
+        [
+          13,
+          "shakedown"
+        ],
+        [
+          20,
+          "overtimeShift"
+        ],
+        [
+          28,
+          "grindDown"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "jackpot",
+          "method": "level",
+          "level": 22
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "park"
+        ],
+        "times": [
+          "day",
+          "dusk"
+        ],
+        "rarity": "common",
+        "levels": [
+          2,
+          10
+        ],
+        "temperament": "flee"
+      },
+      "model": {
+        "height": 0.5,
+        "weightKg": 6,
+        "palette": {
+          "primary": "#e2b33c",
+          "secondary": "#4f8a3c",
+          "accent": "#f7d76b",
+          "eye": "#1b1b1b"
+        }
+      },
       "description": "A park squirrel with cheeks full of coins. It never spends them."
     },
     {
-      "id": "exhaustfume", "dex": 15, "name": "Exhaust Fume", "types": ["smoke"], "stage": 1, "line": "exhaustfume",
-      "base": { "hp": 45, "attack": 50, "defense": 40, "speed": 60, "loud": 30 },
-      "growth": "medium", "tier": 1, "catchRate": 150,
-      "learnset": [[1, "exhaust"], [1, "smokescreen"], [6, "haze"], [11, "fumeLeak"], [17, "smokeRing"], [23, "chokeHold"]],
-      "evolution": [{ "to": "backfire", "method": "item", "item": "sparkPlug" }],
-      "spawn": { "districts": ["downtown", "midtown"], "times": ["day", "dusk", "night"], "rarity": "common", "levels": [2, 9], "temperament": "wander" },
-      "model": { "height": 0.8, "weightKg": 3, "palette": { "primary": "#8a7f9c", "secondary": "#6d6380", "accent": "#2b2b2e", "eye": "#f5f0ff" } },
+      "id": "exhaustfume",
+      "dex": 15,
+      "name": "Exhaust Fume",
+      "types": [
+        "smoke"
+      ],
+      "stage": 1,
+      "line": "exhaustfume",
+      "base": {
+        "hp": 45,
+        "attack": 50,
+        "defense": 40,
+        "speed": 60,
+        "loud": 30
+      },
+      "growth": "medium",
+      "tier": 1,
+      "catchRate": 150,
+      "learnset": [
+        [
+          1,
+          "exhaust"
+        ],
+        [
+          1,
+          "smokescreen"
+        ],
+        [
+          6,
+          "haze"
+        ],
+        [
+          11,
+          "fumeLeak"
+        ],
+        [
+          17,
+          "smokeRing"
+        ],
+        [
+          23,
+          "chokeHold"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "backfire",
+          "method": "item",
+          "item": "sparkPlug"
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "downtown",
+          "midtown"
+        ],
+        "times": [
+          "day",
+          "dusk",
+          "night"
+        ],
+        "rarity": "common",
+        "levels": [
+          2,
+          9
+        ],
+        "temperament": "wander"
+      },
+      "model": {
+        "height": 0.8,
+        "weightKg": 3,
+        "palette": {
+          "primary": "#8a7f9c",
+          "secondary": "#6d6380",
+          "accent": "#2b2b2e",
+          "eye": "#f5f0ff"
+        }
+      },
       "description": "A cloud of exhaust that drifts out of tailpipes in traffic jams."
     },
     {
-      "id": "backfire", "dex": 16, "name": "Backfire", "types": ["smoke"], "stage": 2, "line": "exhaustfume",
-      "base": { "hp": 70, "attack": 85, "defense": 55, "speed": 80, "loud": 70 },
-      "growth": "medium", "tier": 2, "catchRate": 45,
-      "learnset": [[1, "exhaust"], [1, "smokescreen"], [1, "fumeLeak"], [1, "backfire"], [30, "sootBurst"], [38, "chokeHold"]],
+      "id": "backfire",
+      "dex": 16,
+      "name": "Backfire",
+      "types": [
+        "smoke"
+      ],
+      "stage": 2,
+      "line": "exhaustfume",
+      "base": {
+        "hp": 70,
+        "attack": 85,
+        "defense": 55,
+        "speed": 80,
+        "loud": 70
+      },
+      "growth": "medium",
+      "tier": 2,
+      "catchRate": 45,
+      "learnset": [
+        [
+          1,
+          "exhaust"
+        ],
+        [
+          1,
+          "smokescreen"
+        ],
+        [
+          1,
+          "fumeLeak"
+        ],
+        [
+          1,
+          "backfire"
+        ],
+        [
+          30,
+          "sootBurst"
+        ],
+        [
+          38,
+          "chokeHold"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": ["downtown", "park"], "times": ["night"], "rarity": "rare", "levels": [20, 30], "temperament": "aggro" },
-      "model": { "height": 1.4, "weightKg": 45, "palette": { "primary": "#7a6f8e", "secondary": "#5d5470", "accent": "#2b2b2e", "eye": "#ff6a1a" } },
+      "spawn": {
+        "districts": [
+          "downtown",
+          "park"
+        ],
+        "times": [
+          "night"
+        ],
+        "rarity": "rare",
+        "levels": [
+          20,
+          30
+        ],
+        "temperament": "aggro"
+      },
+      "model": {
+        "height": 1.4,
+        "weightKg": 45,
+        "palette": {
+          "primary": "#7a6f8e",
+          "secondary": "#5d5470",
+          "accent": "#2b2b2e",
+          "eye": "#ff6a1a"
+        }
+      },
       "description": "Its two pipes go off like gunshots. Hated by Gun types, who keep getting blamed."
     },
     {
-      "id": "hazeling", "dex": 17, "name": "Hazeling", "types": ["smoke"], "stage": 1, "line": "hazeling",
-      "base": { "hp": 50, "attack": 55, "defense": 45, "speed": 90, "loud": 20 },
-      "growth": "medium", "tier": 2, "catchRate": 75,
-      "learnset": [[1, "smokeRing"], [1, "haze"], [8, "smokescreen"], [14, "chokeHold"], [22, "sootBurst"], [30, "fumeLeak"]],
-      "evolution": [{ "to": "fogbank", "method": "level", "level": 28 }],
-      "spawn": { "districts": ["park"], "times": ["dusk", "night"], "rarity": "uncommon", "levels": [6, 15], "temperament": "flee" },
-      "model": { "height": 0.7, "weightKg": 8, "palette": { "primary": "#b9a3e3", "secondary": "#3fb7a8", "accent": "#e6dcff", "eye": "#3fb7a8" } },
+      "id": "hazeling",
+      "dex": 17,
+      "name": "Hazeling",
+      "types": [
+        "smoke"
+      ],
+      "stage": 1,
+      "line": "hazeling",
+      "base": {
+        "hp": 50,
+        "attack": 55,
+        "defense": 45,
+        "speed": 90,
+        "loud": 20
+      },
+      "growth": "medium",
+      "tier": 2,
+      "catchRate": 75,
+      "learnset": [
+        [
+          1,
+          "smokeRing"
+        ],
+        [
+          1,
+          "haze"
+        ],
+        [
+          8,
+          "smokescreen"
+        ],
+        [
+          14,
+          "chokeHold"
+        ],
+        [
+          22,
+          "sootBurst"
+        ],
+        [
+          30,
+          "fumeLeak"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "fogbank",
+          "method": "level",
+          "level": 28
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "park"
+        ],
+        "times": [
+          "dusk",
+          "night"
+        ],
+        "rarity": "uncommon",
+        "levels": [
+          6,
+          15
+        ],
+        "temperament": "flee"
+      },
+      "model": {
+        "height": 0.7,
+        "weightKg": 8,
+        "palette": {
+          "primary": "#b9a3e3",
+          "secondary": "#3fb7a8",
+          "accent": "#e6dcff",
+          "eye": "#3fb7a8"
+        }
+      },
       "description": "A see-through fox with three ring-tipped tails. Gone the moment you look straight at it."
     },
     {
-      "id": "flue", "dex": 18, "name": "Flue", "types": ["smoke", "concrete"], "stage": 1, "line": "flue",
-      "base": { "hp": 70, "attack": 70, "defense": 85, "speed": 45, "loud": 40 },
-      "growth": "slow", "tier": 2, "catchRate": 60,
-      "learnset": [[1, "exhaust"], [1, "slabSlam"], [9, "smokescreen"], [16, "brokenGlass"], [24, "sootBurst"], [32, "rubbleDrop"]],
-      "evolution": [{ "to": "smokestack", "method": "level", "level": 32 }],
-      "spawn": { "districts": ["uptown"], "times": ["night"], "rarity": "uncommon", "levels": [10, 18], "temperament": "wander" },
-      "model": { "height": 1.3, "weightKg": 90, "palette": { "primary": "#333336", "secondary": "#4a4a4e", "accent": "#ff6a1a", "eye": "#ff6a1a" } },
+      "id": "flue",
+      "dex": 18,
+      "name": "Flue",
+      "types": [
+        "smoke",
+        "concrete"
+      ],
+      "stage": 1,
+      "line": "flue",
+      "base": {
+        "hp": 70,
+        "attack": 70,
+        "defense": 85,
+        "speed": 45,
+        "loud": 40
+      },
+      "growth": "slow",
+      "tier": 2,
+      "catchRate": 60,
+      "learnset": [
+        [
+          1,
+          "exhaust"
+        ],
+        [
+          1,
+          "slabSlam"
+        ],
+        [
+          9,
+          "smokescreen"
+        ],
+        [
+          16,
+          "brokenGlass"
+        ],
+        [
+          24,
+          "sootBurst"
+        ],
+        [
+          32,
+          "rubbleDrop"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "smokestack",
+          "method": "level",
+          "level": 32
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "uptown"
+        ],
+        "times": [
+          "night"
+        ],
+        "rarity": "uncommon",
+        "levels": [
+          10,
+          18
+        ],
+        "temperament": "wander"
+      },
+      "model": {
+        "height": 1.3,
+        "weightKg": 90,
+        "palette": {
+          "primary": "#333336",
+          "secondary": "#4a4a4e",
+          "accent": "#ff6a1a",
+          "eye": "#ff6a1a"
+        }
+      },
       "description": "A tall lizard with a brick chimney on its back that puffs soot rings."
     },
     {
-      "id": "subsonic", "dex": 19, "name": "Subsonic", "types": ["bass"], "stage": 1, "line": "subsonic",
-      "base": { "hp": 55, "attack": 60, "defense": 45, "speed": 75, "loud": 80 },
-      "growth": "medium", "tier": 1, "catchRate": 130,
-      "learnset": [[1, "thump"], [1, "tempo"], [6, "feedback"], [12, "soundWall"], [18, "subPulse"], [25, "theDrop"]],
-      "evolution": [{ "to": "woofer", "method": "condition", "minLevel": 20, "district": "downtown" }],
-      "spawn": { "districts": ["midtown", "downtown"], "times": ["night"], "rarity": "common", "levels": [3, 10], "temperament": "wander" },
-      "model": { "height": 0.8, "weightKg": 25, "palette": { "primary": "#18181b", "secondary": "#2a2a30", "accent": "#2f7bff", "eye": "#2f7bff" } },
+      "id": "subsonic",
+      "dex": 19,
+      "name": "Subsonic",
+      "types": [
+        "bass"
+      ],
+      "stage": 1,
+      "line": "subsonic",
+      "base": {
+        "hp": 55,
+        "attack": 60,
+        "defense": 45,
+        "speed": 75,
+        "loud": 80
+      },
+      "growth": "medium",
+      "tier": 1,
+      "catchRate": 130,
+      "learnset": [
+        [
+          1,
+          "thump"
+        ],
+        [
+          1,
+          "tempo"
+        ],
+        [
+          6,
+          "feedback"
+        ],
+        [
+          12,
+          "soundWall"
+        ],
+        [
+          18,
+          "subPulse"
+        ],
+        [
+          25,
+          "theDrop"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "woofer",
+          "method": "condition",
+          "minLevel": 20,
+          "district": "downtown"
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "midtown",
+          "downtown"
+        ],
+        "times": [
+          "night"
+        ],
+        "rarity": "common",
+        "levels": [
+          3,
+          10
+        ],
+        "temperament": "wander"
+      },
+      "model": {
+        "height": 0.8,
+        "weightKg": 25,
+        "palette": {
+          "primary": "#18181b",
+          "secondary": "#2a2a30",
+          "accent": "#2f7bff",
+          "eye": "#2f7bff"
+        }
+      },
       "description": "A round speaker-cone beast. Evolves if it levels up near the downtown clubs."
     },
     {
-      "id": "woofer", "dex": 20, "name": "Woofer", "types": ["bass"], "stage": 2, "line": "subsonic",
-      "base": { "hp": 80, "attack": 95, "defense": 65, "speed": 95, "loud": 100 },
-      "growth": "medium", "tier": 2, "catchRate": 45,
-      "learnset": [[1, "thump"], [1, "feedback"], [1, "subPulse"], [1, "tempo"], [28, "theDrop"], [36, "soundWall"]],
+      "id": "woofer",
+      "dex": 20,
+      "name": "Woofer",
+      "types": [
+        "bass"
+      ],
+      "stage": 2,
+      "line": "subsonic",
+      "base": {
+        "hp": 80,
+        "attack": 95,
+        "defense": 65,
+        "speed": 95,
+        "loud": 100
+      },
+      "growth": "medium",
+      "tier": 2,
+      "catchRate": 45,
+      "learnset": [
+        [
+          1,
+          "thump"
+        ],
+        [
+          1,
+          "feedback"
+        ],
+        [
+          1,
+          "subPulse"
+        ],
+        [
+          1,
+          "tempo"
+        ],
+        [
+          28,
+          "theDrop"
+        ],
+        [
+          36,
+          "soundWall"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": ["downtown", "park"], "times": ["night"], "rarity": "rare", "levels": [20, 30], "temperament": "aggro" },
-      "model": { "height": 1.5, "weightKg": 85, "palette": { "primary": "#18181b", "secondary": "#2a2a30", "accent": "#2f7bff", "eye": "#2f7bff" } },
+      "spawn": {
+        "districts": [
+          "downtown",
+          "park"
+        ],
+        "times": [
+          "night"
+        ],
+        "rarity": "rare",
+        "levels": [
+          20,
+          30
+        ],
+        "temperament": "aggro"
+      },
+      "model": {
+        "height": 1.5,
+        "weightKg": 85,
+        "palette": {
+          "primary": "#18181b",
+          "secondary": "#2a2a30",
+          "accent": "#2f7bff",
+          "eye": "#2f7bff"
+        }
+      },
       "description": "Three cones and a ring on its back. Windows rattle a block away."
     },
     {
-      "id": "streetlamp", "dex": 21, "name": "Streetlamp", "types": ["bass"], "stage": 1, "line": "streetlamp",
-      "base": { "hp": 50, "attack": 60, "defense": 50, "speed": 95, "loud": 50 },
-      "growth": "medium", "tier": 2, "catchRate": 90,
-      "learnset": [[1, "staticLash"], [1, "lampFlash"], [8, "tempo"], [15, "feedback"], [22, "subPulse"], [30, "soundWall"]],
-      "evolution": [{ "to": "floodlight", "method": "level", "level": 26 }],
-      "spawn": { "districts": ["park", "uptown"], "times": ["dusk", "night"], "rarity": "uncommon", "levels": [5, 14], "temperament": "flee" },
-      "model": { "height": 1.0, "weightKg": 12, "palette": { "primary": "#1e2a4a", "secondary": "#2c3c66", "accent": "#ffd23f", "eye": "#ffd23f" } },
+      "id": "streetlamp",
+      "dex": 21,
+      "name": "Streetlamp",
+      "types": [
+        "bass"
+      ],
+      "stage": 1,
+      "line": "streetlamp",
+      "base": {
+        "hp": 50,
+        "attack": 60,
+        "defense": 50,
+        "speed": 95,
+        "loud": 50
+      },
+      "growth": "medium",
+      "tier": 2,
+      "catchRate": 90,
+      "learnset": [
+        [
+          1,
+          "staticLash"
+        ],
+        [
+          1,
+          "lampFlash"
+        ],
+        [
+          8,
+          "tempo"
+        ],
+        [
+          15,
+          "feedback"
+        ],
+        [
+          22,
+          "subPulse"
+        ],
+        [
+          30,
+          "soundWall"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "floodlight",
+          "method": "level",
+          "level": 26
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "park",
+          "uptown"
+        ],
+        "times": [
+          "dusk",
+          "night"
+        ],
+        "rarity": "uncommon",
+        "levels": [
+          5,
+          14
+        ],
+        "temperament": "flee"
+      },
+      "model": {
+        "height": 1.0,
+        "weightKg": 12,
+        "palette": {
+          "primary": "#1e2a4a",
+          "secondary": "#2c3c66",
+          "accent": "#ffd23f",
+          "eye": "#ffd23f"
+        }
+      },
       "description": "A moth with a lamp-post body. Hums at mains frequency."
     },
     {
-      "id": "wirewhip", "dex": 22, "name": "Wirewhip", "types": ["bass"], "stage": 1, "line": "wirewhip",
-      "base": { "hp": 55, "attack": 85, "defense": 45, "speed": 90, "loud": 60 },
-      "growth": "slow", "tier": 2, "catchRate": 50,
-      "learnset": [[1, "staticLash"], [1, "wireSnap"], [10, "feedback"], [17, "tempo"], [25, "subPulse"], [33, "theDrop"]],
-      "evolution": [{ "to": "livewire", "method": "level", "level": 33 }],
-      "spawn": { "districts": ["waterfront", "park"], "times": ["night"], "rarity": "rare", "levels": [10, 20], "temperament": "aggro" },
-      "model": { "height": 1.2, "weightKg": 20, "palette": { "primary": "#151517", "secondary": "#26262a", "accent": "#ff2fd0", "eye": "#ff2fd0" } },
+      "id": "wirewhip",
+      "dex": 22,
+      "name": "Wirewhip",
+      "types": [
+        "bass"
+      ],
+      "stage": 1,
+      "line": "wirewhip",
+      "base": {
+        "hp": 55,
+        "attack": 85,
+        "defense": 45,
+        "speed": 90,
+        "loud": 60
+      },
+      "growth": "slow",
+      "tier": 2,
+      "catchRate": 50,
+      "learnset": [
+        [
+          1,
+          "staticLash"
+        ],
+        [
+          1,
+          "wireSnap"
+        ],
+        [
+          10,
+          "feedback"
+        ],
+        [
+          17,
+          "tempo"
+        ],
+        [
+          25,
+          "subPulse"
+        ],
+        [
+          33,
+          "theDrop"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "livewire",
+          "method": "level",
+          "level": 33
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "waterfront",
+          "park"
+        ],
+        "times": [
+          "night"
+        ],
+        "rarity": "rare",
+        "levels": [
+          10,
+          20
+        ],
+        "temperament": "aggro"
+      },
+      "model": {
+        "height": 1.2,
+        "weightKg": 20,
+        "palette": {
+          "primary": "#151517",
+          "secondary": "#26262a",
+          "accent": "#ff2fd0",
+          "eye": "#ff2fd0"
+        }
+      },
       "description": "An eel that hangs from a stub of power line, crackling."
     },
     {
-      "id": "rooftail", "dex": 23, "name": "Rooftail", "types": ["wire"], "stage": 1, "line": "rooftail",
-      "base": { "hp": 40, "attack": 50, "defense": 35, "speed": 80, "loud": 55 },
-      "growth": "fast", "tier": 1, "catchRate": 180,
-      "learnset": [[1, "zap"], [1, "hustle"], [6, "staticCharge"], [11, "antennaPeck"], [16, "signalJam"], [22, "feedback"]],
-      "evolution": [{ "to": "antennaroc", "method": "level", "level": 20 }],
-      "spawn": { "districts": ["uptown", "midtown", "downtown"], "times": ["day", "dusk"], "rarity": "common", "levels": [4, 11], "temperament": "flee", "biomes": ["roof"], "biomeWeight": { "roof": 3 }, "roofs": { "minHeight": 10, "near": ["antenna"] } },
-      "model": { "height": 0.6, "weightKg": 1.8, "palette": { "primary": "#7d8796", "secondary": "#4b5260", "accent": "#59d3ff", "eye": "#ffb020" } },
+      "id": "rooftail",
+      "dex": 23,
+      "name": "Rooftail",
+      "types": [
+        "wire"
+      ],
+      "stage": 1,
+      "line": "rooftail",
+      "base": {
+        "hp": 40,
+        "attack": 50,
+        "defense": 35,
+        "speed": 80,
+        "loud": 55
+      },
+      "growth": "fast",
+      "tier": 1,
+      "catchRate": 180,
+      "learnset": [
+        [
+          1,
+          "zap"
+        ],
+        [
+          1,
+          "hustle"
+        ],
+        [
+          6,
+          "staticCharge"
+        ],
+        [
+          11,
+          "antennaPeck"
+        ],
+        [
+          16,
+          "signalJam"
+        ],
+        [
+          22,
+          "feedback"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "antennaroc",
+          "method": "level",
+          "level": 20
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "uptown",
+          "midtown",
+          "downtown"
+        ],
+        "times": [
+          "day",
+          "dusk"
+        ],
+        "rarity": "common",
+        "levels": [
+          4,
+          11
+        ],
+        "temperament": "flee",
+        "biomes": [
+          "roof"
+        ],
+        "biomeWeight": {
+          "roof": 3
+        },
+        "roofs": {
+          "minHeight": 10,
+          "near": [
+            "antenna"
+          ]
+        }
+      },
+      "model": {
+        "height": 0.6,
+        "weightKg": 1.8,
+        "palette": {
+          "primary": "#7d8796",
+          "secondary": "#4b5260",
+          "accent": "#59d3ff",
+          "eye": "#ffb020"
+        }
+      },
       "description": "A city pigeon that nests in rooftop antennas and hums with stolen current."
     },
     {
-      "id": "antennaroc", "dex": 24, "name": "Antennaroc", "types": ["wire",  "bass"], "stage": 2, "line": "rooftail",
-      "base": { "hp": 75, "attack": 90, "defense": 60, "speed": 105, "loud": 90 },
-      "growth": "fast", "tier": 2, "catchRate": 60,
-      "learnset": [[1, "zap"], [1, "antennaPeck"], [1, "signalJam"], [1, "feedback"], [26, "powerSurge"], [32, "subPulse"]],
+      "id": "antennaroc",
+      "dex": 24,
+      "name": "Antennaroc",
+      "types": [
+        "wire",
+        "bass"
+      ],
+      "stage": 2,
+      "line": "rooftail",
+      "base": {
+        "hp": 75,
+        "attack": 90,
+        "defense": 60,
+        "speed": 105,
+        "loud": 90
+      },
+      "growth": "fast",
+      "tier": 2,
+      "catchRate": 60,
+      "learnset": [
+        [
+          1,
+          "zap"
+        ],
+        [
+          1,
+          "antennaPeck"
+        ],
+        [
+          1,
+          "signalJam"
+        ],
+        [
+          1,
+          "feedback"
+        ],
+        [
+          26,
+          "powerSurge"
+        ],
+        [
+          32,
+          "subPulse"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": ["midtown", "downtown"], "times": ["dusk"], "rarity": "rare", "levels": [20, 28], "temperament": "aggro", "biomes": ["roof"] },
-      "model": { "height": 1.3, "weightKg": 9, "palette": { "primary": "#6b7480", "secondary": "#3c424c", "accent": "#59d3ff", "eye": "#ffb020" } },
+      "spawn": {
+        "districts": [
+          "midtown",
+          "downtown"
+        ],
+        "times": [
+          "dusk"
+        ],
+        "rarity": "rare",
+        "levels": [
+          20,
+          28
+        ],
+        "temperament": "aggro",
+        "biomes": [
+          "roof"
+        ]
+      },
+      "model": {
+        "height": 1.3,
+        "weightKg": 9,
+        "palette": {
+          "primary": "#6b7480",
+          "secondary": "#3c424c",
+          "accent": "#59d3ff",
+          "eye": "#ffb020"
+        }
+      },
       "description": "Its crest is a full rooftop aerial. When it lands, every TV on the block loses the picture."
     },
     {
-      "id": "neonmoth", "dex": 25, "name": "Neonmoth", "types": ["wire",  "smoke"], "stage": 1, "line": "neonmoth",
-      "base": { "hp": 45, "attack": 45, "defense": 40, "speed": 75, "loud": 60 },
-      "growth": "medium", "tier": 1, "catchRate": 150,
-      "learnset": [[1, "zap"], [1, "exhaust"], [7, "neonFlash"], [12, "smokescreen"], [17, "signalJam"], [23, "smokeRing"]],
-      "evolution": [{ "to": "marqueen", "method": "condition", "minLevel": 24, "timeOfDay": "night" }],
-      "spawn": { "districts": ["midtown", "downtown"], "times": ["dusk", "night"], "rarity": "common", "levels": [5, 12], "temperament": "wander", "biomes": ["roof"], "biomeWeight": { "roof": 2 } },
-      "model": { "height": 0.7, "weightKg": 0.8, "palette": { "primary": "#6c5a8e", "secondary": "#24202e", "accent": "#ff4fd8", "eye": "#7af7ff" } },
+      "id": "neonmoth",
+      "dex": 25,
+      "name": "Neonmoth",
+      "types": [
+        "wire",
+        "smoke"
+      ],
+      "stage": 1,
+      "line": "neonmoth",
+      "base": {
+        "hp": 45,
+        "attack": 45,
+        "defense": 40,
+        "speed": 75,
+        "loud": 60
+      },
+      "growth": "medium",
+      "tier": 1,
+      "catchRate": 150,
+      "learnset": [
+        [
+          1,
+          "zap"
+        ],
+        [
+          1,
+          "exhaust"
+        ],
+        [
+          7,
+          "neonFlash"
+        ],
+        [
+          12,
+          "smokescreen"
+        ],
+        [
+          17,
+          "signalJam"
+        ],
+        [
+          23,
+          "smokeRing"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "marqueen",
+          "method": "condition",
+          "minLevel": 24,
+          "timeOfDay": "night"
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "midtown",
+          "downtown"
+        ],
+        "times": [
+          "dusk",
+          "night"
+        ],
+        "rarity": "common",
+        "levels": [
+          5,
+          12
+        ],
+        "temperament": "wander",
+        "biomes": [
+          "roof"
+        ],
+        "biomeWeight": {
+          "roof": 2
+        }
+      },
+      "model": {
+        "height": 0.7,
+        "weightKg": 0.8,
+        "palette": {
+          "primary": "#6c5a8e",
+          "secondary": "#24202e",
+          "accent": "#ff4fd8",
+          "eye": "#7af7ff"
+        }
+      },
       "description": "Drawn to neon like other moths are to porch lights. Its wings are outlined in tubes that buzz when it's nervous."
     },
     {
-      "id": "marqueen", "dex": 26, "name": "Marqueen", "types": ["wire",  "smoke"], "stage": 2, "line": "neonmoth",
-      "base": { "hp": 80, "attack": 85, "defense": 70, "speed": 95, "loud": 100 },
-      "growth": "medium", "tier": 2, "catchRate": 45,
-      "learnset": [[1, "zap"], [1, "neonFlash"], [1, "smokeRing"], [1, "signalJam"], [24, "lightsOut"], [30, "sootBurst"], [36, "powerSurge"]],
+      "id": "marqueen",
+      "dex": 26,
+      "name": "Marqueen",
+      "types": [
+        "wire",
+        "smoke"
+      ],
+      "stage": 2,
+      "line": "neonmoth",
+      "base": {
+        "hp": 80,
+        "attack": 85,
+        "defense": 70,
+        "speed": 95,
+        "loud": 100
+      },
+      "growth": "medium",
+      "tier": 2,
+      "catchRate": 45,
+      "learnset": [
+        [
+          1,
+          "zap"
+        ],
+        [
+          1,
+          "neonFlash"
+        ],
+        [
+          1,
+          "smokeRing"
+        ],
+        [
+          1,
+          "signalJam"
+        ],
+        [
+          24,
+          "lightsOut"
+        ],
+        [
+          30,
+          "sootBurst"
+        ],
+        [
+          36,
+          "powerSurge"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": ["downtown"], "times": ["night"], "rarity": "rare", "levels": [24, 32], "temperament": "wander", "biomes": ["roof"] },
-      "model": { "height": 1.4, "weightKg": 4, "palette": { "primary": "#6c5a8e", "secondary": "#1c1824", "accent": "#ffcf3f", "eye": "#ff4fd8" } },
+      "spawn": {
+        "districts": [
+          "downtown"
+        ],
+        "times": [
+          "night"
+        ],
+        "rarity": "rare",
+        "levels": [
+          24,
+          32
+        ],
+        "temperament": "wander",
+        "biomes": [
+          "roof"
+        ]
+      },
+      "model": {
+        "height": 1.4,
+        "weightKg": 4,
+        "palette": {
+          "primary": "#6c5a8e",
+          "secondary": "#1c1824",
+          "accent": "#ffcf3f",
+          "eye": "#ff4fd8"
+        }
+      },
       "description": "Its wings are theatre marquees studded with bulbs. Broadway closes early on nights it's out."
     },
     {
-      "id": "dishling", "dex": 27, "name": "Dishling", "types": ["wire"], "stage": 1, "line": "dishling",
-      "base": { "hp": 55, "attack": 40, "defense": 70, "speed": 30, "loud": 45 },
-      "growth": "slow", "tier": 1, "catchRate": 160,
-      "learnset": [[1, "zap"], [1, "brace"], [8, "staticCharge"], [13, "signalJam"], [19, "slabSlam"], [25, "powerSurge"]],
-      "evolution": [{ "to": "broadcastle", "method": "level", "level": 28 }],
-      "spawn": { "districts": ["uptown", "midtown"], "times": ["day", "dusk", "night"], "rarity": "uncommon", "levels": [6, 13], "temperament": "wander", "biomes": ["roof"] },
-      "model": { "height": 0.55, "weightKg": 14, "palette": { "primary": "#e8e6df", "secondary": "#7f8a74", "accent": "#7dff6a", "eye": "#1e1e22" } },
+      "id": "dishling",
+      "dex": 27,
+      "name": "Dishling",
+      "types": [
+        "wire"
+      ],
+      "stage": 1,
+      "line": "dishling",
+      "base": {
+        "hp": 55,
+        "attack": 40,
+        "defense": 70,
+        "speed": 30,
+        "loud": 45
+      },
+      "growth": "slow",
+      "tier": 1,
+      "catchRate": 160,
+      "learnset": [
+        [
+          1,
+          "zap"
+        ],
+        [
+          1,
+          "brace"
+        ],
+        [
+          8,
+          "staticCharge"
+        ],
+        [
+          13,
+          "signalJam"
+        ],
+        [
+          19,
+          "slabSlam"
+        ],
+        [
+          25,
+          "powerSurge"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "broadcastle",
+          "method": "level",
+          "level": 28
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "uptown",
+          "midtown"
+        ],
+        "times": [
+          "day",
+          "dusk",
+          "night"
+        ],
+        "rarity": "uncommon",
+        "levels": [
+          6,
+          13
+        ],
+        "temperament": "wander",
+        "biomes": [
+          "roof"
+        ]
+      },
+      "model": {
+        "height": 0.55,
+        "weightKg": 14,
+        "palette": {
+          "primary": "#e8e6df",
+          "secondary": "#7f8a74",
+          "accent": "#7dff6a",
+          "eye": "#1e1e22"
+        }
+      },
       "description": "A turtle whose shell is a satellite dish. It turns slowly to follow the strongest signal."
     },
     {
-      "id": "broadcastle", "dex": 28, "name": "Broadcastle", "types": ["wire",  "concrete"], "stage": 2, "line": "dishling",
-      "base": { "hp": 100, "attack": 80, "defense": 115, "speed": 35, "loud": 80 },
-      "growth": "slow", "tier": 3, "catchRate": 30,
-      "learnset": [[1, "zap"], [1, "brace"], [1, "signalJam"], [1, "rubbleDrop"], [28, "dishBeam"], [36, "foundation"], [42, "powerSurge"]],
+      "id": "broadcastle",
+      "dex": 28,
+      "name": "Broadcastle",
+      "types": [
+        "wire",
+        "concrete"
+      ],
+      "stage": 2,
+      "line": "dishling",
+      "base": {
+        "hp": 100,
+        "attack": 80,
+        "defense": 115,
+        "speed": 35,
+        "loud": 80
+      },
+      "growth": "slow",
+      "tier": 3,
+      "catchRate": 30,
+      "learnset": [
+        [
+          1,
+          "zap"
+        ],
+        [
+          1,
+          "brace"
+        ],
+        [
+          1,
+          "signalJam"
+        ],
+        [
+          1,
+          "rubbleDrop"
+        ],
+        [
+          28,
+          "dishBeam"
+        ],
+        [
+          36,
+          "foundation"
+        ],
+        [
+          42,
+          "powerSurge"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": ["uptown"], "times": ["night"], "rarity": "rare", "levels": [28, 36], "temperament": "aggro", "biomes": ["roof"] },
-      "model": { "height": 2.1, "weightKg": 650, "palette": { "primary": "#e8e6df", "secondary": "#9a988f", "accent": "#7dff6a", "eye": "#ff3b30" } },
+      "spawn": {
+        "districts": [
+          "uptown"
+        ],
+        "times": [
+          "night"
+        ],
+        "rarity": "rare",
+        "levels": [
+          28,
+          36
+        ],
+        "temperament": "aggro",
+        "biomes": [
+          "roof"
+        ]
+      },
+      "model": {
+        "height": 2.1,
+        "weightKg": 650,
+        "palette": {
+          "primary": "#e8e6df",
+          "secondary": "#9a988f",
+          "accent": "#7dff6a",
+          "eye": "#ff3b30"
+        }
+      },
       "description": "A concrete broadcast tower on legs. Pirate radio DJs follow it from roof to roof."
     },
     {
-      "id": "gutterat", "dex": 29, "name": "Gutterat", "types": ["sludge"], "stage": 1, "line": "gutterat",
-      "base": { "hp": 40, "attack": 55, "defense": 35, "speed": 70, "loud": 50 },
-      "growth": "fast", "tier": 1, "catchRate": 190,
-      "learnset": [[1,  "ooze"],  [1,  "hustle"],  [6,  "clog"],  [11,  "corrode"],  [16,  "shakedown"],  [21,  "toxicSplash"]],
-      "evolution": [{ "to": "ratking", "method": "level", "level": 22 }],
-      "spawn": { "districts": ["uptown", "midtown", "downtown"], "times": ["day", "dusk", "night"], "rarity": "common", "levels": [4, 12], "temperament": "flee", "biomes": ["sewer"], "biomeWeight": { "sewer": 3 }, "sewer": { "zones": ["tunnel", "deadEnd"] } },
-      "model": { "height": 0.5, "weightKg": 2, "palette": { "primary": "#6b5f55", "secondary": "#3a332e", "accent": "#9be22d", "eye": "#ff4040" } },
+      "id": "gutterat",
+      "dex": 29,
+      "name": "Gutterat",
+      "types": [
+        "sludge"
+      ],
+      "stage": 1,
+      "line": "gutterat",
+      "base": {
+        "hp": 40,
+        "attack": 55,
+        "defense": 35,
+        "speed": 70,
+        "loud": 50
+      },
+      "growth": "fast",
+      "tier": 1,
+      "catchRate": 190,
+      "learnset": [
+        [
+          1,
+          "ooze"
+        ],
+        [
+          1,
+          "hustle"
+        ],
+        [
+          6,
+          "clog"
+        ],
+        [
+          11,
+          "corrode"
+        ],
+        [
+          16,
+          "shakedown"
+        ],
+        [
+          21,
+          "toxicSplash"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "ratking",
+          "method": "level",
+          "level": 22
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "uptown",
+          "midtown",
+          "downtown"
+        ],
+        "times": [
+          "day",
+          "dusk",
+          "night"
+        ],
+        "rarity": "common",
+        "levels": [
+          4,
+          12
+        ],
+        "temperament": "flee",
+        "biomes": [
+          "sewer"
+        ],
+        "biomeWeight": {
+          "sewer": 3
+        },
+        "sewer": {
+          "zones": [
+            "tunnel",
+            "deadEnd"
+          ]
+        }
+      },
+      "model": {
+        "height": 0.5,
+        "weightKg": 2,
+        "palette": {
+          "primary": "#6b5f55",
+          "secondary": "#3a332e",
+          "accent": "#9be22d",
+          "eye": "#ff4040"
+        }
+      },
       "description": "A sewer rat with sludge dripping off its whiskers. Never alone: where there's one, there are twenty."
     },
     {
-      "id": "ratking", "dex": 30, "name": "Ratking", "types": ["sludge",  "grind"], "stage": 2, "line": "gutterat",
-      "base": { "hp": 80, "attack": 95, "defense": 65, "speed": 90, "loud": 80 },
-      "growth": "fast", "tier": 2, "catchRate": 50,
-      "learnset": [[1,  "ooze"],  [1,  "corrode"],  [1,  "shakedown"],  [1,  "toxicSplash"],  [22,  "plague"],  [30,  "grindDown"],  [36,  "backflow"]],
+      "id": "ratking",
+      "dex": 30,
+      "name": "Ratking",
+      "types": [
+        "sludge",
+        "grind"
+      ],
+      "stage": 2,
+      "line": "gutterat",
+      "base": {
+        "hp": 80,
+        "attack": 95,
+        "defense": 65,
+        "speed": 90,
+        "loud": 80
+      },
+      "growth": "fast",
+      "tier": 2,
+      "catchRate": 50,
+      "learnset": [
+        [
+          1,
+          "ooze"
+        ],
+        [
+          1,
+          "corrode"
+        ],
+        [
+          1,
+          "shakedown"
+        ],
+        [
+          1,
+          "toxicSplash"
+        ],
+        [
+          22,
+          "plague"
+        ],
+        [
+          30,
+          "grindDown"
+        ],
+        [
+          36,
+          "backflow"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": ["downtown"], "times": ["night"], "rarity": "rare", "levels": [22, 30], "temperament": "aggro", "biomes": ["sewer"] },
-      "model": { "height": 1.2, "weightKg": 25, "palette": { "primary": "#5c5249", "secondary": "#2e2925", "accent": "#9be22d", "eye": "#ff4040" } },
+      "spawn": {
+        "districts": [
+          "downtown"
+        ],
+        "times": [
+          "night"
+        ],
+        "rarity": "rare",
+        "levels": [
+          22,
+          30
+        ],
+        "temperament": "aggro",
+        "biomes": [
+          "sewer"
+        ]
+      },
+      "model": {
+        "height": 1.2,
+        "weightKg": 25,
+        "palette": {
+          "primary": "#5c5249",
+          "secondary": "#2e2925",
+          "accent": "#9be22d",
+          "eye": "#ff4040"
+        }
+      },
       "description": "Wears a bottle-cap crown and rules a court of a hundred rats. The tunnels go quiet when it passes."
     },
     {
-      "id": "drainling", "dex": 31, "name": "Drainling", "types": ["sludge"], "stage": 1, "line": "drainling",
-      "base": { "hp": 55, "attack": 60, "defense": 55, "speed": 40, "loud": 40 },
-      "growth": "slow", "tier": 1, "catchRate": 140,
-      "learnset": [[1,  "ooze"],  [1,  "brace"],  [8,  "clog"],  [14,  "corrode"],  [20,  "rebarJab"],  [26,  "backflow"]],
-      "evolution": [{ "to": "sewergator", "method": "level", "level": 30 }],
-      "spawn": { "districts": ["midtown", "downtown"], "times": ["day", "dusk", "night"], "rarity": "uncommon", "levels": [6, 14], "temperament": "wander", "biomes": ["sewer"], "sewer": { "zones": ["tunnel"], "nearHazard": "channel" } },
-      "model": { "height": 0.6, "weightKg": 8, "palette": { "primary": "#4f6b46", "secondary": "#c9c39a", "accent": "#9be22d", "eye": "#ffd23f" } },
+      "id": "drainling",
+      "dex": 31,
+      "name": "Drainling",
+      "types": [
+        "sludge"
+      ],
+      "stage": 1,
+      "line": "drainling",
+      "base": {
+        "hp": 55,
+        "attack": 60,
+        "defense": 55,
+        "speed": 40,
+        "loud": 40
+      },
+      "growth": "slow",
+      "tier": 1,
+      "catchRate": 140,
+      "learnset": [
+        [
+          1,
+          "ooze"
+        ],
+        [
+          1,
+          "brace"
+        ],
+        [
+          8,
+          "clog"
+        ],
+        [
+          14,
+          "corrode"
+        ],
+        [
+          20,
+          "rebarJab"
+        ],
+        [
+          26,
+          "backflow"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "sewergator",
+          "method": "level",
+          "level": 30
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "midtown",
+          "downtown"
+        ],
+        "times": [
+          "day",
+          "dusk",
+          "night"
+        ],
+        "rarity": "uncommon",
+        "levels": [
+          6,
+          14
+        ],
+        "temperament": "wander",
+        "biomes": [
+          "sewer"
+        ],
+        "sewer": {
+          "zones": [
+            "tunnel"
+          ],
+          "nearHazard": "channel"
+        }
+      },
+      "model": {
+        "height": 0.6,
+        "weightKg": 8,
+        "palette": {
+          "primary": "#4f6b46",
+          "secondary": "#c9c39a",
+          "accent": "#9be22d",
+          "eye": "#ffd23f"
+        }
+      },
       "description": "Someone's pet alligator, flushed years ago. It grew up fine, thanks."
     },
     {
-      "id": "sewergator", "dex": 32, "name": "Sewergator", "types": ["sludge",  "concrete"], "stage": 2, "line": "drainling",
-      "base": { "hp": 110, "attack": 110, "defense": 100, "speed": 45, "loud": 70 },
-      "growth": "slow", "tier": 3, "catchRate": 25,
-      "learnset": [[1,  "ooze"],  [1,  "corrode"],  [1,  "rebarJab"],  [1,  "backflow"],  [30,  "deathRoll"],  [38,  "foundation"],  [44,  "jackhammer"]],
+      "id": "sewergator",
+      "dex": 32,
+      "name": "Sewergator",
+      "types": [
+        "sludge",
+        "concrete"
+      ],
+      "stage": 2,
+      "line": "drainling",
+      "base": {
+        "hp": 110,
+        "attack": 110,
+        "defense": 100,
+        "speed": 45,
+        "loud": 70
+      },
+      "growth": "slow",
+      "tier": 3,
+      "catchRate": 25,
+      "learnset": [
+        [
+          1,
+          "ooze"
+        ],
+        [
+          1,
+          "corrode"
+        ],
+        [
+          1,
+          "rebarJab"
+        ],
+        [
+          1,
+          "backflow"
+        ],
+        [
+          30,
+          "deathRoll"
+        ],
+        [
+          38,
+          "foundation"
+        ],
+        [
+          44,
+          "jackhammer"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": ["midtown"], "times": ["night"], "rarity": "rare", "levels": [30, 38], "temperament": "aggro", "biomes": ["sewer"] },
-      "model": { "height": 2.0, "weightKg": 300, "palette": { "primary": "#43593c", "secondary": "#8f8b7a", "accent": "#9be22d", "eye": "#ffd23f" } },
+      "spawn": {
+        "districts": [
+          "midtown"
+        ],
+        "times": [
+          "night"
+        ],
+        "rarity": "rare",
+        "levels": [
+          30,
+          38
+        ],
+        "temperament": "aggro",
+        "biomes": [
+          "sewer"
+        ]
+      },
+      "model": {
+        "height": 2.0,
+        "weightKg": 300,
+        "palette": {
+          "primary": "#43593c",
+          "secondary": "#8f8b7a",
+          "accent": "#9be22d",
+          "eye": "#ffd23f"
+        }
+      },
       "description": "Concrete plates have grown into its hide. Maintenance crews leave it alone and it leaves them alone, mostly."
     },
     {
-      "id": "mildew", "dex": 33, "name": "Mildew", "types": ["sludge",  "smoke"], "stage": 1, "line": "mildew",
-      "base": { "hp": 50, "attack": 40, "defense": 50, "speed": 35, "loud": 30 },
-      "growth": "medium", "tier": 1, "catchRate": 170,
-      "learnset": [[1,  "ooze"],  [1,  "exhaust"],  [7,  "smokescreen"],  [12,  "clog"],  [18,  "toxicSplash"],  [24,  "smokeRing"]],
-      "evolution": [{ "to": "moldmother", "method": "level", "level": 26 }],
-      "spawn": { "districts": ["uptown", "midtown"], "times": ["day", "dusk", "night"], "rarity": "common", "levels": [5, 12], "temperament": "wander", "biomes": ["sewer"], "biomeWeight": { "sewer": 2 }, "sewer": { "zones": ["deadEnd", "chamber"] } },
-      "model": { "height": 0.6, "weightKg": 1, "palette": { "primary": "#b9b08a", "secondary": "#7a6a8e", "accent": "#c7ff6a", "eye": "#2a1f2e" } },
+      "id": "mildew",
+      "dex": 33,
+      "name": "Mildew",
+      "types": [
+        "sludge",
+        "smoke"
+      ],
+      "stage": 1,
+      "line": "mildew",
+      "base": {
+        "hp": 50,
+        "attack": 40,
+        "defense": 50,
+        "speed": 35,
+        "loud": 30
+      },
+      "growth": "medium",
+      "tier": 1,
+      "catchRate": 170,
+      "learnset": [
+        [
+          1,
+          "ooze"
+        ],
+        [
+          1,
+          "exhaust"
+        ],
+        [
+          7,
+          "smokescreen"
+        ],
+        [
+          12,
+          "clog"
+        ],
+        [
+          18,
+          "toxicSplash"
+        ],
+        [
+          24,
+          "smokeRing"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "moldmother",
+          "method": "level",
+          "level": 26
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "uptown",
+          "midtown"
+        ],
+        "times": [
+          "day",
+          "dusk",
+          "night"
+        ],
+        "rarity": "common",
+        "levels": [
+          5,
+          12
+        ],
+        "temperament": "wander",
+        "biomes": [
+          "sewer"
+        ],
+        "biomeWeight": {
+          "sewer": 2
+        },
+        "sewer": {
+          "zones": [
+            "deadEnd",
+            "chamber"
+          ]
+        }
+      },
+      "model": {
+        "height": 0.6,
+        "weightKg": 1,
+        "palette": {
+          "primary": "#b9b08a",
+          "secondary": "#7a6a8e",
+          "accent": "#c7ff6a",
+          "eye": "#2a1f2e"
+        }
+      },
       "description": "A cluster of mushrooms that learned to shuffle. Its caps puff spores when it's startled."
     },
     {
-      "id": "moldmother", "dex": 34, "name": "Moldmother", "types": ["sludge",  "smoke"], "stage": 2, "line": "mildew",
-      "base": { "hp": 95, "attack": 75, "defense": 85, "speed": 45, "loud": 60 },
-      "growth": "medium", "tier": 2, "catchRate": 45,
-      "learnset": [[1,  "ooze"],  [1,  "smokescreen"],  [1,  "toxicSplash"],  [1,  "smokeRing"],  [26,  "sporeBloom"],  [32,  "sootBurst"],  [38,  "backflow"]],
+      "id": "moldmother",
+      "dex": 34,
+      "name": "Moldmother",
+      "types": [
+        "sludge",
+        "smoke"
+      ],
+      "stage": 2,
+      "line": "mildew",
+      "base": {
+        "hp": 95,
+        "attack": 75,
+        "defense": 85,
+        "speed": 45,
+        "loud": 60
+      },
+      "growth": "medium",
+      "tier": 2,
+      "catchRate": 45,
+      "learnset": [
+        [
+          1,
+          "ooze"
+        ],
+        [
+          1,
+          "smokescreen"
+        ],
+        [
+          1,
+          "toxicSplash"
+        ],
+        [
+          1,
+          "smokeRing"
+        ],
+        [
+          26,
+          "sporeBloom"
+        ],
+        [
+          32,
+          "sootBurst"
+        ],
+        [
+          38,
+          "backflow"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": ["uptown"], "times": ["night"], "rarity": "rare", "levels": [26, 34], "temperament": "wander", "biomes": ["sewer"] },
-      "model": { "height": 1.6, "weightKg": 20, "palette": { "primary": "#a89f78", "secondary": "#5f4f74", "accent": "#c7ff6a", "eye": "#2a1f2e" } },
+      "spawn": {
+        "districts": [
+          "uptown"
+        ],
+        "times": [
+          "night"
+        ],
+        "rarity": "rare",
+        "levels": [
+          26,
+          34
+        ],
+        "temperament": "wander",
+        "biomes": [
+          "sewer"
+        ]
+      },
+      "model": {
+        "height": 1.6,
+        "weightKg": 20,
+        "palette": {
+          "primary": "#a89f78",
+          "secondary": "#5f4f74",
+          "accent": "#c7ff6a",
+          "eye": "#2a1f2e"
+        }
+      },
       "description": "A great glowing fungus that carpets whole chambers. The air around it tastes of rain and rot."
     },
     {
-      "id": "gridlock", "dex": 35, "name": "Gridlock", "types": ["concrete", "grind"], "stage": 1, "line": "gridlock", "legendary": true,
-      "base": { "hp": 125, "attack": 120, "defense": 125, "speed": 50, "loud": 120 },
-      "growth": "slow", "tier": 3, "catchRate": 30,
-      "learnset": [[1, "gridlockSlam"], [1, "rushHour"], [1, "brace"], [1, "pileUp"], [45, "spanCollapse"]],
+      "id": "gridlock",
+      "dex": 35,
+      "name": "Gridlock",
+      "types": [
+        "concrete",
+        "grind"
+      ],
+      "stage": 1,
+      "line": "gridlock",
+      "legendary": true,
+      "base": {
+        "hp": 125,
+        "attack": 120,
+        "defense": 125,
+        "speed": 50,
+        "loud": 120
+      },
+      "growth": "slow",
+      "tier": 3,
+      "catchRate": 30,
+      "learnset": [
+        [
+          1,
+          "gridlockSlam"
+        ],
+        [
+          1,
+          "rushHour"
+        ],
+        [
+          1,
+          "brace"
+        ],
+        [
+          1,
+          "pileUp"
+        ],
+        [
+          45,
+          "spanCollapse"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": [], "times": [], "rarity": "legendary", "levels": [30, 70], "temperament": "aggro" },
-      "model": { "height": 3.6, "weightKg": 2000, "palette": { "primary": "#70747b", "secondary": "#34373d", "accent": "#ffb000", "eye": "#ff2a2a" } },
+      "spawn": {
+        "districts": [],
+        "times": [],
+        "rarity": "legendary",
+        "levels": [
+          30,
+          70
+        ],
+        "temperament": "aggro"
+      },
+      "model": {
+        "height": 3.6,
+        "weightKg": 2000,
+        "palette": {
+          "primary": "#70747b",
+          "secondary": "#34373d",
+          "accent": "#ffb000",
+          "eye": "#ff2a2a"
+        }
+      },
       "description": "Every jam the city ever sat in, welded into one body. Traffic lights burn in its chest, and car alarms follow it like a choir."
     },
     {
-      "id": "blackout", "dex": 36, "name": "Blackout", "types": ["wire", "smoke"], "stage": 1, "line": "blackout", "legendary": true,
-      "base": { "hp": 100, "attack": 100, "defense": 80, "speed": 90, "loud": 110 },
-      "growth": "slow", "tier": 3, "catchRate": 30,
-      "learnset": [[1, "gridFailure"], [1, "neonStorm"], [1, "brownout"], [1, "staticLash"]],
+      "id": "blackout",
+      "dex": 36,
+      "name": "Blackout",
+      "types": [
+        "wire",
+        "smoke"
+      ],
+      "stage": 1,
+      "line": "blackout",
+      "legendary": true,
+      "base": {
+        "hp": 100,
+        "attack": 100,
+        "defense": 80,
+        "speed": 90,
+        "loud": 110
+      },
+      "growth": "slow",
+      "tier": 3,
+      "catchRate": 30,
+      "learnset": [
+        [
+          1,
+          "gridFailure"
+        ],
+        [
+          1,
+          "neonStorm"
+        ],
+        [
+          1,
+          "brownout"
+        ],
+        [
+          1,
+          "staticLash"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": [], "times": [], "rarity": "legendary", "levels": [30, 70], "temperament": "aggro" },
-      "model": { "height": 3.8, "weightKg": 900, "palette": { "primary": "#1f1c2c", "secondary": "#4a4560", "accent": "#ff4bd8", "eye": "#9ff6ff" } },
+      "spawn": {
+        "districts": [],
+        "times": [],
+        "rarity": "legendary",
+        "levels": [
+          30,
+          70
+        ],
+        "temperament": "aggro"
+      },
+      "model": {
+        "height": 3.8,
+        "weightKg": 900,
+        "palette": {
+          "primary": "#1f1c2c",
+          "secondary": "#4a4560",
+          "accent": "#ff4bd8",
+          "eye": "#9ff6ff"
+        }
+      },
       "description": "A walking substation wrapped in smoke. Every light on the block dies as it passes, then flares back twice as bright."
     },
     {
-      "id": "undertow", "dex": 37, "name": "Undertow", "types": ["sludge", "bass"], "stage": 1, "line": "undertow", "legendary": true,
-      "base": { "hp": 140, "attack": 115, "defense": 110, "speed": 60, "loud": 100 },
-      "growth": "slow", "tier": 3, "catchRate": 30,
-      "learnset": [[1, "floodSurge"], [1, "undertowPull"], [1, "deepHum"], [1, "backflow"]],
+      "id": "undertow",
+      "dex": 37,
+      "name": "Undertow",
+      "types": [
+        "sludge",
+        "bass"
+      ],
+      "stage": 1,
+      "line": "undertow",
+      "legendary": true,
+      "base": {
+        "hp": 140,
+        "attack": 115,
+        "defense": 110,
+        "speed": 60,
+        "loud": 100
+      },
+      "growth": "slow",
+      "tier": 3,
+      "catchRate": 30,
+      "learnset": [
+        [
+          1,
+          "floodSurge"
+        ],
+        [
+          1,
+          "undertowPull"
+        ],
+        [
+          1,
+          "deepHum"
+        ],
+        [
+          1,
+          "backflow"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": [], "times": [], "rarity": "legendary", "levels": [30, 70], "temperament": "aggro", "biomes": ["sewer"] },
-      "model": { "height": 3.4, "weightKg": 1800, "palette": { "primary": "#2c4a3a", "secondary": "#14231c", "accent": "#2f7bff", "eye": "#c6ff3a" } },
+      "spawn": {
+        "districts": [],
+        "times": [],
+        "rarity": "legendary",
+        "levels": [
+          30,
+          70
+        ],
+        "temperament": "aggro",
+        "biomes": [
+          "sewer"
+        ]
+      },
+      "model": {
+        "height": 3.4,
+        "weightKg": 1800,
+        "palette": {
+          "primary": "#2c4a3a",
+          "secondary": "#14231c",
+          "accent": "#2f7bff",
+          "eye": "#c6ff3a"
+        }
+      },
       "description": "The thing the sewer workers hum about. Its drum-tank body thrums so low the pipes sing, and the water rises wherever it sleeps."
     },
     {
-      "id": "curbcrusher", "dex": 38, "name": "Curbcrusher", "types": ["concrete"], "stage": 2, "line": "curbstone",
-      "base": { "hp": 80, "attack": 85, "defense": 125, "speed": 40, "loud": 25 },
-      "growth": "medium", "tier": 2, "catchRate": 60,
-      "learnset": [[1, "slabSlam"], [1, "curbRoll"], [1, "brace"], [1, "rubbleDrop"], [30, "foundation"], [36, "jackhammer"]],
+      "id": "curbcrusher",
+      "dex": 38,
+      "name": "Curbcrusher",
+      "types": [
+        "concrete"
+      ],
+      "stage": 2,
+      "line": "curbstone",
+      "base": {
+        "hp": 80,
+        "attack": 85,
+        "defense": 125,
+        "speed": 40,
+        "loud": 25
+      },
+      "growth": "medium",
+      "tier": 2,
+      "catchRate": 60,
+      "learnset": [
+        [
+          1,
+          "slabSlam"
+        ],
+        [
+          1,
+          "curbRoll"
+        ],
+        [
+          1,
+          "brace"
+        ],
+        [
+          1,
+          "rubbleDrop"
+        ],
+        [
+          30,
+          "foundation"
+        ],
+        [
+          36,
+          "jackhammer"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": ["uptown"], "times": ["day", "dusk"], "rarity": "rare", "levels": [24, 32], "temperament": "wander" },
-      "model": { "height": 1.0, "weightKg": 220, "palette": { "primary": "#8c8c88", "secondary": "#5e5e5a", "accent": "#f2c230", "eye": "#1b1b1b" } },
+      "spawn": {
+        "districts": [
+          "uptown"
+        ],
+        "times": [
+          "day",
+          "dusk"
+        ],
+        "rarity": "rare",
+        "levels": [
+          24,
+          32
+        ],
+        "temperament": "wander"
+      },
+      "model": {
+        "height": 1.0,
+        "weightKg": 220,
+        "palette": {
+          "primary": "#8c8c88",
+          "secondary": "#5e5e5a",
+          "accent": "#f2c230",
+          "eye": "#1b1b1b"
+        }
+      },
       "description": "A Curbstone that has been driven over so often it decided to drive back. It rams parked cars off the kerb out of principle."
     },
     {
-      "id": "jackpot", "dex": 39, "name": "Jackpot", "types": ["grind"], "stage": 2, "line": "cashew",
-      "base": { "hp": 70, "attack": 75, "defense": 70, "speed": 105, "loud": 60 },
-      "growth": "medium", "tier": 2, "catchRate": 70,
-      "learnset": [[1, "hustle"], [1, "coinToss"], [1, "shakedown"], [1, "grindDown"], [30, "burnout"], [36, "overtimeShift"]],
+      "id": "jackpot",
+      "dex": 39,
+      "name": "Jackpot",
+      "types": [
+        "grind"
+      ],
+      "stage": 2,
+      "line": "cashew",
+      "base": {
+        "hp": 70,
+        "attack": 75,
+        "defense": 70,
+        "speed": 105,
+        "loud": 60
+      },
+      "growth": "medium",
+      "tier": 2,
+      "catchRate": 70,
+      "learnset": [
+        [
+          1,
+          "hustle"
+        ],
+        [
+          1,
+          "coinToss"
+        ],
+        [
+          1,
+          "shakedown"
+        ],
+        [
+          1,
+          "grindDown"
+        ],
+        [
+          30,
+          "burnout"
+        ],
+        [
+          36,
+          "overtimeShift"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": ["park"], "times": ["day", "dusk"], "rarity": "rare", "levels": [22, 30], "temperament": "flee" },
-      "model": { "height": 0.8, "weightKg": 14, "palette": { "primary": "#e2b33c", "secondary": "#4f8a3c", "accent": "#ff3b6b", "eye": "#1b1b1b" } },
+      "spawn": {
+        "districts": [
+          "park"
+        ],
+        "times": [
+          "day",
+          "dusk"
+        ],
+        "rarity": "rare",
+        "levels": [
+          22,
+          30
+        ],
+        "temperament": "flee"
+      },
+      "model": {
+        "height": 0.8,
+        "weightKg": 14,
+        "palette": {
+          "primary": "#e2b33c",
+          "secondary": "#4f8a3c",
+          "accent": "#ff3b6b",
+          "eye": "#1b1b1b"
+        }
+      },
       "description": "Its belly spins like a slot machine when it's excited. Nobody has ever seen it pay out."
     },
     {
-      "id": "fogbank", "dex": 40, "name": "Fogbank", "types": ["smoke"], "stage": 2, "line": "hazeling",
-      "base": { "hp": 75, "attack": 75, "defense": 60, "speed": 100, "loud": 25 },
-      "growth": "medium", "tier": 2, "catchRate": 55,
-      "learnset": [[1, "smokeRing"], [1, "haze"], [1, "sootBurst"], [1, "chokeHold"], [32, "backfire"], [38, "smokescreen"]],
+      "id": "fogbank",
+      "dex": 40,
+      "name": "Fogbank",
+      "types": [
+        "smoke"
+      ],
+      "stage": 2,
+      "line": "hazeling",
+      "base": {
+        "hp": 75,
+        "attack": 75,
+        "defense": 60,
+        "speed": 100,
+        "loud": 25
+      },
+      "growth": "medium",
+      "tier": 2,
+      "catchRate": 55,
+      "learnset": [
+        [
+          1,
+          "smokeRing"
+        ],
+        [
+          1,
+          "haze"
+        ],
+        [
+          1,
+          "sootBurst"
+        ],
+        [
+          1,
+          "chokeHold"
+        ],
+        [
+          32,
+          "backfire"
+        ],
+        [
+          38,
+          "smokescreen"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": ["park"], "times": ["night"], "rarity": "rare", "levels": [28, 36], "temperament": "flee" },
-      "model": { "height": 1.3, "weightKg": 10, "palette": { "primary": "#b9a3e3", "secondary": "#3fb7a8", "accent": "#e6dcff", "eye": "#ffe9a6" } },
+      "spawn": {
+        "districts": [
+          "park"
+        ],
+        "times": [
+          "night"
+        ],
+        "rarity": "rare",
+        "levels": [
+          28,
+          36
+        ],
+        "temperament": "flee",
+        "biomes": [
+          "street",
+          "pond"
+        ]
+      },
+      "model": {
+        "height": 1.3,
+        "weightKg": 10,
+        "palette": {
+          "primary": "#b9a3e3",
+          "secondary": "#3fb7a8",
+          "accent": "#e6dcff",
+          "eye": "#ffe9a6"
+        }
+      },
       "description": "Rolls across the Park lake at night with a lantern glowing somewhere inside. Joggers swear it has led them home."
     },
     {
-      "id": "floodlight", "dex": 41, "name": "Floodlight", "types": ["bass", "wire"], "stage": 2, "line": "streetlamp",
-      "base": { "hp": 70, "attack": 90, "defense": 65, "speed": 105, "loud": 80 },
-      "growth": "medium", "tier": 2, "catchRate": 55,
-      "learnset": [[1, "staticLash"], [1, "lampFlash"], [1, "feedback"], [1, "subPulse"], [30, "powerSurge"], [36, "theDrop"]],
+      "id": "floodlight",
+      "dex": 41,
+      "name": "Floodlight",
+      "types": [
+        "bass",
+        "wire"
+      ],
+      "stage": 2,
+      "line": "streetlamp",
+      "base": {
+        "hp": 70,
+        "attack": 90,
+        "defense": 65,
+        "speed": 105,
+        "loud": 80
+      },
+      "growth": "medium",
+      "tier": 2,
+      "catchRate": 55,
+      "learnset": [
+        [
+          1,
+          "staticLash"
+        ],
+        [
+          1,
+          "lampFlash"
+        ],
+        [
+          1,
+          "feedback"
+        ],
+        [
+          1,
+          "subPulse"
+        ],
+        [
+          30,
+          "powerSurge"
+        ],
+        [
+          36,
+          "theDrop"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": ["park"], "times": ["night"], "rarity": "rare", "levels": [26, 34], "temperament": "flee" },
-      "model": { "height": 1.7, "weightKg": 40, "palette": { "primary": "#1e2a4a", "secondary": "#2c3c66", "accent": "#ffd23f", "eye": "#ffd23f" } },
+      "spawn": {
+        "districts": [
+          "park"
+        ],
+        "times": [
+          "night"
+        ],
+        "rarity": "rare",
+        "levels": [
+          26,
+          34
+        ],
+        "temperament": "flee"
+      },
+      "model": {
+        "height": 1.7,
+        "weightKg": 40,
+        "palette": {
+          "primary": "#1e2a4a",
+          "secondary": "#2c3c66",
+          "accent": "#ffd23f",
+          "eye": "#ffd23f"
+        }
+      },
       "description": "A Streetlamp that grew into a stadium light. When it flares, every moth in the city knows where the game is."
     },
     {
-      "id": "barricade", "dex": 42, "name": "Barricade", "types": ["concrete", "gun"], "stage": 2, "line": "rebarb",
-      "base": { "hp": 85, "attack": 100, "defense": 110, "speed": 40, "loud": 60 }, "ammo": 7,
-      "growth": "medium", "tier": 3, "catchRate": 45,
-      "learnset": [[1, "rebarJab"], [1, "reload"], [1, "spikeVolley"], [1, "brace"], [32, "jackhammer"], [38, "suppressingFire"]],
+      "id": "barricade",
+      "dex": 42,
+      "name": "Barricade",
+      "types": [
+        "concrete",
+        "gun"
+      ],
+      "stage": 2,
+      "line": "rebarb",
+      "base": {
+        "hp": 85,
+        "attack": 100,
+        "defense": 110,
+        "speed": 40,
+        "loud": 60
+      },
+      "ammo": 7,
+      "growth": "medium",
+      "tier": 3,
+      "catchRate": 45,
+      "learnset": [
+        [
+          1,
+          "rebarJab"
+        ],
+        [
+          1,
+          "reload"
+        ],
+        [
+          1,
+          "spikeVolley"
+        ],
+        [
+          1,
+          "brace"
+        ],
+        [
+          32,
+          "jackhammer"
+        ],
+        [
+          38,
+          "suppressingFire"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": ["downtown", "park"], "times": ["night"], "rarity": "rare", "levels": [30, 38], "temperament": "aggro" },
-      "model": { "height": 1.4, "weightKg": 320, "palette": { "primary": "#4b4d50", "secondary": "#35373a", "accent": "#ff7a1a", "eye": "#ffd27a" } },
+      "spawn": {
+        "districts": [
+          "downtown",
+          "park"
+        ],
+        "times": [
+          "night"
+        ],
+        "rarity": "rare",
+        "levels": [
+          30,
+          38
+        ],
+        "temperament": "aggro"
+      },
+      "model": {
+        "height": 1.4,
+        "weightKg": 320,
+        "palette": {
+          "primary": "#4b4d50",
+          "secondary": "#35373a",
+          "accent": "#ff7a1a",
+          "eye": "#ffd27a"
+        }
+      },
       "description": "A one-creature roadblock. Downtown crews rent it by the night; the police have tried to impound it three times."
     },
     {
-      "id": "bigshot", "dex": 43, "name": "Bigshot", "types": ["gun"], "stage": 2, "line": "slugger",
-      "base": { "hp": 90, "attack": 110, "defense": 80, "speed": 65, "loud": 100 }, "ammo": 8,
-      "growth": "medium", "tier": 3, "catchRate": 45,
-      "learnset": [[1, "snapShot"], [1, "reload"], [1, "pistolWhip"], [1, "buckshot"], [34, "longShot"], [40, "emptyTheClip"]],
+      "id": "bigshot",
+      "dex": 43,
+      "name": "Bigshot",
+      "types": [
+        "gun"
+      ],
+      "stage": 2,
+      "line": "slugger",
+      "base": {
+        "hp": 90,
+        "attack": 110,
+        "defense": 80,
+        "speed": 65,
+        "loud": 100
+      },
+      "ammo": 8,
+      "growth": "medium",
+      "tier": 3,
+      "catchRate": 45,
+      "learnset": [
+        [
+          1,
+          "snapShot"
+        ],
+        [
+          1,
+          "reload"
+        ],
+        [
+          1,
+          "pistolWhip"
+        ],
+        [
+          1,
+          "buckshot"
+        ],
+        [
+          34,
+          "longShot"
+        ],
+        [
+          40,
+          "emptyTheClip"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": ["waterfront", "park"], "times": ["night"], "rarity": "rare", "levels": [30, 38], "temperament": "aggro" },
-      "model": { "height": 1.5, "weightKg": 140, "palette": { "primary": "#c9a13b", "secondary": "#1d1d1f", "accent": "#ff7a1a", "eye": "#ff8a00" } },
+      "spawn": {
+        "districts": [
+          "waterfront",
+          "park"
+        ],
+        "times": [
+          "night"
+        ],
+        "rarity": "rare",
+        "levels": [
+          30,
+          38
+        ],
+        "temperament": "aggro"
+      },
+      "model": {
+        "height": 1.5,
+        "weightKg": 140,
+        "palette": {
+          "primary": "#c9a13b",
+          "secondary": "#1d1d1f",
+          "accent": "#ff7a1a",
+          "eye": "#ff8a00"
+        }
+      },
       "description": "Swings a bat made of two shotgun barrels taped together, and has never once missed a fastball or a debt."
     },
     {
-      "id": "smokestack", "dex": 44, "name": "Smokestack", "types": ["smoke", "concrete"], "stage": 2, "line": "flue",
-      "base": { "hp": 95, "attack": 85, "defense": 105, "speed": 40, "loud": 55 },
-      "growth": "slow", "tier": 3, "catchRate": 45,
-      "learnset": [[1, "exhaust"], [1, "slabSlam"], [1, "sootBurst"], [1, "smokescreen"], [34, "backfire"], [40, "spanCollapse"]],
+      "id": "smokestack",
+      "dex": 44,
+      "name": "Smokestack",
+      "types": [
+        "smoke",
+        "concrete"
+      ],
+      "stage": 2,
+      "line": "flue",
+      "base": {
+        "hp": 95,
+        "attack": 85,
+        "defense": 105,
+        "speed": 40,
+        "loud": 55
+      },
+      "growth": "slow",
+      "tier": 3,
+      "catchRate": 45,
+      "learnset": [
+        [
+          1,
+          "exhaust"
+        ],
+        [
+          1,
+          "slabSlam"
+        ],
+        [
+          1,
+          "sootBurst"
+        ],
+        [
+          1,
+          "smokescreen"
+        ],
+        [
+          34,
+          "backfire"
+        ],
+        [
+          40,
+          "spanCollapse"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": ["uptown"], "times": ["night"], "rarity": "rare", "levels": [32, 40], "temperament": "wander" },
-      "model": { "height": 2.2, "weightKg": 400, "palette": { "primary": "#7a3a2a", "secondary": "#4a2a22", "accent": "#ff6a1a", "eye": "#ff6a1a" } },
+      "spawn": {
+        "districts": [
+          "uptown"
+        ],
+        "times": [
+          "night"
+        ],
+        "rarity": "rare",
+        "levels": [
+          32,
+          40
+        ],
+        "temperament": "wander"
+      },
+      "model": {
+        "height": 2.2,
+        "weightKg": 400,
+        "palette": {
+          "primary": "#7a3a2a",
+          "secondary": "#4a2a22",
+          "accent": "#ff6a1a",
+          "eye": "#ff6a1a"
+        }
+      },
       "description": "An old factory chimney that wandered off when the factory closed. Its fire has never gone out."
     },
     {
-      "id": "livewire", "dex": 45, "name": "Livewire", "types": ["bass", "wire"], "stage": 2, "line": "wirewhip",
-      "base": { "hp": 70, "attack": 110, "defense": 60, "speed": 110, "loud": 80 },
-      "growth": "medium", "tier": 3, "catchRate": 45,
-      "learnset": [[1, "staticLash"], [1, "wireSnap"], [1, "feedback"], [1, "subPulse"], [36, "theDrop"], [42, "powerSurge"]],
+      "id": "livewire",
+      "dex": 45,
+      "name": "Livewire",
+      "types": [
+        "bass",
+        "wire"
+      ],
+      "stage": 2,
+      "line": "wirewhip",
+      "base": {
+        "hp": 70,
+        "attack": 110,
+        "defense": 60,
+        "speed": 110,
+        "loud": 80
+      },
+      "growth": "medium",
+      "tier": 3,
+      "catchRate": 45,
+      "learnset": [
+        [
+          1,
+          "staticLash"
+        ],
+        [
+          1,
+          "wireSnap"
+        ],
+        [
+          1,
+          "feedback"
+        ],
+        [
+          1,
+          "subPulse"
+        ],
+        [
+          36,
+          "theDrop"
+        ],
+        [
+          42,
+          "powerSurge"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": ["waterfront", "park"], "times": ["night"], "rarity": "rare", "levels": [33, 40], "temperament": "aggro" },
-      "model": { "height": 1.6, "weightKg": 30, "palette": { "primary": "#151517", "secondary": "#26262a", "accent": "#38f0ff", "eye": "#38f0ff" } },
+      "spawn": {
+        "districts": [
+          "waterfront",
+          "park"
+        ],
+        "times": [
+          "night"
+        ],
+        "rarity": "rare",
+        "levels": [
+          33,
+          40
+        ],
+        "temperament": "aggro"
+      },
+      "model": {
+        "height": 1.6,
+        "weightKg": 30,
+        "palette": {
+          "primary": "#151517",
+          "secondary": "#26262a",
+          "accent": "#38f0ff",
+          "eye": "#38f0ff"
+        }
+      },
       "description": "A downed power line that refused to stay down. It hums on one note, and the street lights flicker in time."
     },
     {
-      "id": "hustlehound", "dex": 46, "name": "Hustlehound", "types": ["grind"], "stage": 2, "line": "hustlepup",
-      "base": { "hp": 80, "attack": 95, "defense": 70, "speed": 95, "loud": 70 },
-      "growth": "medium", "tier": 2, "catchRate": 60,
-      "learnset": [[1, "hustle"], [1, "shoulderCheck"], [1, "shakedown"], [1, "grindDown"], [28, "burnout"], [34, "secondWind"]],
+      "id": "hustlehound",
+      "dex": 46,
+      "name": "Hustlehound",
+      "types": [
+        "grind"
+      ],
+      "stage": 2,
+      "line": "hustlepup",
+      "base": {
+        "hp": 80,
+        "attack": 95,
+        "defense": 70,
+        "speed": 95,
+        "loud": 70
+      },
+      "growth": "medium",
+      "tier": 2,
+      "catchRate": 60,
+      "learnset": [
+        [
+          1,
+          "hustle"
+        ],
+        [
+          1,
+          "shoulderCheck"
+        ],
+        [
+          1,
+          "shakedown"
+        ],
+        [
+          1,
+          "grindDown"
+        ],
+        [
+          28,
+          "burnout"
+        ],
+        [
+          34,
+          "secondWind"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": ["park", "uptown"], "times": ["day", "dusk"], "rarity": "rare", "levels": [22, 30], "temperament": "wander" },
-      "model": { "height": 1.0, "weightKg": 45, "palette": { "primary": "#d9a62e", "secondary": "#6b4a2f", "accent": "#3b6ea5", "eye": "#1b1b1b" } },
+      "spawn": {
+        "districts": [
+          "park",
+          "uptown"
+        ],
+        "times": [
+          "day",
+          "dusk"
+        ],
+        "rarity": "rare",
+        "levels": [
+          22,
+          30
+        ],
+        "temperament": "wander"
+      },
+      "model": {
+        "height": 1.0,
+        "weightKg": 45,
+        "palette": {
+          "primary": "#d9a62e",
+          "secondary": "#6b4a2f",
+          "accent": "#3b6ea5",
+          "eye": "#1b1b1b"
+        }
+      },
       "description": "A bike-courier hound that has never been late. It knows every shortcut in the city, including several through buildings."
     },
     {
-      "id": "tagling", "dex": 47, "name": "Tagling", "types": ["sludge"], "stage": 1, "line": "tagling",
-      "base": { "hp": 50, "attack": 60, "defense": 45, "speed": 80, "loud": 40 },
-      "growth": "fast", "tier": 1, "catchRate": 160,
-      "learnset": [[1, "ooze"], [1, "toxicSplash"], [5, "smokescreen"], [10, "corrode"], [18, "clog"], [26, "backflow"]],
-      "evolution": [{"to": "muralist", "method": "level", "level": 25}],
-      "spawn": { "districts": ["midtown"], "times": ["day", "dusk"], "rarity": "uncommon", "levels": [4, 12], "temperament": "wander" },
-      "model": { "height": 0.6, "weightKg": 3, "palette": { "primary": "#2f6fd0", "secondary": "#d0d6dc", "accent": "#ff3bb4", "eye": "#1b1b1b" } },
+      "id": "tagling",
+      "dex": 47,
+      "name": "Tagling",
+      "types": [
+        "sludge"
+      ],
+      "stage": 1,
+      "line": "tagling",
+      "base": {
+        "hp": 50,
+        "attack": 60,
+        "defense": 45,
+        "speed": 80,
+        "loud": 40
+      },
+      "growth": "fast",
+      "tier": 1,
+      "catchRate": 160,
+      "learnset": [
+        [
+          1,
+          "ooze"
+        ],
+        [
+          1,
+          "toxicSplash"
+        ],
+        [
+          5,
+          "smokescreen"
+        ],
+        [
+          10,
+          "corrode"
+        ],
+        [
+          18,
+          "clog"
+        ],
+        [
+          26,
+          "backflow"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "muralist",
+          "method": "level",
+          "level": 25
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "midtown"
+        ],
+        "times": [
+          "day",
+          "dusk"
+        ],
+        "rarity": "uncommon",
+        "levels": [
+          4,
+          12
+        ],
+        "temperament": "wander"
+      },
+      "model": {
+        "height": 0.6,
+        "weightKg": 3,
+        "palette": {
+          "primary": "#2f6fd0",
+          "secondary": "#d0d6dc",
+          "accent": "#ff3bb4",
+          "eye": "#1b1b1b"
+        }
+      },
       "description": "A spray can that learned to walk and never learned to stop tagging. Its paint never quite dries."
     },
     {
-      "id": "muralist", "dex": 48, "name": "Muralist", "types": ["sludge", "wire"], "stage": 2, "line": "tagling",
-      "base": { "hp": 75, "attack": 95, "defense": 70, "speed": 95, "loud": 75 },
-      "growth": "fast", "tier": 2, "catchRate": 60,
-      "learnset": [[1, "ooze"], [1, "corrode"], [1, "neonFlash"], [1, "backflow"], [34, "signalJam"], [40, "powerSurge"]],
+      "id": "muralist",
+      "dex": 48,
+      "name": "Muralist",
+      "types": [
+        "sludge",
+        "wire"
+      ],
+      "stage": 2,
+      "line": "tagling",
+      "base": {
+        "hp": 75,
+        "attack": 95,
+        "defense": 70,
+        "speed": 95,
+        "loud": 75
+      },
+      "growth": "fast",
+      "tier": 2,
+      "catchRate": 60,
+      "learnset": [
+        [
+          1,
+          "ooze"
+        ],
+        [
+          1,
+          "corrode"
+        ],
+        [
+          1,
+          "neonFlash"
+        ],
+        [
+          1,
+          "backflow"
+        ],
+        [
+          34,
+          "signalJam"
+        ],
+        [
+          40,
+          "powerSurge"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": ["midtown"], "times": ["night"], "rarity": "rare", "levels": [25, 33], "temperament": "wander" },
-      "model": { "height": 1.5, "weightKg": 40, "palette": { "primary": "#2f6fd0", "secondary": "#d0d6dc", "accent": "#ff3bb4", "eye": "#7cf7ff" } },
+      "spawn": {
+        "districts": [
+          "midtown"
+        ],
+        "times": [
+          "night"
+        ],
+        "rarity": "rare",
+        "levels": [
+          25,
+          33
+        ],
+        "temperament": "wander"
+      },
+      "model": {
+        "height": 1.5,
+        "weightKg": 40,
+        "palette": {
+          "primary": "#2f6fd0",
+          "secondary": "#d0d6dc",
+          "accent": "#ff3bb4",
+          "eye": "#7cf7ff"
+        }
+      },
       "description": "Paints a whole wall overnight and signs it with a neon halo. By morning half of Midtown has come to look."
     },
     {
-      "id": "bollard", "dex": 49, "name": "Bollard", "types": ["concrete"], "stage": 1, "line": "bollard",
-      "base": { "hp": 70, "attack": 55, "defense": 110, "speed": 25, "loud": 15 },
-      "growth": "slow", "tier": 1, "catchRate": 140,
-      "learnset": [[1, "slabSlam"], [1, "brace"], [12, "curbRoll"], [20, "foundation"], [28, "rubbleDrop"]],
+      "id": "bollard",
+      "dex": 49,
+      "name": "Bollard",
+      "types": [
+        "concrete"
+      ],
+      "stage": 1,
+      "line": "bollard",
+      "base": {
+        "hp": 70,
+        "attack": 55,
+        "defense": 110,
+        "speed": 25,
+        "loud": 15
+      },
+      "growth": "slow",
+      "tier": 1,
+      "catchRate": 140,
+      "learnset": [
+        [
+          1,
+          "slabSlam"
+        ],
+        [
+          1,
+          "brace"
+        ],
+        [
+          12,
+          "curbRoll"
+        ],
+        [
+          20,
+          "foundation"
+        ],
+        [
+          28,
+          "rubbleDrop"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": ["waterfront"], "times": ["day", "dusk"], "rarity": "common", "levels": [4, 12], "temperament": "wander" },
-      "model": { "height": 0.7, "weightKg": 160, "palette": { "primary": "#2b2f36", "secondary": "#8a4a2a", "accent": "#d9c08c", "eye": "#ffd27a" } },
+      "spawn": {
+        "districts": [
+          "waterfront"
+        ],
+        "times": [
+          "day",
+          "dusk"
+        ],
+        "rarity": "common",
+        "levels": [
+          4,
+          12
+        ],
+        "temperament": "wander"
+      },
+      "model": {
+        "height": 0.7,
+        "weightKg": 160,
+        "palette": {
+          "primary": "#2b2f36",
+          "secondary": "#8a4a2a",
+          "accent": "#d9c08c",
+          "eye": "#ffd27a"
+        }
+      },
       "description": "An iron dock bollard that wandered up the pier. Ships still try to tie up to it. It doesn't mind."
     },
     {
-      "id": "gullgrifter", "dex": 50, "name": "Gullgrifter", "types": ["grind"], "stage": 1, "line": "gullgrifter",
-      "base": { "hp": 50, "attack": 65, "defense": 45, "speed": 100, "loud": 70 },
-      "growth": "fast", "tier": 1, "catchRate": 170,
-      "learnset": [[1, "hustle"], [1, "coinToss"], [8, "shakedown"], [15, "doubleShift"], [22, "grindDown"]],
+      "id": "gullgrifter",
+      "dex": 50,
+      "name": "Gullgrifter",
+      "types": [
+        "grind"
+      ],
+      "stage": 1,
+      "line": "gullgrifter",
+      "base": {
+        "hp": 50,
+        "attack": 65,
+        "defense": 45,
+        "speed": 100,
+        "loud": 70
+      },
+      "growth": "fast",
+      "tier": 1,
+      "catchRate": 170,
+      "learnset": [
+        [
+          1,
+          "hustle"
+        ],
+        [
+          1,
+          "coinToss"
+        ],
+        [
+          8,
+          "shakedown"
+        ],
+        [
+          15,
+          "doubleShift"
+        ],
+        [
+          22,
+          "grindDown"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": ["waterfront"], "times": ["day", "dusk"], "rarity": "common", "levels": [3, 10], "temperament": "flee" },
-      "model": { "height": 0.6, "weightKg": 2, "palette": { "primary": "#e8e8e8", "secondary": "#5a5f66", "accent": "#f2a516", "eye": "#1b1b1b" } },
+      "spawn": {
+        "districts": [
+          "waterfront"
+        ],
+        "times": [
+          "day",
+          "dusk"
+        ],
+        "rarity": "common",
+        "levels": [
+          3,
+          10
+        ],
+        "temperament": "flee"
+      },
+      "model": {
+        "height": 0.6,
+        "weightKg": 2,
+        "palette": {
+          "primary": "#e8e8e8",
+          "secondary": "#5a5f66",
+          "accent": "#f2a516",
+          "eye": "#1b1b1b"
+        }
+      },
       "description": "Wears a flat cap it stole from a fisherman and runs a chip racket on the pier. Never pays, never misses."
     },
     {
-      "id": "clogger", "dex": 51, "name": "Clogger", "types": ["sludge", "concrete"], "stage": 1, "line": "clogger",
-      "base": { "hp": 85, "attack": 75, "defense": 95, "speed": 35, "loud": 30 },
-      "growth": "slow", "tier": 2, "catchRate": 90,
-      "learnset": [[1, "ooze"], [1, "slabSlam"], [1, "clog"], [14, "corrode"], [22, "rubbleDrop"], [30, "backflow"]],
+      "id": "clogger",
+      "dex": 51,
+      "name": "Clogger",
+      "types": [
+        "sludge",
+        "concrete"
+      ],
+      "stage": 1,
+      "line": "clogger",
+      "base": {
+        "hp": 85,
+        "attack": 75,
+        "defense": 95,
+        "speed": 35,
+        "loud": 30
+      },
+      "growth": "slow",
+      "tier": 2,
+      "catchRate": 90,
+      "learnset": [
+        [
+          1,
+          "ooze"
+        ],
+        [
+          1,
+          "slabSlam"
+        ],
+        [
+          1,
+          "clog"
+        ],
+        [
+          14,
+          "corrode"
+        ],
+        [
+          22,
+          "rubbleDrop"
+        ],
+        [
+          30,
+          "backflow"
+        ]
+      ],
       "evolution": [],
-      "spawn": { "districts": ["uptown", "midtown"], "times": ["day", "dusk", "night"], "rarity": "uncommon", "levels": [8, 18], "temperament": "wander", "biomes": ["sewer"] },
-      "model": { "height": 1.1, "weightKg": 250, "palette": { "primary": "#5c5241", "secondary": "#3a332a", "accent": "#c7ff6a", "eye": "#c7ff6a" } },
+      "spawn": {
+        "districts": [
+          "uptown",
+          "midtown"
+        ],
+        "times": [
+          "day",
+          "dusk",
+          "night"
+        ],
+        "rarity": "uncommon",
+        "levels": [
+          8,
+          18
+        ],
+        "temperament": "wander",
+        "biomes": [
+          "sewer"
+        ]
+      },
+      "model": {
+        "height": 1.1,
+        "weightKg": 250,
+        "palette": {
+          "primary": "#5c5241",
+          "secondary": "#3a332a",
+          "accent": "#c7ff6a",
+          "eye": "#c7ff6a"
+        }
+      },
       "description": "Everything anyone ever flushed, packed hard enough to walk. It has a wedding ring, three phones and a set of keys in there."
+    },
+    {
+      "id": "quackpack",
+      "dex": 52,
+      "name": "Quackpack",
+      "types": [
+        "sludge"
+      ],
+      "stage": 1,
+      "line": "quackpack",
+      "base": {
+        "hp": 45,
+        "attack": 45,
+        "defense": 40,
+        "speed": 60,
+        "loud": 75
+      },
+      "growth": "fast",
+      "tier": 1,
+      "catchRate": 200,
+      "learnset": [
+        [
+          1,
+          "ooze"
+        ],
+        [
+          1,
+          "hustle"
+        ],
+        [
+          5,
+          "toxicSplash"
+        ],
+        [
+          9,
+          "clog"
+        ],
+        [
+          14,
+          "thump"
+        ],
+        [
+          19,
+          "corrode"
+        ],
+        [
+          24,
+          "feedback"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "pedalswan",
+          "method": "level",
+          "level": 26
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "park"
+        ],
+        "times": [
+          "day",
+          "dusk"
+        ],
+        "rarity": "common",
+        "levels": [
+          4,
+          13
+        ],
+        "temperament": "wander",
+        "biomes": [
+          "pond"
+        ]
+      },
+      "model": {
+        "height": 0.45,
+        "weightKg": 1.5,
+        "palette": {
+          "primary": "#ffd23f",
+          "secondary": "#f0eadc",
+          "accent": "#ff7a1a",
+          "eye": "#1b1b1b"
+        },
+        "sink": 0.21
+      },
+      "description": "A rubber duck that floated out of a bathtub years ago and kept collecting bottle caps and bread bags on the way. It quacks at joggers on principle."
+    },
+    {
+      "id": "pedalswan",
+      "dex": 53,
+      "name": "Pedalswan",
+      "types": [
+        "sludge",
+        "bass"
+      ],
+      "stage": 2,
+      "line": "quackpack",
+      "base": {
+        "hp": 85,
+        "attack": 80,
+        "defense": 75,
+        "speed": 70,
+        "loud": 110
+      },
+      "growth": "fast",
+      "tier": 2,
+      "catchRate": 60,
+      "learnset": [
+        [
+          1,
+          "ooze"
+        ],
+        [
+          1,
+          "thump"
+        ],
+        [
+          1,
+          "toxicSplash"
+        ],
+        [
+          1,
+          "feedback"
+        ],
+        [
+          26,
+          "subPulse"
+        ],
+        [
+          32,
+          "backflow"
+        ],
+        [
+          40,
+          "theDrop"
+        ]
+      ],
+      "evolution": [],
+      "spawn": {
+        "districts": [
+          "park"
+        ],
+        "times": [
+          "dusk",
+          "night"
+        ],
+        "rarity": "rare",
+        "levels": [
+          26,
+          34
+        ],
+        "temperament": "aggro",
+        "biomes": [
+          "pond"
+        ]
+      },
+      "model": {
+        "height": 1.4,
+        "weightKg": 90,
+        "palette": {
+          "primary": "#f4f1ea",
+          "secondary": "#2a2f36",
+          "accent": "#ff3fa4",
+          "eye": "#ff3fa4"
+        },
+        "sink": 0.14
+      },
+      "description": "A rented pedal boat that was never returned. Somewhere along the way it grew a neck, a sound system and a temper; the bass from its honk ripples the whole pond."
+    },
+    {
+      "id": "koinfish",
+      "dex": 54,
+      "name": "Koinfish",
+      "types": [
+        "grind",
+        "sludge"
+      ],
+      "stage": 1,
+      "line": "koinfish",
+      "base": {
+        "hp": 50,
+        "attack": 55,
+        "defense": 45,
+        "speed": 75,
+        "loud": 20
+      },
+      "growth": "medium",
+      "tier": 1,
+      "catchRate": 150,
+      "learnset": [
+        [
+          1,
+          "hustle"
+        ],
+        [
+          1,
+          "ooze"
+        ],
+        [
+          6,
+          "coinToss"
+        ],
+        [
+          11,
+          "toxicSplash"
+        ],
+        [
+          16,
+          "shakedown"
+        ],
+        [
+          22,
+          "corrode"
+        ],
+        [
+          28,
+          "doubleShift"
+        ]
+      ],
+      "evolution": [
+        {
+          "to": "wishmaw",
+          "method": "level",
+          "level": 30
+        }
+      ],
+      "spawn": {
+        "districts": [
+          "park"
+        ],
+        "times": [
+          "day",
+          "dusk",
+          "night"
+        ],
+        "rarity": "uncommon",
+        "levels": [
+          6,
+          16
+        ],
+        "temperament": "flee",
+        "biomes": [
+          "pond"
+        ]
+      },
+      "model": {
+        "height": 0.5,
+        "weightKg": 4,
+        "palette": {
+          "primary": "#ff7a1a",
+          "secondary": "#f4efe6",
+          "accent": "#ffd23f",
+          "eye": "#1b1b1b"
+        },
+        "sink": 0.5
+      },
+      "description": "A koi that swallowed every coin tossed into the pond for luck. Its scales are pennies and quarters, and it rings faintly when it turns."
+    },
+    {
+      "id": "wishmaw",
+      "dex": 55,
+      "name": "Wishmaw",
+      "types": [
+        "grind",
+        "sludge"
+      ],
+      "stage": 2,
+      "line": "koinfish",
+      "base": {
+        "hp": 95,
+        "attack": 105,
+        "defense": 80,
+        "speed": 75,
+        "loud": 40
+      },
+      "growth": "medium",
+      "tier": 3,
+      "catchRate": 30,
+      "learnset": [
+        [
+          1,
+          "hustle"
+        ],
+        [
+          1,
+          "coinToss"
+        ],
+        [
+          1,
+          "shakedown"
+        ],
+        [
+          1,
+          "corrode"
+        ],
+        [
+          30,
+          "backflow"
+        ],
+        [
+          36,
+          "burnout"
+        ],
+        [
+          44,
+          "grindDown"
+        ]
+      ],
+      "evolution": [],
+      "spawn": {
+        "districts": [
+          "park"
+        ],
+        "times": [
+          "night"
+        ],
+        "rarity": "rare",
+        "levels": [
+          30,
+          38
+        ],
+        "temperament": "aggro",
+        "biomes": [
+          "pond"
+        ]
+      },
+      "model": {
+        "height": 1.6,
+        "weightKg": 160,
+        "palette": {
+          "primary": "#d4a531",
+          "secondary": "#7a5a1e",
+          "accent": "#5ab8ff",
+          "eye": "#ffe680"
+        },
+        "sink": 0.46
+      },
+      "description": "A koi grown as big as a rowboat, its mouth a ring of fountain stone. Make a wish and toss a coin in. It keeps the coin. Nobody has seen the wish come back."
+    },
+    {
+      "id": "snapcase",
+      "dex": 56,
+      "name": "Snapcase",
+      "types": [
+        "concrete",
+        "sludge"
+      ],
+      "stage": 1,
+      "line": "snapcase",
+      "base": {
+        "hp": 80,
+        "attack": 85,
+        "defense": 110,
+        "speed": 30,
+        "loud": 35
+      },
+      "growth": "slow",
+      "tier": 2,
+      "catchRate": 70,
+      "learnset": [
+        [
+          1,
+          "brace"
+        ],
+        [
+          1,
+          "ooze"
+        ],
+        [
+          7,
+          "slabSlam"
+        ],
+        [
+          13,
+          "clog"
+        ],
+        [
+          19,
+          "rebarJab"
+        ],
+        [
+          26,
+          "backflow"
+        ],
+        [
+          33,
+          "foundation"
+        ],
+        [
+          40,
+          "deathRoll"
+        ]
+      ],
+      "evolution": [],
+      "spawn": {
+        "districts": [
+          "park"
+        ],
+        "times": [
+          "day",
+          "dusk",
+          "night"
+        ],
+        "rarity": "rare",
+        "levels": [
+          14,
+          26
+        ],
+        "temperament": "aggro",
+        "biomes": [
+          "pond"
+        ]
+      },
+      "model": {
+        "height": 0.7,
+        "weightKg": 40,
+        "palette": {
+          "primary": "#6d6a5d",
+          "secondary": "#4f6b46",
+          "accent": "#c9c39a",
+          "eye": "#ff5040"
+        },
+        "sink": 0.37
+      },
+      "description": "A snapping turtle whose shell set like poured concrete in the pond's old drain. It suns itself on the rim and bites anything that dangles."
     }
   ]
 }

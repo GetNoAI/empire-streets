@@ -143,7 +143,7 @@ export class VehicleManager {
     for (const car of this.cars) car.prePhysics(dt);
   }
 
-  postPhysics(dt: number, listener: THREE.Vector3): void {
+  postPhysics(dt: number, _listener?: THREE.Vector3): void {
     for (const car of this.cars) {
       if (car.sleeping && car.driver === null) continue;
       car.postPhysics(dt);
@@ -152,7 +152,7 @@ export class VehicleManager {
         car.lastImpactAt = performance.now();
         car.damage((strength - CRASH_THRESHOLD) * CRASH_DAMAGE * (1500 / car.spec.mass) ** 0.5);
         const p = car.position;
-        audio.crash((strength - CRASH_THRESHOLD) / 10, Math.hypot(p.x - listener.x, p.z - listener.z));
+        audio.crash((strength - CRASH_THRESHOLD) / 10, p);
         this.effects.sparks(p.x + (Math.random() - 0.5) * 2, p.y + 0.3, p.z + (Math.random() - 0.5) * 2, Math.min(30, Math.round(strength * 3)));
         this.events.onCrash(strength, car.driver === 'player');
       }
@@ -204,12 +204,12 @@ export class VehicleManager {
     }
   }
 
-  explode(car: Car, listener: THREE.Vector3): void {
+  explode(car: Car, _listener?: THREE.Vector3): void {
     if (car.destroyed) return;
     const p = car.position.clone();
     car.markDestroyed();
     this.effects.explosion(p.x, p.y, p.z);
-    audio.explosion(Math.hypot(p.x - listener.x, p.z - listener.z));
+    audio.explosion(p);
     // Throw the wreck up and spin it, shove and damage everything nearby.
     const m = car.spec.mass;
     car.body.applyImpulse({ x: (Math.random() - 0.5) * m * 2, y: m * 6, z: (Math.random() - 0.5) * m * 2 }, true);

@@ -3,6 +3,7 @@ import { ROOF_BUILDERS, ROOF_FLOATING } from './RoofBuilders';
 import { SEWER_BUILDERS } from './SewerBuilders';
 import { LEGEND_BUILDERS, LEGEND_FLOATING } from './LegendBuilders';
 import { NEW_BUILDERS, NEW_FLOATING } from './NewBuilders';
+import { POND_BUILDERS, POND_FLOATING } from './PondBuilders';
 import type { Palette, SpeciesSpec } from '../Data';
 import { Kit, shinyPalette, type BuiltModel, type Pose, type Style } from './Kit';
 import { surfaceFor } from './Polish';
@@ -680,7 +681,7 @@ function speaker(k: Kit, evolved: boolean): void {
 // ------------------------------------------------------------------ entry points
 
 // Rooftop and sewer species live in their own files.
-Object.assign(BUILDERS, ROOF_BUILDERS, SEWER_BUILDERS, LEGEND_BUILDERS, NEW_BUILDERS);
+Object.assign(BUILDERS, ROOF_BUILDERS, SEWER_BUILDERS, LEGEND_BUILDERS, NEW_BUILDERS, POND_BUILDERS);
 
 export function hasBuilder(id: string): boolean {
   return id in BUILDERS;
@@ -696,8 +697,8 @@ export function buildCreatureModel(spec: SpeciesSpec, shiny = false): BuiltModel
   if (!build) throw new Error(`No model builder for species "${spec.id}"`);
   const palette: Palette = shiny ? shinyPalette(spec.model.palette) : spec.model.palette;
   const primaryType = spec.types[0];
-  const style: Partial<Style> = { ...surfaceFor(spec.types), ...TYPE_MOTION[primaryType] };
-  if (spec.id === 'exhaustfume' || spec.id === 'backfire' || spec.id === 'streetlamp' || ROOF_FLOATING.has(spec.id) || LEGEND_FLOATING.has(spec.id) || NEW_FLOATING.has(spec.id)) style.floating = true;
+  const style: Partial<Style> = { ...surfaceFor(spec.types), ...TYPE_MOTION[primaryType], flavour: primaryType, flavour2: spec.types[1] };
+  if (spec.id === 'exhaustfume' || spec.id === 'backfire' || spec.id === 'streetlamp' || ROOF_FLOATING.has(spec.id) || LEGEND_FLOATING.has(spec.id) || NEW_FLOATING.has(spec.id) || POND_FLOATING.has(spec.id)) style.floating = true;
   if (spec.id === 'hazeling') style.glassOpacity = 0.7;
   if (spec.id === 'overtime') style.energy = 1.4;
   const kit = new Kit(shiny ? `${spec.id}_shiny` : spec.id, palette, style);

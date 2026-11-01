@@ -17,12 +17,26 @@ export const SEWER = {
   block: 3,
   rooms: 24,
   floor: -40,
+  /** The deeper levels: floor heights and maze size (rooms per side), one each under every district. */
+  levels: [
+    { floor: -40, rooms: 24 },
+    { floor: -56, rooms: 16 },
+    { floor: -72, rooms: 12 },
+  ],
   /** Tunnel height (m). */
   height: 4,
-  loopRate: 0.15,
+  loopRate: 0.3,
   chambers: 6,
   /** Big 5x5-block open rooms (wild Streetmon gather there; some are camps). */
-  halls: 6,
+  halls: 8,
+  /** Pools: cistern halls (deep water to swim), channels (water with a current), sludge (toxic, waist deep). */
+  cisternDepth: 1.9,
+  channelDepth: 1.45,
+  sludgeDepth: 0.85,
+  /** The pool's surface sits this far below the tunnel floor. */
+  poolDrop: 0.3,
+  /** Caches (lockboxes in dead ends): per level. */
+  caches: [4, 5, 6],
   manholes: 6,
   /** Props per room size, and loose ones along straight tunnels per maze. */
   propsPerHall: 7,
@@ -84,6 +98,22 @@ export interface Room {
 
 export type Hazard = { kind: 'sludge' } | { kind: 'vent'; phase: number } | { kind: 'channel'; dx: number; dz: number };
 
+/** A sunken block of water (or sludge): its depth below the tunnel floor's pool surface. */
+export interface Pool {
+  depth: number;
+  toxic: boolean;
+}
+
+/** A lockbox of loot in a dead end; `tier` grows with depth (better loot). */
+export interface Cache {
+  id: string;
+  i: number;
+  j: number;
+  x: number;
+  z: number;
+  tier: number;
+}
+
 export interface Manhole {
   id: string;
   /** Street position (top) and the tunnel block below. */
@@ -115,6 +145,12 @@ export interface Maze {
   manholes: Manhole[];
   hazards: Map<string, Hazard>;
   dark: Array<{ i: number; j: number }>;
+  /** 1 = the sewers under the street, 2 and 3 the deep drains below; the floor's height. */
+  level: number;
+  floor: number;
+  /** Sunken water by block (cisterns, channels, sludge). */
+  pools: Map<string, Pool>;
+  caches: Cache[];
 }
 
 export const key = (i: number, j: number): string => `${i},${j}`;
@@ -196,10 +232,29 @@ const openNeighbours = (open: boolean[][], i: number, j: number): number =>
  * manholes on open pavement above tunnels. `streetOk(x, z)` says whether a manhole can sit there.
  */
 export function planSewers(layout: CityLayout, seed: number, centres: Array<{ district: District; x: number; z: number }>, streetOk: (x: number, z: number) => boolean): Maze[] {
-  const mazes: Maze[] = [];
-  centres.forEach((c, idx) => {
+  void layout;
+  return centres.map((c, idx) => makeMaze(c, idx, seed, 1, streetOk));
+}
+
+/**
+ * The deep drains: levels 2 and 3 under every district's sewer, smaller mazes further down with
+ * more water, more sludge, more caches and no way up but the shafts (Game links them).
+ */
+export function planDeepSewers(seed: number, top: readonly Maze[]): Maze[] {
+  const out: Maze[] = [];
+  top.forEach((t, idx) => {
+    const W = t.size * SEWER.block;
+    const c = { district: t.district, x: t.x0 + W / 2, z: t.z0 + W / 2 };
+    for (let level = 2; level <= SEWER.levels.length; level++) out.push(makeMaze(c, idx, seed + level * 7717, level, () => false));
+  });
+  return out;
+}
+
+function makeMaze(c: { district: District; x: number; z: number }, idx: number, seed: number, level: number, streetOk: (x: number, z: number) => boolean): Maze {
+    const L = SEWER.levels[level - 1];
+    const N = L.rooms;
     const rng = new Rng(seed * 31 + idx * 977);
-    const { open, size } = carveMaze(seed + idx * 101);
+    const { open, size } = carveMaze(seed + idx * 101, N, SEWER.loopRate + (level - 1) * 0.05);
     const B = SEWER.block;
     const x0 = c.x - (size * B) / 2;
     const z0 = c.z - (size * B) / 2;
@@ -209,9 +264,10 @@ export function planSewers(layout: CityLayout, seed: number, centres: Array<{ di
     for (let i = mid - 2; i <= mid + 2; i++) for (let j = mid - 2; j <= mid + 2; j++) open[i][j] = true;
     // Chambers: 3x3 rooms at random room centres away from the hub.
     const chambers: Array<{ i: number; j: number }> = [];
-    for (let tries = 0; chambers.length < SEWER.chambers && tries < 200; tries++) {
-      const i = 2 * Math.floor(rng.next() * (SEWER.rooms - 2)) + 3;
-      const j = 2 * Math.floor(rng.next() * (SEWER.rooms - 2)) + 3;
+    for (let tries = 0; chambers.length < (level === 1 ? SEWER.chambers : 3) && tries < 200; tries++) {
+      const i = 2 * Math.floor(rng.next() * (N - 2)) + 3;
+      const j = 2 * Math.floor(rng.next() * (N - 2)) + 3;
+      if (i + 1 >= size - 1 || j + 1 >= size - 1) continue;
       if (Math.abs(i - mid) < 7 && Math.abs(j - mid) < 7) continue;
       if (chambers.some((ch) => Math.abs(ch.i - i) < 6 && Math.abs(ch.j - j) < 6)) continue;
       chambers.push({ i, j });
@@ -220,11 +276,11 @@ export function planSewers(layout: CityLayout, seed: number, centres: Array<{ di
     // Halls: 5x5-block open rooms (their own random stream, so chambers and the carve stay put).
     const hrng = new Rng(seed * 53 + idx * 331);
     const hallsRaw: Array<{ i: number; j: number }> = [];
-    for (let tries = 0; hallsRaw.length < SEWER.halls && tries < 400; tries++) {
-      const i = 2 * Math.floor(hrng.next() * (SEWER.rooms - 4)) + 5;
-      const j = 2 * Math.floor(hrng.next() * (SEWER.rooms - 4)) + 5;
+    for (let tries = 0; hallsRaw.length < (level === 1 ? SEWER.halls : level === 2 ? 4 : 3) && tries < 400; tries++) {
+      const i = 2 * Math.floor(hrng.next() * (N - 4)) + 5;
+      const j = 2 * Math.floor(hrng.next() * (N - 4)) + 5;
       if (i + 2 >= size - 1 || j + 2 >= size - 1) continue;
-      if (Math.abs(i - mid) < 8 && Math.abs(j - mid) < 8) continue;
+      if (Math.abs(i - mid) < (level === 1 ? 8 : 6) && Math.abs(j - mid) < (level === 1 ? 8 : 6)) continue;
       if (chambers.some((ch) => Math.abs(ch.i - i) < 6 && Math.abs(ch.j - j) < 6)) continue;
       if (hallsRaw.some((h) => Math.abs(h.i - i) < 9 && Math.abs(h.j - j) < 9)) continue;
       hallsRaw.push({ i, j });
@@ -248,7 +304,7 @@ export function planSewers(layout: CityLayout, seed: number, centres: Array<{ di
         if (streetOk(x, z)) cand.push({ i, j, x, z });
       }
     for (const ccc of shuffle(cand, rng)) {
-      if (manholes.length >= SEWER.manholes) break;
+      if (manholes.length >= (level === 1 ? SEWER.manholes : 0)) break;
       if (manholes.some((m) => Math.hypot(m.x - ccc.x, m.z - ccc.z) < 30)) continue;
       manholes.push({ id: `mh-${c.district}-${manholes.length}`, ...ccc });
     }
@@ -270,18 +326,19 @@ export function planSewers(layout: CityLayout, seed: number, centres: Array<{ di
       }
       return null;
     };
-    for (let n = 0; n < SEWER.sludge; n++) {
+    const scale = level === 1 ? 1 : 0.55;
+    for (let n = 0; n < Math.round(SEWER.sludge * scale * (level === 3 ? 1.5 : 1)); n++) {
       const t = take();
       if (t) hazards.set(key(t.i, t.j), { kind: 'sludge' });
     }
-    for (let n = 0; n < SEWER.vents; n++) {
+    for (let n = 0; n < Math.round(SEWER.vents * scale); n++) {
       const t = take();
       if (t) hazards.set(key(t.i, t.j), { kind: 'vent', phase: rng.next() * SEWER.ventCycle });
     }
     // Channels: straight runs of 4+ tunnel blocks; the current flows along the run.
     let made = 0;
     for (const t of shuffle(tunnels, rng)) {
-      if (made >= SEWER.channels) break;
+      if (made >= SEWER.channels + (level - 1) * 2) break;
       for (const [dx, dz] of [
         [1, 0],
         [0, 1],
@@ -321,11 +378,79 @@ export function planSewers(layout: CityLayout, seed: number, centres: Array<{ di
       if (!best) break;
       camps.push(best);
     }
-    const props = placeProps({ open, size, x0, z0, rooms, camps, deadEnds, manholes, hazards }, new Rng(seed * 7919 + idx * 613));
-    mazes.push({ district: c.district, x0, z0, size, open, hub, chambers, halls, rooms, camps, props, deadEnds, manholes, hazards, dark });
-  });
-  void layout;
-  return mazes;
+    // Nobody camps in the deep drains.
+    if (level > 1) camps.length = 0;
+    // Water: channel runs and sludge blocks sink into pools, and the halls nobody camps in become
+    // cisterns (a deep pool in the middle with a walkway round it).
+    const pools = new Map<string, Pool>();
+    for (const [k, h] of hazards) {
+      if (h.kind === 'channel') pools.set(k, { depth: SEWER.channelDepth, toxic: false });
+      else if (h.kind === 'sludge') pools.set(k, { depth: SEWER.sludgeDepth + (level - 1) * 0.35, toxic: true });
+    }
+    const cisterns = halls.filter((h) => !camps.includes(h)).slice(0, level === 1 ? 3 : 2);
+    for (const h of cisterns) for (let a = h.i - 1; a <= h.i + 1; a++) for (let b = h.j - 1; b <= h.j + 1; b++) pools.set(key(a, b), { depth: SEWER.cisternDepth + (level - 1) * 0.3, toxic: false });
+    // Caches: lockboxes in the dead ends furthest from the hub.
+    const byDist = [...deadEnds].filter((d) => !hazards.has(key(d.i, d.j))).sort((a, b) => (fromHub.get(key(b.i, b.j)) ?? 0) - (fromHub.get(key(a.i, a.j)) ?? 0));
+    const caches: Cache[] = [];
+    for (const d of byDist) {
+      if (caches.length >= SEWER.caches[level - 1]) break;
+      if (caches.some((o) => Math.abs(o.i - d.i) + Math.abs(o.j - d.j) < 8)) continue;
+      const ctr = { x: x0 + (d.i + 0.5) * B, z: z0 + (d.j + 0.5) * B };
+      caches.push({ id: `cache-${c.district}-${level}-${caches.length}`, i: d.i, j: d.j, x: ctr.x, z: ctr.z, tier: level });
+    }
+    // Few dead ends (the lower levels loop a lot): tuck the rest into corners far from the hub.
+    if (caches.length < SEWER.caches[level - 1]) {
+      const corners: Array<{ i: number; j: number }> = [];
+      for (let i = 1; i < size - 1; i++)
+        for (let j = 1; j < size - 1; j++) {
+          if (!open[i][j] || pools.has(key(i, j)) || hazards.has(key(i, j))) continue;
+          const wallsX = (open[i - 1][j] ? 0 : 1) + (open[i + 1][j] ? 0 : 1);
+          const wallsZ = (open[i][j - 1] ? 0 : 1) + (open[i][j + 1] ? 0 : 1);
+          if (wallsX >= 1 && wallsZ >= 1) corners.push({ i, j });
+        }
+      corners.sort((a, b) => (fromHub.get(key(b.i, b.j)) ?? 0) - (fromHub.get(key(a.i, a.j)) ?? 0));
+      for (const d of corners) {
+        if (caches.length >= SEWER.caches[level - 1]) break;
+        if (caches.some((o) => Math.abs(o.i - d.i) + Math.abs(o.j - d.j) < 6)) continue;
+        caches.push({ id: `cache-${c.district}-${level}-${caches.length}`, i: d.i, j: d.j, x: x0 + (d.i + 0.5) * B, z: z0 + (d.j + 0.5) * B, tier: level });
+      }
+    }
+    const props = placeProps({ open, size, x0, z0, rooms, camps, deadEnds: deadEnds.filter((d) => !caches.some((o) => o.i === d.i && o.j === d.j)), manholes, hazards }, new Rng(seed * 7919 + idx * 613));
+    const floor = L.floor;
+    return { district: c.district, x0, z0, size, open, hub, chambers, halls, rooms, camps, props, deadEnds, manholes, hazards, dark, level, floor, pools, caches };
+}
+
+/** The pool under a point (null: dry tunnel or outside the maze). */
+export function poolAt(m: Maze, x: number, z: number): Pool | null {
+  const b = blockAt(m, x, z);
+  return b ? (m.pools.get(key(b.i, b.j)) ?? null) : null;
+}
+
+/**
+ * Nearest dry tunnel edge from a point in a pool: how far, which way, and a spot just past it to
+ * climb out to (null: no dry neighbour block; keep swimming along).
+ */
+export function poolEdge(m: Maze, x: number, z: number): { d: number; nx: number; nz: number; outX: number; outZ: number } | null {
+  const b = blockAt(m, x, z);
+  if (!b) return null;
+  const B = SEWER.block;
+  let best: { d: number; nx: number; nz: number; outX: number; outZ: number } | null = null;
+  for (const [di, dj] of [
+    [1, 0],
+    [-1, 0],
+    [0, 1],
+    [0, -1],
+  ] as Array<[number, number]>) {
+    const a = b.i + di;
+    const c = b.j + dj;
+    if (!m.open[a]?.[c] || m.pools.has(key(a, c))) continue;
+    // Distance from the point to the shared face of the two blocks.
+    const faceX = m.x0 + (b.i + (di > 0 ? 1 : 0)) * B;
+    const faceZ = m.z0 + (b.j + (dj > 0 ? 1 : 0)) * B;
+    const d = di !== 0 ? Math.abs(faceX - x) : Math.abs(faceZ - z);
+    if (!best || d < best.d) best = { d, nx: di, nz: dj, outX: di !== 0 ? faceX + di * 0.7 : x, outZ: dj !== 0 ? faceZ + dj * 0.7 : z };
+  }
+  return best;
 }
 
 /** Block under a world point, or null outside this maze. */

@@ -1,7 +1,7 @@
 import RAPIER from '@dimforge/rapier3d-compat';
 import * as THREE from 'three';
 import { GROUP, groups } from '../config';
-import { copLook } from '../peds/CrowdRenderer';
+import { copLook, swatLook } from '../peds/CrowdRenderer';
 import type { Ped, PedestrianSystem } from '../peds/PedestrianSystem';
 import type { HumanoidLook } from '../player/Humanoid';
 import { DIR_HEADING, DX, DZ, axisOf, opposite, type Dir, type Point, type RoadGraph } from '../traffic/RoadGraph';
@@ -13,6 +13,7 @@ import type { VehicleManager } from '../vehicles/VehicleManager';
 import { rule, unitsFor } from './Escalation';
 import { segmentsInRing } from './spawnRing';
 import type { Wanted } from './Wanted';
+import { VISION, inVision, type PoliceBlip } from './Vision';
 
 type Mode = 'respond' | 'pursue' | 'deploy' | 'onfoot' | 'roadblock';
 
@@ -62,8 +63,6 @@ export interface PoliceEvents {
   onOfficerFire(officer: Ped, hitChance: number): void;
 }
 
-const SIGHT_CAR = 110;
-const SIGHT_FOOT = 60;
 const LOS_GROUPS = groups(0xffff, GROUP.WORLD);
 
 /**
@@ -135,6 +134,19 @@ export class PoliceSystem {
     return best;
   }
 
+  /** The raw arrest timer (1.1 = busted): the game holds it while you roll, speeds it while you're winded. */
+  get arrestRaw(): number {
+    return this.arrest;
+  }
+
+  set arrestRaw(v: number) {
+    this.arrest = Math.max(0, v);
+    if (this.arrest >= 1.1) {
+      this.arrest = 0;
+      this.events.onBusted();
+    }
+  }
+
   /** 0..1 progress of an arrest in progress (for the HUD). */
   get arrestProgress(): number {
     return clamp(this.arrest, 0, 1);
@@ -183,10 +195,16 @@ export class PoliceSystem {
   }
 
   /** Police car positions for the minimap. */
-  blips(): Array<{ x: number; z: number }> {
-    const out: Array<{ x: number; z: number }> = [];
-    for (const u of this.units) if (!u.car.destroyed) out.push({ x: u.car.position.x, z: u.car.position.z });
-    for (const c of this.traffic.patrols()) out.push({ x: c.position.x, z: c.position.z });
+  /** Minimap blips: each unit and patrol with its vision cone (lit when it can see you). Officers out of their car get their own. */
+  blips(): PoliceBlip[] {
+    const out: PoliceBlip[] = [];
+    for (const u of this.units) {
+      if (u.car.destroyed) continue;
+      const crewed = u.crew.length > 0 && (u.dazedFor ?? 0) <= 0;
+      out.push({ x: u.car.position.x, z: u.car.position.z, heading: u.car.heading, vision: crewed ? VISION.car : undefined, sees: u.sees });
+      for (const o of u.officers) if (o.state === 'cop') out.push({ x: o.x, z: o.z, heading: o.heading, vision: VISION.foot, sees: u.sees });
+    }
+    for (const c of this.traffic.patrols()) out.push({ x: c.position.x, z: c.position.z, heading: c.heading, vision: VISION.patrol });
     return out;
   }
 
@@ -219,16 +237,15 @@ export class PoliceSystem {
     for (const u of this.units) {
       const c = u.car;
       if (!c.destroyed && u.crew.length > 0) {
-        const d = Math.hypot(c.position.x - x, c.position.z - z);
-        if (d < SIGHT_CAR && this.los(c.position.x, c.position.y + 0.8, c.position.z, x, y + 1, z)) return true;
+        if (inVision(VISION.car, c.position.x, c.position.z, c.heading, x, z) && this.los(c.position.x, c.position.y + 0.8, c.position.z, x, y + 1, z)) return true;
       }
       for (const o of u.officers) {
         if (o.state !== 'cop') continue;
-        if (Math.hypot(o.x - x, o.z - z) < SIGHT_FOOT && this.los(o.x, o.y + 1.6, o.z, x, y + 1, z)) return true;
+        if (inVision(VISION.foot, o.x, o.z, o.heading, x, z) && this.los(o.x, o.y + 1.6, o.z, x, y + 1, z)) return true;
       }
     }
     for (const c of this.traffic.patrols()) {
-      if (Math.hypot(c.position.x - x, c.position.z - z) < SIGHT_CAR * 0.7 && this.los(c.position.x, c.position.y + 0.8, c.position.z, x, y + 1, z)) return true;
+      if (inVision(VISION.patrol, c.position.x, c.position.z, c.heading, x, z) && this.los(c.position.x, c.position.y + 0.8, c.position.z, x, y + 1, z)) return true;
     }
     return false;
   }
@@ -282,7 +299,7 @@ export class PoliceSystem {
     if (!seen && stars > 0) {
       // Patrols still in traffic (rare once wanted) count too.
       for (const c of this.traffic.patrols()) {
-        if (Math.hypot(c.position.x - p.x, c.position.z - p.z) < 70 && this.los(c.position.x, c.position.y + 0.8, c.position.z, p.x, p.y + 1, p.z)) seen = true;
+        if (inVision(VISION.patrol, c.position.x, c.position.z, c.heading, p.x, p.z) && this.los(c.position.x, c.position.y + 0.8, c.position.z, p.x, p.y + 1, p.z)) seen = true;
       }
     }
     this.seen = seen;
@@ -294,7 +311,10 @@ export class PoliceSystem {
       const g = this.updateUnit(u, dt, player, stars);
       if (g === 'foot' || (g === 'car' && grab === null)) grab = g;
     }
-    this.arrest = grab ? this.arrest + dt * (grab === 'car' ? 0.55 : 1) : Math.max(0, this.arrest - dt * 2);
+    // (At one or two stars an officer takes a moment longer to get the cuffs on, so there's time
+    // to see "BEING ARRESTED" and roll out of reach; from three stars they're quick about it.)
+    const footRate = stars >= 3 ? 1 : 0.65;
+    this.arrest = grab ? this.arrest + dt * (grab === 'car' ? 0.55 : footRate) : Math.max(0, this.arrest - dt * 2);
     if (this.arrest >= 1.1) {
       this.arrest = 0;
       this.events.onBusted();
@@ -305,11 +325,14 @@ export class PoliceSystem {
     if ((u.dazedFor ?? 0) > 0) return false;
     const c = u.car;
     if (!c.destroyed && u.crew.length > 0) {
-      if (Math.hypot(c.position.x - p.x, c.position.z - p.z) < SIGHT_CAR && this.los(c.position.x, c.position.y + 0.8, c.position.z, p.x, p.y + 1, p.z)) return true;
+      // A unit already on your tail keeps you in sight within its full range (they're watching you, not the road).
+      const v = u.sees ? { ...VISION.car, half: Math.PI } : VISION.car;
+      if (inVision(v, c.position.x, c.position.z, c.heading, p.x, p.z) && this.los(c.position.x, c.position.y + 0.8, c.position.z, p.x, p.y + 1, p.z)) return true;
     }
     for (const o of u.officers) {
       if (o.state !== 'cop') continue;
-      if (Math.hypot(o.x - p.x, o.z - p.z) < SIGHT_FOOT && this.los(o.x, o.y + 1.6, o.z, p.x, p.y + 1, p.z)) return true;
+      const v = u.sees ? { ...VISION.foot, half: Math.PI } : VISION.foot;
+      if (inVision(v, o.x, o.z, o.heading, p.x, p.z) && this.los(o.x, o.y + 1.6, o.z, p.x, p.y + 1, p.z)) return true;
     }
     return false;
   }
@@ -356,7 +379,9 @@ export class PoliceSystem {
       if (toward < 0 && tries < 14) continue;
       const car = this.vehicles.spawn(getSpec('police'), pt.x, pt.z, DIR_HEADING[seg.d]);
       car.setInitialVelocity(DX[seg.d] * 12, DZ[seg.d] * 12);
-      this.addUnit(car, [copLook(), copLook()], 'respond');
+      // From four stars the tactical unit turns out: helmets, visors and plate vests.
+      const officer = (): ReturnType<typeof copLook> => (this.wanted.stars >= 4 ? swatLook() : copLook());
+      this.addUnit(car, [officer(), officer()], 'respond');
       return;
     }
   }
@@ -398,7 +423,7 @@ export class PoliceSystem {
       // Officer stands behind the car (further along the player's direction of travel).
       const ox = x + DX[dir] * 3.2;
       const oz = z + DZ[dir] * 3.2;
-      if (!this.peds.blocked(ox, oz)) u.officers.push(this.peds.spawnOfficer(ox, oz, copLook(), DIR_HEADING[opposite(dir)]));
+      if (!this.peds.blocked(ox, oz)) u.officers.push(this.peds.spawnOfficer(ox, oz, this.wanted.stars >= 4 ? swatLook() : copLook(), DIR_HEADING[opposite(dir)]));
     }
   }
 

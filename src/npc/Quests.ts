@@ -174,8 +174,12 @@ export const MARKET = {
     { id: 'cage', price: 1600, rep: 20 },
     { id: 'sparkPlug', price: 1800, rep: 20 },
     { id: 'steelCase', price: 3000, rep: 20 },
+    { id: 'burner', price: 900, rep: 10 },
+    { id: 'rabbitFoot', price: 2800, rep: 30 },
+    { id: 'proteinShake', price: 3200, rep: 30 },
+    { id: 'lockpick', price: 300 },
   ],
-  slots: 4,
+  slots: 5,
   /** Reputation for a 20% discount. */
   discountRep: 40,
   discount: 0.8,

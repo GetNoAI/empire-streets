@@ -38,37 +38,59 @@
         "name": "Vinnie \"Vroom\" Russo",
         "vehicle": "sports",
         "color": "#c41e3a",
-        "skill": 0.96
+        "skill": 0.96,
+        "streetmon": [
+          "gun",
+          "smoke"
+        ]
       },
       {
         "name": "Dee Okafor",
         "vehicle": "sports",
         "color": "#1f6fe0",
-        "skill": 0.9
+        "skill": 0.9,
+        "streetmon": [
+          "bass"
+        ]
       },
       {
         "name": "Marisol Vega",
         "vehicle": "sedan",
         "color": "#e8e8e8",
-        "skill": 0.93
+        "skill": 0.93,
+        "streetmon": [
+          "smoke"
+        ]
       },
       {
         "name": "Big Lou",
         "vehicle": "suv",
         "color": "#222222",
-        "skill": 0.86
+        "skill": 0.86,
+        "streetmon": [
+          "concrete",
+          "grind"
+        ]
       },
       {
         "name": "Kenji Sato",
         "vehicle": "taxi",
         "color": "#f3b712",
-        "skill": 0.88
+        "skill": 0.88,
+        "streetmon": [
+          "grind",
+          "gun"
+        ]
       },
       {
         "name": "Rosa \"Two-Tone\" Diaz",
         "vehicle": "sports",
         "color": "#7b2fbe",
-        "skill": 0.92
+        "skill": 0.92,
+        "streetmon": [
+          "smoke",
+          "bass"
+        ]
       }
     ],
     "catchUp": {
@@ -76,7 +98,8 @@
       "behindBoost": 1.06,
       "aheadGap": 1.5,
       "aheadSlow": 0.88
-    }
+    },
+    "_streetmon": "Each racer's favourite Streetmon types: rivals run Streetmon in their cars' slots (same Chop Shop rules as yours). How many are armed, how strong they are, which abilities appear and how sharply they use them all scale with the race's tier (the higher of the track's USRL division and yours); see src/systems/rivalLoadout.ts."
   },
   "props": {
     "barricade": {
@@ -296,7 +319,8 @@
           "count": 3,
           "spacing": 2.6
         }
-      ]
+      ],
+      "mode": "sprint"
     },
     {
       "id": "central-green-circuit",
@@ -473,7 +497,8 @@
           "z": 280.7,
           "rotationY": 0
         }
-      ]
+      ],
+      "mode": "circuit"
     },
     {
       "id": "uptown-switchback",
@@ -636,7 +661,8 @@
           "count": 8,
           "spacing": 3
         }
-      ]
+      ],
+      "mode": "sprint"
     },
     {
       "id": "harbor-run",
@@ -837,7 +863,403 @@
           "count": 3,
           "spacing": 2.6
         }
+      ],
+      "mode": "sprint"
+    },
+    {
+      "id": "park-loop-drift",
+      "name": "Park Loop Drift",
+      "district": "park",
+      "mode": "drift",
+      "maxClass": null,
+      "description": "Slide round the four corners of the park. Points for angle and speed; chain the slides for a multiplier.",
+      "entryFee": 150,
+      "minStreetCred": 5,
+      "laps": 2,
+      "timeLimit": 200,
+      "payouts": {
+        "first": 2000,
+        "second": 1000,
+        "third": 450
+      },
+      "streetCred": {
+        "first": 8,
+        "second": 5,
+        "third": 3,
+        "finish": 1
+      },
+      "medals": {
+        "gold": 12000,
+        "silver": 7000,
+        "bronze": 3000
+      },
+      "start": {
+        "x": -150,
+        "z": -150,
+        "heading": 1.5708
+      },
+      "organizer": {
+        "x": -163,
+        "z": -130
+      },
+      "checkpointRadius": 14,
+      "checkpointPositions": [
+        {
+          "x": -150,
+          "z": -217
+        },
+        {
+          "x": 300,
+          "z": -217
+        },
+        {
+          "x": 300,
+          "z": 279
+        },
+        {
+          "x": -150,
+          "z": 279
+        }
+      ],
+      "temporaryObstacles": [
+        {
+          "type": "cones",
+          "x": -150,
+          "z": -200,
+          "rotationY": 1.5708,
+          "count": 4,
+          "spacing": 3
+        },
+        {
+          "type": "cones",
+          "x": 300,
+          "z": 262,
+          "rotationY": 1.5708,
+          "count": 4,
+          "spacing": 3
+        }
+      ]
+    },
+    {
+      "id": "midtown-time-attack",
+      "name": "Midtown Time Attack",
+      "district": "midtown",
+      "mode": "timeTrial",
+      "maxClass": null,
+      "description": "You against the clock through the heart of midtown. Gold needs a clean run and a quick car.",
+      "entryFee": 100,
+      "minStreetCred": 0,
+      "laps": 1,
+      "timeLimit": 180,
+      "payouts": {
+        "first": 1800,
+        "second": 900,
+        "third": 400
+      },
+      "streetCred": {
+        "first": 6,
+        "second": 4,
+        "third": 2,
+        "finish": 1
+      },
+      "medals": {
+        "gold": 58,
+        "silver": 70,
+        "bronze": 90
+      },
+      "start": {
+        "x": -300,
+        "z": -60,
+        "heading": -1.5708
+      },
+      "organizer": {
+        "x": -313,
+        "z": -80
+      },
+      "checkpointRadius": 14,
+      "checkpointPositions": [
+        {
+          "x": -300,
+          "z": 31
+        },
+        {
+          "x": -300,
+          "z": 279
+        },
+        {
+          "x": 0,
+          "z": 279
+        },
+        {
+          "x": 0,
+          "z": 527
+        }
+      ]
+    },
+    {
+      "id": "uptown-knockout",
+      "name": "Uptown Knockout",
+      "district": "uptown",
+      "mode": "knockout",
+      "maxClass": "B",
+      "description": "Three laps round the uptown blocks. Last place at the end of each lap is out.",
+      "entryFee": 250,
+      "minStreetCred": 10,
+      "laps": 3,
+      "timeLimit": 260,
+      "payouts": {
+        "first": 2600,
+        "second": 1200,
+        "third": 500
+      },
+      "streetCred": {
+        "first": 10,
+        "second": 5,
+        "third": 3,
+        "finish": 1
+      },
+      "start": {
+        "x": -150,
+        "z": -480,
+        "heading": 1.5708
+      },
+      "organizer": {
+        "x": -163,
+        "z": -460
+      },
+      "checkpointRadius": 14,
+      "checkpointPositions": [
+        {
+          "x": -150,
+          "z": -527
+        },
+        {
+          "x": 150,
+          "z": -527
+        },
+        {
+          "x": 150,
+          "z": -403
+        },
+        {
+          "x": -150,
+          "z": -403
+        }
+      ],
+      "temporaryObstacles": [
+        {
+          "type": "tireStack",
+          "x": 138,
+          "z": -515,
+          "rotationY": 0
+        },
+        {
+          "type": "tireStack",
+          "x": -138,
+          "z": -415,
+          "rotationY": 0
+        },
+        {
+          "type": "boostPad",
+          "x": 75,
+          "z": -527,
+          "rotationY": 0
+        }
+      ]
+    },
+    {
+      "id": "hatch-cup",
+      "name": "Hatch Cup",
+      "district": "midtown",
+      "mode": "sprint",
+      "maxClass": "C",
+      "description": "Class C and below only: hatchbacks, cabs and sedans. A short, scrappy sprint across the east side.",
+      "entryFee": 50,
+      "minStreetCred": 0,
+      "laps": 1,
+      "timeLimit": 120,
+      "payouts": {
+        "first": 700,
+        "second": 350,
+        "third": 150
+      },
+      "streetCred": {
+        "first": 6,
+        "second": 3,
+        "third": 2,
+        "finish": 1
+      },
+      "start": {
+        "x": 300,
+        "z": 180,
+        "heading": -1.5708
+      },
+      "organizer": {
+        "x": 313,
+        "z": 160
+      },
+      "checkpointRadius": 14,
+      "checkpointPositions": [
+        {
+          "x": 300,
+          "z": 279
+        },
+        {
+          "x": 450,
+          "z": 279
+        },
+        {
+          "x": 450,
+          "z": 465
+        },
+        {
+          "x": 150,
+          "z": 465
+        }
+      ],
+      "temporaryObstacles": [
+        {
+          "type": "cones",
+          "x": 300,
+          "z": 260,
+          "rotationY": 1.5708,
+          "count": 5,
+          "spacing": 3
+        }
+      ]
+    },
+    {
+      "id": "downtown-gp",
+      "name": "Downtown Grand Prix",
+      "district": "downtown",
+      "mode": "circuit",
+      "maxClass": null,
+      "description": "Four laps of the downtown ring. Fast, wide and busy; the big prize of the league.",
+      "entryFee": 500,
+      "minStreetCred": 40,
+      "laps": 4,
+      "timeLimit": 420,
+      "payouts": {
+        "first": 5000,
+        "second": 2400,
+        "third": 1000
+      },
+      "streetCred": {
+        "first": 15,
+        "second": 8,
+        "third": 4,
+        "finish": 1
+      },
+      "start": {
+        "x": 0,
+        "z": 330,
+        "heading": -1.5708
+      },
+      "organizer": {
+        "x": -13,
+        "z": 310
+      },
+      "checkpointRadius": 15,
+      "checkpointPositions": [
+        {
+          "x": 0,
+          "z": 403
+        },
+        {
+          "x": 300,
+          "z": 403
+        },
+        {
+          "x": 300,
+          "z": 527
+        },
+        {
+          "x": 0,
+          "z": 527
+        }
+      ],
+      "temporaryObstacles": [
+        {
+          "type": "boostPad",
+          "x": 75,
+          "z": 403,
+          "rotationY": 0
+        },
+        {
+          "type": "boostPad",
+          "x": 225,
+          "z": 527,
+          "rotationY": 3.1416
+        },
+        {
+          "type": "tireStack",
+          "x": 288,
+          "z": 415,
+          "rotationY": 0
+        },
+        {
+          "type": "tireStack",
+          "x": 12,
+          "z": 515,
+          "rotationY": 0
+        }
+      ]
+    },
+    {
+      "id": "island-marathon",
+      "name": "Island Marathon",
+      "district": "waterfront",
+      "mode": "sprint",
+      "maxClass": null,
+      "description": "Corner to corner across the whole island. The longest race in the city.",
+      "entryFee": 400,
+      "minStreetCred": 30,
+      "laps": 1,
+      "timeLimit": 300,
+      "payouts": {
+        "first": 4200,
+        "second": 2000,
+        "third": 800
+      },
+      "streetCred": {
+        "first": 14,
+        "second": 7,
+        "third": 4,
+        "finish": 1
+      },
+      "start": {
+        "x": -450,
+        "z": 560,
+        "heading": 1.5708
+      },
+      "organizer": {
+        "x": -463,
+        "z": 540
+      },
+      "checkpointRadius": 15,
+      "checkpointPositions": [
+        {
+          "x": -450,
+          "z": 31
+        },
+        {
+          "x": -150,
+          "z": 31
+        },
+        {
+          "x": -150,
+          "z": -341
+        },
+        {
+          "x": 300,
+          "z": -341
+        },
+        {
+          "x": 300,
+          "z": -589
+        }
       ]
     }
-  ]
+  ],
+  "_modes": "mode: sprint | circuit | knockout | timeTrial | drift. maxClass limits entry to that car class and below (D C B A S; see src/vehicles/Performance.ts). Time trials and drift events are solo: medals give the 1st/2nd/3rd payouts (gold/silver/bronze: seconds for a time trial, points for drift)."
 }

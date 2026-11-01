@@ -62,10 +62,14 @@ export interface CityLayout {
   buildings: Building[];
   parking: ParkingSpot[];
   playerSpawn: { x: number; z: number };
+  /** Pavement kept free of lamps, trees and hydrants (shop fronts): set before buildCity. */
+  clearFronts?: Array<{ x: number; z: number; r: number }>;
   /** Promenade strip between outer roads and the water. */
   promenade: number;
   /** Parking garages that replaced pairs of buildings (set by the rooftop planner before building). */
   garages?: Array<{ rect: Rect }>;
+  /** The docks' piers and T-heads (set by the city builder): walkable ground past the river railing. */
+  docks?: Rect[];
   /** Back alleys cut through some blocks (set by planAlleys before building). */
   alleys?: Array<{ id: string; rect: Rect; x: number; z: number; district: string }>;
 }

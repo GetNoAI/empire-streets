@@ -5,12 +5,18 @@ import type { VehicleManager } from '../vehicles/VehicleManager';
 import type { CityLayout } from '../world/CityLayout';
 import type { CreatureInstance, CreatureModels } from './CreatureModels';
 import { createCreature, type Creature } from './Creature';
-import { species, typeInfo, type Biome, type District, type SpeciesSpec, type Temperament, type TimeOfDay } from './Data';
+import { layerOfBiome, species, typeInfo, type Biome, type District, type SpeciesSpec, type Temperament, type TimeOfDay } from './Data';
 import { SmartFleeBehavior, newFleeMemory, steerWithRepulsion, type FleeMemory } from './SmartFlee';
 import { ObstacleField, WallGrid, moveWithCollision, wallRepulsion } from './WallProbe';
 import {
+  FLIGHT,
+  SKY,
   SPAWN,
   capFor,
+  deepLevelBonus,
+  deepTable,
+  skyTable,
+  flightTarget,
   detectionRadius,
   districtAt,
   hostileAt,
@@ -18,6 +24,8 @@ import {
   pickSpecies,
   revealRadius,
   rollLevel,
+  storyAllows,
+  storyLevel,
   spawnTable,
   type Stealth,
 } from './SpawnRules';
@@ -38,7 +46,9 @@ export interface LayerGround {
   /** Height a creature stands at, or null where it can't stand (a gap between roofs, a wall). */
   ground(x: number, z: number, yNear: number): number | null;
   /** A spawn point in this layer near the player, or null if there's nowhere right now. */
-  spawnPoint(player: THREE.Vector3, rand: () => number): { x: number; y: number; z: number; district: District } | null;
+  spawnPoint(player: THREE.Vector3, rand: () => number): { x: number; y: number; z: number; district: District; level?: number } | null;
+  /** The nearest point it can be at (a pond Streetmon that ended up on the bank heads back here). */
+  nearest?(x: number, z: number): { x: number; z: number };
 }
 
 export interface WildCreature {
@@ -76,6 +86,9 @@ export interface WildCreature {
   pinned: boolean;
   /** A one-shot clip (hurt) is playing until this time. */
   animLock?: number;
+  /** Flyers (SpawnRules FLIGHT): height above the ground, and the soaring height (0 = not soaring). */
+  alt?: number;
+  soar?: number;
   /** Knocked into the air by a car: velocity, and what it does on landing. */
   knock?: { vx: number; vy: number; vz: number; then: 'fainted' | 'approach' | 'flee'; fromX: number; fromZ: number };
   /** performance.now() until which cars can't hit it again. */
@@ -159,10 +172,42 @@ export interface SpawnContext {
 
 const TAU = Math.PI * 2;
 
+/** Animation step for far-off wild Streetmon (s): 15 fps. */
+const FAR_ANIM_STEP = 1 / 15;
+
 export class SpawnSystem {
+  /** Time banked for creatures animated at the reduced far rate. */
+  private readonly animAcc = new WeakMap<WildCreature, number>();
   readonly wild: WildCreature[] = [];
   /** The street cap right now (day or night), from the last update. */
   streetCap: number = capFor('day');
+  /** Share of the usual numbers to keep around (phones keep fewer: see mobile/Platform). */
+  capScale = 1;
+  /** Items: Pheromone Bait (more spawns), the Rabbit's Foot (shinies), Pepper Musk (weaker ones stay away). */
+  rateMult = 1;
+  shinyMult = 1;
+  repelBelow = 0;
+  /** Campaign acts finished, and your strongest Streetmon's level (storyLevel in SpawnRules). */
+  actsDone = 0;
+  strongest = 0;
+
+  /** A level for a new spawn; under Pepper Musk it's at least the lead's level where the species can be. */
+  private rollLevelFor(spec: SpeciesSpec): number {
+    const lv = storyLevel(rollLevel(spec, this.rand()), this.actsDone, this.strongest);
+    return this.repelBelow > 0 && lv < this.repelBelow ? Math.min(spec.spawn.levels[1], this.repelBelow) : lv;
+  }
+
+  /** The weather's pull on each type (rain brings out Sludge, storms Wire, fog Smoke: Weather.ts). */
+  typeBoost: Partial<Record<string, number>> = {};
+
+  /** Weighted species pick; under Pepper Musk, species that can't reach your lead's level stay away. */
+  private pick(table: Parameters<typeof pickSpecies>[0], r: number): SpeciesSpec | null {
+    let t = this.repelBelow > 0 ? table.filter((o) => o.spec.spawn.levels[1] >= this.repelBelow) : table;
+    const early = t.filter((o) => storyAllows(o.spec, this.actsDone, this.strongest));
+    if (early.length) t = early;
+    if (Object.keys(this.typeBoost).length) t = t.map((o) => ({ ...o, weight: o.weight * Math.max(0.2, ...o.spec.types.map((ty) => this.typeBoost[ty] ?? 1)) }));
+    return pickSpecies(t, r);
+  }
   /** Ground for rooftops and sewers (the street uses the pedestrian walk map). */
   readonly layers: Partial<Record<Biome, LayerGround>> = {};
   private nextId = 1;
@@ -174,7 +219,7 @@ export class SpawnSystem {
   /** Turn spawning off (e.g. during a battle). */
   enabled = true;
   /** Counters for testing/tuning. */
-  readonly stats = { spawned: 0, despawned: 0, shiny: 0 };
+  readonly stats: { spawned: number; despawned: number; shiny: number; skySpawned?: number } = { spawned: 0, despawned: 0, shiny: 0 };
   /** Obstacle-aware fleeing (context steering over the wall grid). */
   readonly smartFlee = new SmartFleeBehavior();
   /** Wall grids (the spatial partition the probes read), one per layer and height band. */
@@ -224,10 +269,10 @@ export class SpawnSystem {
   ) {}
 
   update(dt: number, ctx: SpawnContext): void {
-    this.streetCap = capFor(ctx.time);
+    this.streetCap = Math.max(4, Math.round(capFor(ctx.time) * this.capScale));
     this.pv.multiplyMatrices(ctx.camera.projectionMatrix, ctx.camera.matrixWorldInverse);
     this.frustum.setFromProjectionMatrix(this.pv);
-    this.spawnTimer -= dt;
+    this.spawnTimer -= dt * this.rateMult;
     if (this.enabled && this.spawnTimer <= 0) {
       this.spawnTimer = SPAWN.interval * (0.6 + this.rand() * 0.8);
       this.trySpawn(ctx);
@@ -262,10 +307,12 @@ export class SpawnSystem {
       // Out of its hours (a day creature at night): it slips away as soon as nobody's looking.
       const offShift = w.spec.spawn.times.length > 0 && !w.spec.spawn.times.includes(ctx.time) && d > 25;
       w.hidden = !visible && (d > SPAWN.hiddenDespawnDist || offShift) ? w.hidden + dt : 0;
-      const otherLayer = w.biome !== (ctx.biome ?? 'street');
+      const otherLayer = layerOfBiome(w.biome) !== layerOfBiome(ctx.biome ?? 'street');
+      // Another sewer level (above or below you) counts as another layer.
+      const otherLevel = w.biome === 'sewer' && ctx.playerY !== undefined && Math.abs(w.y - ctx.playerY) > 8;
       // Event swarms stay put (out of sight or not) until their event ends, unless you leave the layer.
       const held = w.eventTag !== undefined && !w.removed && !otherLayer;
-      if (!held && (w.removed || otherLayer || d > SPAWN.despawnDist || w.hidden > SPAWN.hiddenDespawnTime)) {
+      if (!held && (w.removed || otherLayer || otherLevel || d > SPAWN.despawnDist || w.hidden > SPAWN.hiddenDespawnTime)) {
         if (w.state === 'engaged' && !w.removed) continue;
         this.dispose(w);
         this.wild.splice(i, 1);
@@ -288,6 +335,8 @@ export class SpawnSystem {
   /** Ground height for a creature in its layer (null = can't stand there). */
   private groundFor(b: Biome, x: number, z: number, y: number): number | null {
     if (b === 'street') return this.peds.blocked(x, z) ? null : this.peds.groundY(x, z);
+    // Pond Streetmon float on the water; hauled out on the bank (a fight) they stand on the grass.
+    if (b === 'pond') return this.layers.pond?.ground(x, z, y) ?? (this.peds.blocked(x, z) ? null : this.peds.groundY(x, z));
     const L = this.layers[b];
     return L ? L.ground(x, z, y) : null;
   }
@@ -295,6 +344,8 @@ export class SpawnSystem {
   /** Can a creature step here? Wandering ones keep to sidewalks on the street. */
   private canStep(w: WildCreature, x: number, z: number, roam: boolean): boolean {
     if (w.biome === 'street') return roam ? !this.peds.blocked(x, z) : this.walkable(x, z);
+    // Pond Streetmon keep to the water.
+    if (w.biome === 'pond') return (this.layers.pond?.ground(x, z, w.y) ?? null) !== null;
     return this.groundFor(w.biome, x, z, w.y) !== null;
   }
 
@@ -332,7 +383,11 @@ export class SpawnSystem {
       this.trySpawnLayer(ctx, biome);
       return;
     }
-    if (this.wild.length >= capFor(ctx.time)) return;
+    // The sky: a few flyers soaring high over the streets.
+    if (this.rand() < 0.4 && this.trySpawnSky(ctx)) return;
+    // The pond (on the street layer): its own few Streetmon, while you're anywhere near it.
+    if (this.layers.pond && this.rand() < 0.5 && this.trySpawnPond(ctx)) return;
+    if (this.wild.length >= this.streetCap) return;
     for (let attempt = 0; attempt < 8; attempt++) {
       const a = this.rand() * TAU;
       const d = SPAWN.minDist + this.rand() * (SPAWN.maxDist - SPAWN.minDist);
@@ -344,13 +399,50 @@ export class SpawnSystem {
       const district = districtAt(this.layout, x, z);
       const inDistrict = this.wild.filter((w) => w.district === district).length;
       if (inDistrict >= SPAWN.maxPerDistrict) continue;
-      const spec = pickSpecies(spawnTable(district, ctx.time), this.rand());
+      const spec = this.pick(spawnTable(district, ctx.time), this.rand());
       if (!spec) continue;
       // Don't stack the same species right next to each other.
       if (this.wild.some((w) => w.spec.id === spec.id && Math.hypot(w.x - x, w.z - z) < 25)) continue;
-      this.spawn(spec, rollLevel(spec, this.rand()), x, z, district, this.rand() < SPAWN.shinyChance);
+      this.spawn(spec, this.rollLevelFor(spec), x, z, district, this.rand() < SPAWN.shinyChance * this.shinyMult);
       return;
     }
+  }
+
+  /** A flyer from the local spawn table, already soaring well above the street. */
+  private trySpawnSky(ctx: SpawnContext): boolean {
+    if (this.wild.filter((w) => (w.soar ?? 0) > 0 && !w.removed).length >= Math.max(2, Math.round(SKY.max * this.capScale))) return false;
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const a = this.rand() * TAU;
+      const d = 45 + this.rand() * 80;
+      const x = ctx.player.x + Math.cos(a) * d;
+      const z = ctx.player.z + Math.sin(a) * d;
+      if (!this.walkable(x, z) && this.peds.blocked(x, z)) continue;
+      const district = districtAt(this.layout, x, z);
+      const table = skyTable(district, ctx.time);
+      const spec = this.pick(table, this.rand());
+      if (!spec) return false;
+      const w = this.spawn(spec, this.rollLevelFor(spec), x, z, district, this.rand() < SPAWN.shinyChance * this.shinyMult);
+      w.soar = SKY.alt[0] + this.rand() * (SKY.alt[1] - SKY.alt[0]);
+      w.alt = w.soar;
+      this.stats.skySpawned = (this.stats.skySpawned ?? 0) + 1;
+      return true;
+    }
+    return false;
+  }
+
+  /** The Central Green pond: up to its own cap, on open water. */
+  private trySpawnPond(ctx: SpawnContext): boolean {
+    const L = this.layers.pond;
+    if (!L || this.wild.filter((w) => w.biome === 'pond' && !w.removed).length >= capFor(ctx.time, 'pond')) return false;
+    const p = L.spawnPoint(ctx.player, this.rand);
+    if (!p) return false;
+    const d = Math.hypot(p.x - ctx.player.x, p.z - ctx.player.z);
+    if (this.inView(p.x, p.y + 0.4, p.z) && d < 25) return false;
+    const spec = this.pick(spawnTable(p.district, ctx.time, 'pond'), this.rand());
+    if (!spec) return false;
+    if (this.wild.some((w) => w.spec.id === spec.id && Math.hypot(w.x - p.x, w.z - p.z) < 12)) return false;
+    this.spawn(spec, this.rollLevelFor(spec), p.x, p.z, p.district, this.rand() < SPAWN.shinyChance * this.shinyMult, 'pond', p.y);
+    return true;
   }
 
   /** Rooftops and sewers: their own caps and spawn points, from the layer's ground. */
@@ -362,10 +454,13 @@ export class SpawnSystem {
       if (!p) return;
       const d = Math.hypot(p.x - ctx.player.x, p.z - ctx.player.z);
       if (this.inView(p.x, p.y + 0.6, p.z) && d < 30) continue;
-      const spec = pickSpecies(spawnTable(p.district, ctx.time, biome), this.rand());
+      // The deep drains: rarer Streetmon from anywhere under the city, and stronger.
+      const lvl = p.level ?? 1;
+      const table = lvl > 1 ? deepTable(ctx.time, lvl, biome) : spawnTable(p.district, ctx.time, biome);
+      const spec = this.pick(table, this.rand());
       if (!spec) return;
       if (this.wild.some((w) => w.spec.id === spec.id && Math.hypot(w.x - p.x, w.z - p.z) < 15)) continue;
-      this.spawn(spec, rollLevel(spec, this.rand()), p.x, p.z, p.district, this.rand() < SPAWN.shinyChance, biome, p.y);
+      this.spawn(spec, Math.min(70, this.rollLevelFor(spec) + deepLevelBonus(lvl)), p.x, p.z, p.district, this.rand() < SPAWN.shinyChance * this.shinyMult * lvl, biome, p.y);
       return;
     }
   }
@@ -545,6 +640,9 @@ export class SpawnSystem {
     const dx = px - w.x;
     const dz = pz - w.z;
     const dist = Math.hypot(dx, dz);
+    // Out of HP but not fainting (hit by a car while in a pod, say): it faints now rather than
+    // standing about at 0 HP where it could be battled (and crash the battle).
+    if (w.creature.hp <= 0 && w.state !== 'fainted' && w.state !== 'knocked' && w.state !== 'engaged' && !w.inPod && !w.boss) this.faint(w);
     if (w.state === 'fainted') {
       w.stateTime -= dt;
       if (w.stateTime <= 0) w.removed = true;
@@ -576,6 +674,27 @@ export class SpawnSystem {
       w.y += ((this.groundFor(w.biome, w.x, w.z, w.y) ?? w.y) - w.y) * Math.min(1, dt * 10);
       this.place(w, dt, dist);
       return;
+    }
+    // A pond Streetmon out on the bank (after a fight there) waddles straight back into the water.
+    if (w.biome === 'pond' && w.state !== 'knocked' && !w.inPod) {
+      const P = this.layers.pond;
+      if (P?.nearest && P.ground(w.x, w.z, w.y) === null) {
+        const t = P.nearest(w.x, w.z);
+        const ddx = t.x - w.x;
+        const ddz = t.z - w.z;
+        const dd = Math.hypot(ddx, ddz);
+        const step = Math.min(dd, 2.6 * dt);
+        if (dd > 1e-3) {
+          w.x += (ddx / dd) * step;
+          w.z += (ddz / dd) * step;
+          w.heading = turnToward(w.heading, Math.atan2(ddx, ddz), dt * 8);
+        }
+        w.speed = 2.6;
+        w.state = 'wander';
+        w.y += ((P.ground(w.x, w.z, w.y) ?? Math.max(w.y, this.peds.groundY(w.x, w.z))) - w.y) * Math.min(1, dt * 8);
+        this.place(w, dt, dist);
+        return;
+      }
     }
     if (w.state === 'knocked' && w.knock) {
       const k = w.knock;
@@ -766,8 +885,7 @@ export class SpawnSystem {
         if (ch.biteIn <= 0 && ch.unseen === 0) {
           const [a, b] = this.aggro.attackEvery;
           ch.biteIn = a + this.rand() * (b - a);
-          w.inst?.play('attack', 0.05);
-          w.animLock = performance.now() + 600;
+          if (w.inst) w.animLock = performance.now() + w.inst.attack('strike').duration * 1000;
           this.events.onAttackPlayer?.(w, this.biteDamage(w));
         }
         break;
@@ -874,7 +992,7 @@ export class SpawnSystem {
       const t = k / n;
       const x = w.x + (px - w.x) * t;
       const z = w.z + (pz - w.z) * t;
-      if (w.biome === 'street' ? this.peds.blocked(x, z) : this.groundFor(w.biome, x, z, w.y) === null) return false;
+      if (w.biome === 'street' ? this.peds.blocked(x, z) : w.biome === 'pond' ? !this.canStep(w, x, z, true) : this.groundFor(w.biome, x, z, w.y) === null) return false;
     }
     return true;
   }
@@ -927,6 +1045,7 @@ export class SpawnSystem {
    */
   private stepLite(w: WildCreature, dt: number): void {
     if (w.removed) return;
+    if (w.creature.hp <= 0 && w.state !== 'fainted' && w.state !== 'knocked' && w.state !== 'engaged' && !w.inPod && !w.boss) this.faint(w);
     if (w.state === 'fainted') {
       w.stateTime -= dt;
       if (w.stateTime <= 0) w.removed = true;
@@ -981,7 +1100,7 @@ export class SpawnSystem {
     w.vx = mx * w.speed;
     w.vz = mz * w.speed;
     w.y = this.groundFor(w.biome, w.x, w.z, w.y) ?? w.y;
-    this.place(w);
+    this.place(w, dt, 999);
   }
 
   private pickWander(w: WildCreature): void {
@@ -1003,17 +1122,43 @@ export class SpawnSystem {
     this.setState(w, 'idle', 2);
   }
 
+  /** Flyers rise and sink toward the height their behaviour wants (and soarers come down when you're near). */
+  private fly(w: WildCreature, dt: number, dist: number): void {
+    if (!FLIGHT[w.spec.id] || dt <= 0) return;
+    if (w.soar && dist < SKY.descendAt && w.state !== 'flee') w.soar = 0;
+    if (w.soar && w.state === 'flee') w.soar = Math.max(w.soar, FLIGHT[w.spec.id].high);
+    const target = flightTarget(w.spec.id, w.state, w.id * 3.1 + performance.now() / 1000, w.soar ?? 0);
+    const a = w.alt ?? 0;
+    const rate = (w.state === 'flee' ? SKY.climbFlee : SKY.climb) * dt;
+    w.alt = a + Math.max(-rate * 1.5, Math.min(rate, target - a));
+  }
+
   private place(w: WildCreature, dt = 0, dist = 0): void {
+    this.fly(w, dt, dist);
     const inst = w.inst;
     if (!inst) return;
-    inst.root.position.set(w.x, w.y, w.z);
+    // On the pond a water Streetmon floats with part of itself under the surface.
+    const sink = w.biome === 'pond' && this.layers.pond?.ground(w.x, w.z, w.y) != null ? (w.spec.model.sink ?? 0) * w.spec.model.height * (w.sizeScale ?? 1) : 0;
+    inst.root.position.set(w.x, w.y - sink + (w.alt ?? 0), w.z);
     inst.root.rotation.y = w.heading;
     const moving = w.speed > 0.25;
     if (w.state !== 'engaged' && w.state !== 'fainted' && w.state !== 'knocked' && performance.now() > (w.animLock ?? 0)) inst.play(moving ? 'walk' : 'idle');
     const action = inst.mixer.existingAction(inst.clips.get('walk')!);
     if (action) action.timeScale = moving ? Math.max(0.6, w.speed / Math.max(0.6, w.spec.model.height * 1.4)) : 1;
-    // Animate only nearby creatures (saves time with a full cap).
-    if (dt > 0 && dist < 90) inst.mixer.update(dt);
+    // Animation rate by distance: every frame up close, 15 fps beyond 35 m (a few pixels tall,
+    // the difference doesn't show), nothing past 90 m (saves time with a full cap).
+    if (dt > 0 && dist < 90) {
+      if (dist < 35) inst.mixer.update(dt + (this.animAcc.get(w) ?? 0));
+      else {
+        const acc = (this.animAcc.get(w) ?? 0) + dt;
+        if (acc >= FAR_ANIM_STEP) {
+          inst.mixer.update(acc);
+          this.animAcc.set(w, 0);
+        } else this.animAcc.set(w, acc);
+        return;
+      }
+      this.animAcc.delete(w);
+    }
   }
 
   // ------------------------------------------------------------------ queries
@@ -1035,7 +1180,7 @@ export class SpawnSystem {
     let bd = maxDist;
     for (const w of this.wild) {
       const d = Math.hypot(w.x - p.x, w.z - p.z);
-      if (!w.removed && !w.inPod && d < bd) {
+      if (!w.removed && !w.inPod && w.creature.hp > 0 && w.state !== 'fainted' && w.state !== 'knocked' && (w.alt ?? 0) < SKY.reach && d < bd) {
         bd = d;
         best = w;
       }

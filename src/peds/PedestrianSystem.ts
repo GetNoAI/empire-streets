@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { audio } from '../audio/Audio';
 import type { RoadGraph, Axis } from '../traffic/RoadGraph';
 import type { Signals } from '../traffic/Signals';
-import type { HumanoidLook } from '../player/Humanoid';
+import { gaitFrequency, type HumanoidLook } from '../player/Humanoid';
 import { damp, wrapAngle } from '../util/math';
 import type { Car } from '../vehicles/Car';
 import type { VehicleManager } from '../vehicles/VehicleManager';
@@ -19,8 +19,10 @@ type State = 'walk' | 'wait' | 'cross' | 'flee' | 'return' | 'fly' | 'down' | 'd
 type Corner = 0 | 1 | 2 | 3;
 
 export interface Ped {
-  role: 'civ' | 'cop';
+  role: 'civ' | 'cop' | 'gang';
   health: number;
+  /** Standing on this floor rather than the street (the gang hideout, a sewer level). */
+  floorY?: number;
   /** Seconds until an armed officer may fire again (police use). */
   shootCd: number;
   x: number;
@@ -236,9 +238,14 @@ export class PedestrianSystem {
     ped.tx = b.x;
     ped.tz = b.z;
     ped.heading = Math.atan2(-(b.z - a.z), b.x - a.x);
+    // Each neighbourhood dresses its own way (set by the game: Districts.ts).
+    if (this.styleAt) ped.look = this.styleAt(ped.x, ped.z, ped.look);
     this.peds.push(ped);
     return ped;
   }
+
+  /** Restyles a new passer-by for where they spawned (neighbourhood fashions). */
+  styleAt: ((x: number, z: number, look: HumanoidLook) => HumanoidLook) | null = null;
 
   /** A driver bailing out or being dragged from a car: runs away from the threat. */
   spawnFleeing(x: number, z: number, look: HumanoidLook, threatX: number, threatZ: number): Ped {
@@ -297,9 +304,27 @@ export class PedestrianSystem {
   // ------------------------------------------------------------------ behaviour
 
   /** Everyone near (x, z) panics and runs. */
+  /**
+   * Removes the civilians standing within `radius` of a point (the wardrobe: the world freezes while
+   * it's open, and a frozen stranger beside you makes it unclear who you're dressing). Officers,
+   * scripted and pinned people stay.
+   */
+  clearAround(x: number, z: number, radius: number): number {
+    let n = 0;
+    for (let k = this.peds.length - 1; k >= 0; k--) {
+      const p = this.peds[k];
+      if (p.role === 'cop' || p.pinned || p.state === 'script' || p.state === 'dead') continue;
+      if (Math.hypot(p.x - x, p.z - z) < radius) {
+        this.peds.splice(k, 1);
+        n++;
+      }
+    }
+    return n;
+  }
+
   alarm(x: number, z: number, radius: number): void {
     for (const p of this.peds) {
-      if (p.state === 'dead' || p.state === 'fly' || p.state === 'down' || p.role === 'cop') continue;
+      if (p.state === 'dead' || p.state === 'fly' || p.state === 'down' || p.role === 'cop' || p.role === 'gang') continue;
       if (Math.hypot(p.x - x, p.z - z) < radius) this.flee(p, x, z);
     }
   }
@@ -471,7 +496,7 @@ export class PedestrianSystem {
             p.vz *= -0.3;
           }
           p.y += p.vy * dt;
-          const gy = this.groundY(p.x, p.z);
+          const gy = p.floorY ?? this.groundY(p.x, p.z);
           if (p.y <= gy) {
             p.y = gy;
             p.vx *= 0.35;
@@ -489,6 +514,7 @@ export class PedestrianSystem {
           p.timer -= dt;
           if (p.timer <= 0) {
             if (p.role === 'cop') p.state = 'cop';
+            else if (p.role === 'gang') p.state = 'script';
             else this.flee(p, p.threatX, p.threatZ);
           }
           break;
@@ -501,14 +527,14 @@ export class PedestrianSystem {
           p.speed = 0;
           break;
       }
-      if (p.state !== 'fly') p.y += (this.groundY(p.x, p.z) - p.y) * damp(20, dt);
+      if (p.state !== 'fly') p.y += ((p.floorY ?? this.groundY(p.x, p.z)) - p.y) * damp(20, dt);
 
       // Gait.
       const moving = Math.min(1, p.speed / 1.2);
       p.blend += (moving - p.blend) * Math.min(1, dt * 8);
-      p.phase += dt * (1.6 + p.speed * 0.55) * Math.PI * 2 * (p.speed > 0.05 ? 1 : 0);
+      p.phase += dt * gaitFrequency(p.speed) * Math.PI * 2 * (p.speed > 0.05 ? 1 : 0.12);
 
-      if (!far && p.state !== 'dead' && p.state !== 'fly' && p.state !== 'down') this.checkCars(p, cars, playerCar);
+      if (!far && p.state !== 'dead' && p.state !== 'fly' && p.state !== 'down' && p.floorY === undefined) this.checkCars(p, cars, playerCar);
     }
   }
 
@@ -613,6 +639,22 @@ export class PedestrianSystem {
         }
       }
     }
+  }
+
+  /** Adds a scripted person (a gang member, an officer at a gang fight): moved by its own system. */
+  spawnScripted(x: number, z: number, look: HumanoidLook, heading: number, role: Ped['role'], ctrl: string, floorY?: number): Ped {
+    const p = this.makePed(look, x, z);
+    p.role = role;
+    p.state = 'script';
+    p.ctrl = ctrl;
+    p.pinned = true;
+    p.health = role === 'cop' ? 130 : 100;
+    p.heading = heading;
+    p.walkSpeed = 4.2;
+    p.floorY = floorY;
+    if (floorY !== undefined) p.y = floorY;
+    this.peds.push(p);
+    return p;
   }
 
   /** Adds an officer on foot (controlled by the police system). */

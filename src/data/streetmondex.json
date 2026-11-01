@@ -803,6 +803,16 @@
             "night"
           ],
           "text": "Home turf: the Park, at night, or evolve Hazeling (Lv 28)"
+        },
+        {
+          "biome": "pond",
+          "districts": [
+            "park"
+          ],
+          "times": [
+            "night"
+          ],
+          "text": "Drifts low over the pond at night"
         }
       ]
     },
@@ -1023,6 +1033,107 @@
             "night"
           ],
           "text": "Sewers under Uptown and Midtown, by day, at dusk and at night"
+        }
+      ]
+    },
+    "quackpack": {
+      "category": "Litter Duck",
+      "lore": [
+        "Quackpack paddle in little convoys along the pond's edge, honking at anything that rows past.",
+        "Feed one bread and it will follow you all the way to the subway."
+      ],
+      "habitatHints": [
+        {
+          "biome": "pond",
+          "districts": [
+            "park"
+          ],
+          "times": [
+            "day",
+            "dusk"
+          ],
+          "text": "The Central Green pond, by day and at dusk"
+        }
+      ]
+    },
+    "pedalswan": {
+      "category": "Pedal Boat",
+      "lore": [
+        "The rental hut lost its whole fleet one summer. Some of them came back as Pedalswan.",
+        "Its honk is a sub-bass drop: windows on the avenues rattle when it calls at night."
+      ],
+      "habitatHints": [
+        {
+          "biome": "pond",
+          "districts": [
+            "park"
+          ],
+          "times": [
+            "dusk",
+            "night"
+          ],
+          "text": "The pond at dusk and at night, or evolve Quackpack (Lv 26)"
+        }
+      ]
+    },
+    "koinfish": {
+      "category": "Wishing Koi",
+      "lore": [
+        "Every coin tossed into the pond ends up in a Koinfish sooner or later.",
+        "Shy: it dives under the lily pads the moment a shadow falls on the water."
+      ],
+      "habitatHints": [
+        {
+          "biome": "pond",
+          "districts": [
+            "park"
+          ],
+          "times": [
+            "day",
+            "dusk",
+            "night"
+          ],
+          "text": "The Central Green pond, any time; it hides under the lily pads"
+        }
+      ]
+    },
+    "wishmaw": {
+      "category": "Fountain Koi",
+      "lore": [
+        "Wishmaw circles the deep middle of the pond at night, its stone mouth just under the surface.",
+        "Rowers swear the water glows gold where it has passed."
+      ],
+      "habitatHints": [
+        {
+          "biome": "pond",
+          "districts": [
+            "park"
+          ],
+          "times": [
+            "night"
+          ],
+          "text": "The deep middle of the pond at night, or evolve Koinfish (Lv 30)"
+        }
+      ]
+    },
+    "snapcase": {
+      "category": "Concrete Snapper",
+      "lore": [
+        "Older than the park's paths, some say. Its shell has a date stamped in it.",
+        "It drags itself up on the stone rim to warm up and does not move for anybody."
+      ],
+      "habitatHints": [
+        {
+          "biome": "pond",
+          "districts": [
+            "park"
+          ],
+          "times": [
+            "day",
+            "dusk",
+            "night"
+          ],
+          "text": "The Central Green pond, often near the rim"
         }
       ]
     }

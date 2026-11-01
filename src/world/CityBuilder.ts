@@ -3,8 +3,13 @@ import * as THREE from 'three';
 import { GROUP, groups } from '../config';
 import { Rng } from '../util/rng';
 import { CITY, FACADES, type CityLayout, type Facade, type Rect } from './CityLayout';
-import { FACADE_TILE_H, FACADE_TILE_W, makeAsphalt, makeFacade, makeGrass, makeRoof, makeSidewalk, type SurfaceSet } from './Textures';
+import { buildParkFlora } from './ParkFlora';
+import { platform } from '../mobile/Platform';
+import { FACADE_TILE_H, FACADE_TILE_W, makeAsphalt, makeFacade, makeGrass, makeMarkingWear, makeRoof, makeSidewalk, type SurfaceSet } from './Textures';
 import { withSurface, type SurfaceKind } from '../render/Surfaces';
+import { buildStreetClutter, canopyGeometry } from './StreetClutter';
+import { buildPond, type PondView } from './PondView';
+import { buildDocks, dockRects, planDocks, type DocksView } from './Docks';
 
 /** A material for a full PBR set (colour, normal, packed roughness/metalness). */
 const pbr = (s: SurfaceSet): THREE.MeshStandardMaterial =>
@@ -152,6 +157,10 @@ export interface BuiltCity {
   signals: SignalLenses;
   /** Breakable street furniture. */
   props: StaticProp[];
+  /** The Central Green pond (waves, ripples). */
+  pond: PondView;
+  /** The docks on both rivers (moored boats bob). */
+  docks: DocksView;
 }
 
 /** Turns a CityLayout into meshes (a handful of merged draw calls) and fixed Rapier colliders. */
@@ -172,15 +181,24 @@ export function buildCity(layout: CityLayout, world: RAPIER.World): BuiltCity {
   // ---------------------------------------------------------------- ground and roads
   const asphalt = makeAsphalt();
   const groundGeo = new GeoBuilder();
-  groundGeo.top(land, 0, 10);
+  // The pond is a hole in the ground (its own basin, PondView.ts).
+  const lk = layout.parkLake;
+  const groundPieces: Rect[] = [
+    { x0: land.x0, x1: land.x1, z0: land.z0, z1: lk.z0 },
+    { x0: land.x0, x1: land.x1, z0: lk.z1, z1: land.z1 },
+    { x0: land.x0, x1: lk.x0, z0: lk.z0, z1: lk.z1 },
+    { x0: lk.x1, x1: land.x1, z0: lk.z0, z1: lk.z1 },
+  ];
+  for (const r of groundPieces) groundGeo.top(r, 0, 10);
   const ground = new THREE.Mesh(
     groundGeo.build(),
-    withSurface(pbr(asphalt), 'asphalt', { tone: 0.5, bump: 0.6, fade: [18, 55] }), // close-up grain on top of the 10 m tile
+    withSurface(pbr(asphalt), 'asphalt', { tone: 0.4, bump: 0.3, fade: [18, 55] }), // close-up grain on top of the 10 m tile
   );
   ground.receiveShadow = true;
+  ground.name = 'ground';
   root.add(ground);
   // One thick slab: the road surface is its top face at y = 0.
-  rectCollider(land, -2, 0);
+  for (const r of groundPieces) rectCollider(r, -2, 0);
 
   // ---------------------------------------------------------------- sidewalks (blocks, promenades)
   const walk = new GeoBuilder();
@@ -203,22 +221,27 @@ export function buildCity(layout: CityLayout, world: RAPIER.World): BuiltCity {
   const sidewalk = new THREE.Mesh(walk.build(), withSurface(pbr(makeSidewalk()), 'concrete', { tone: 0.5, bump: 0.6, fade: [15, 45] }));
   sidewalk.receiveShadow = true;
   sidewalk.castShadow = false;
+  sidewalk.name = 'sidewalk';
   root.add(sidewalk);
 
   // ---------------------------------------------------------------- park
   const props: StaticProp[] = [];
-  buildPark(layout, root, world, rng, props);
+  const pond = buildPark(layout, root, world, rng, props);
 
   // ---------------------------------------------------------------- markings
   root.add(buildMarkings(layout));
 
   // ---------------------------------------------------------------- buildings
-  const walls = new Map<Facade, GeoBuilder>(FACADES.map((f) => [f, new GeoBuilder()]));
+  // Three variants of each facade (different window layouts, colour and weathering), so a street
+  // of brick isn't the same brick over and over.
+  const VARIANTS = 3;
+  const walls = new Map<string, GeoBuilder>(FACADES.flatMap((f) => Array.from({ length: VARIANTS }, (_, v) => [`${f}:${v}`, new GeoBuilder()] as [string, GeoBuilder])));
   const roofs = new GeoBuilder();
   const spires: Array<{ x: number; y: number; z: number; h: number; r: number }> = [];
   const tanks: Array<{ x: number; y: number; z: number }> = [];
   for (const b of layout.buildings) {
-    const wb = walls.get(b.facade)!;
+    const vi = Math.abs(Math.floor(Math.sin(b.rect.x0 * 12.9898 + b.rect.z0 * 78.233) * 43758.5453)) % VARIANTS;
+    const wb = walls.get(`${b.facade}:${vi}`)!;
     const off = rng.range(0, FACADE_TILE_W);
     wb.boxWalls(b.rect, CURB, b.height, FACADE_TILE_W, FACADE_TILE_H, off);
     roofs.top(b.rect, b.height, 6);
@@ -243,10 +266,13 @@ export function buildCity(layout: CityLayout, world: RAPIER.World): BuiltCity {
       if (w > 7 && d > 7) tanks.push({ x: topRect.x0 + w * rng.range(0.3, 0.7), y: topY, z: topRect.z0 + d * rng.range(0.3, 0.7) });
     }
   }
-  FACADES.forEach((f, i) => {
-    const gb = walls.get(f)!;
-    if (gb.empty) return;
-    const set = makeFacade(f, 100 + i);
+  const TINTS = [0xffffff, 0xf2e6dc, 0xdfe6ec];
+  FACADES.forEach((f, i) => for_variants(f, i));
+  function for_variants(f: Facade, i: number): void {
+   for (let v = 0; v < VARIANTS; v++) {
+    const gb = walls.get(`${f}:${v}`)!;
+    if (gb.empty) continue;
+    const set = makeFacade(f, 100 + i + v * 37);
     const mesh = new THREE.Mesh(
       gb.build(),
       withSurface(
@@ -258,6 +284,7 @@ export function buildCity(layout: CityLayout, world: RAPIER.World): BuiltCity {
           roughness: 1,
           metalness: 1,
           envMapIntensity: f === 'glass' || f === 'darkglass' ? 1.4 : 0.9,
+          color: TINTS[v],
         }),
         FACADE_SURFACE[f],
         { tone: 0.35, bump: 0.5, fade: [20, 60] },
@@ -265,9 +292,10 @@ export function buildCity(layout: CityLayout, world: RAPIER.World): BuiltCity {
     );
     mesh.castShadow = true;
     mesh.receiveShadow = true;
-    mesh.name = `facade-${f}`;
+    mesh.name = `facade-${f}-${v}`;
     root.add(mesh);
-  });
+   }
+  }
   const roofMesh = new THREE.Mesh(roofs.build(), withSurface(pbr(makeRoof()), 'gravel', { tone: 0.4, bump: 0.6 }));
   roofMesh.receiveShadow = true;
   roofMesh.castShadow = true;
@@ -279,14 +307,21 @@ export function buildCity(layout: CityLayout, world: RAPIER.World): BuiltCity {
   // ---------------------------------------------------------------- street furniture
   const furniture = buildStreetFurniture(layout, world, rng, props);
   root.add(furniture.group);
+  // Bin bags, litter, drains and manhole covers.
+  root.add(buildStreetClutter(layout, CURB, props.map((p) => ({ x: p.x, z: p.z })), platform.touch ? 0.5 : 1).group);
 
   // ---------------------------------------------------------------- waterfront railing
-  root.add(buildRailing(land, world));
+  // ---------------------------------------------------------------- docks (gaps in the railing for the piers)
+  const dockPlans = planDocks(layout);
+  layout.docks = dockPlans.flatMap(dockRects);
+  const docks = buildDocks(dockPlans, world);
+  root.add(docks.root);
+  root.add(buildRailing(land, world, dockPlans.map((d) => d.opening)));
 
-  return { root, signals: furniture.signals, props };
+  return { root, signals: furniture.signals, props, pond, docks };
 }
 
-function buildPark(layout: CityLayout, root: THREE.Group, world: RAPIER.World, rng: Rng, props: StaticProp[]): void {
+function buildPark(layout: CityLayout, root: THREE.Group, world: RAPIER.World, rng: Rng, props: StaticProp[]): PondView {
   const park = layout.park;
   const lake = layout.parkLake;
   const grassTex = makeGrass();
@@ -312,43 +347,9 @@ function buildPark(layout: CityLayout, root: THREE.Group, world: RAPIER.World, r
   grass.receiveShadow = true;
   root.add(grass);
 
-  // Lake: water surface below the grass with a stone rim the cars bump against.
-  const water = new THREE.Mesh(
-    new THREE.PlaneGeometry(lake.x1 - lake.x0, lake.z1 - lake.z0),
-    new THREE.MeshStandardMaterial({ color: 0x35525c, roughness: 0.08, metalness: 0.2 }),
-  );
-  water.rotation.x = -Math.PI / 2;
-  water.position.set((lake.x0 + lake.x1) / 2, 0.04, (lake.z0 + lake.z1) / 2);
-  water.receiveShadow = true;
-  root.add(water);
-  const rim = new GeoBuilder();
-  const rimH = 0.55;
-  const rimW = 0.5;
-  const rims: Rect[] = [
-    { x0: lake.x0 - rimW, x1: lake.x1 + rimW, z0: lake.z0 - rimW, z1: lake.z0 },
-    { x0: lake.x0 - rimW, x1: lake.x1 + rimW, z0: lake.z1, z1: lake.z1 + rimW },
-    { x0: lake.x0 - rimW, x1: lake.x0, z0: lake.z0, z1: lake.z1 },
-    { x0: lake.x1, x1: lake.x1 + rimW, z0: lake.z0, z1: lake.z1 },
-  ];
-  for (const r of rims) {
-    rim.boxWalls(r, 0, rimH, 2, 2);
-    rim.top(r, rimH, 2);
-    world.createCollider(
-      RAPIER.ColliderDesc.cuboid((r.x1 - r.x0) / 2, rimH / 2, (r.z1 - r.z0) / 2)
-        .setTranslation((r.x0 + r.x1) / 2, rimH / 2, (r.z0 + r.z1) / 2)
-        .setCollisionGroups(WORLD_GROUPS),
-    );
-  }
-  // The lake bed: a floor just under the water so anything that gets in can drive out.
-  world.createCollider(
-    RAPIER.ColliderDesc.cuboid((lake.x1 - lake.x0) / 2, 0.5, (lake.z1 - lake.z0) / 2)
-      .setTranslation((lake.x0 + lake.x1) / 2, -0.5, (lake.z0 + lake.z1) / 2)
-      .setCollisionGroups(WORLD_GROUPS),
-  );
-  const rimMesh = new THREE.Mesh(rim.build(), withSurface(new THREE.MeshStandardMaterial({ color: 0x8c877c, roughness: 0.9 }), 'stone'));
-  rimMesh.castShadow = true;
-  rimMesh.receiveShadow = true;
-  root.add(rimMesh);
+  // The pond: real water in a bowl, with a low stone rim (PondView.ts).
+  const pond = buildPond(lake, world);
+  root.add(pond.root);
 
   // Paths: a loop and two cross paths.
   const paths = new GeoBuilder();
@@ -378,20 +379,29 @@ function buildPark(layout: CityLayout, root: THREE.Group, world: RAPIER.World, r
     trees.push({ x, z, s: rng.range(0.8, 1.35) });
   }
   root.add(buildTrees(trees, CURB, world, rng, props, 'parkTree'));
+  // Tall grass, flower beds, shrubs, pines and benches (ParkFlora.ts); phones get a thinner meadow.
+  root.add(buildParkFlora({ park, lake, paths: loop, baseY: CURB, trees, density: platform.touch ? 0.45 : 1 }, world));
+  return pond;
 }
 
 /** Trunk + low-poly canopy, instanced, with trunk colliders. */
 function buildTrees(trees: Array<{ x: number; z: number; s: number }>, baseY: number, world: RAPIER.World, rng: Rng, props?: StaticProp[], kind: 'tree' | 'parkTree' = 'tree'): THREE.Group {
   const group = new THREE.Group();
   if (trees.length === 0) return group;
-  const trunkGeo = new THREE.CylinderGeometry(0.18, 0.28, 3.2, 7);
-  trunkGeo.translate(0, 1.6, 0);
-  const canopyGeo = new THREE.IcosahedronGeometry(2.4, 1);
-  canopyGeo.translate(0, 4.6, 0);
-  const trunks = new THREE.InstancedMesh(trunkGeo, withSurface(new THREE.MeshStandardMaterial({ color: 0x4a3828, roughness: 1 }), 'bark'), trees.length);
+  // A trunk that flares at the root and forks into two short limbs under the crown; a faceted,
+  // lumpy olive canopy (StreetClutter.canopyGeometry) shaded facet by facet.
+  const trunkGeo = mergeGeometries([
+    new THREE.CylinderGeometry(0.17, 0.3, 3.4, 7).translate(0, 1.7, 0),
+    new THREE.CylinderGeometry(0.09, 0.14, 1.4, 5).rotateZ(0.5).translate(0.35, 3.8, 0.1),
+    new THREE.CylinderGeometry(0.08, 0.13, 1.3, 5).rotateZ(-0.45).rotateY(1.2).translate(-0.3, 3.7, -0.2),
+  ]);
+  const canopyGeo = canopyGeometry(kind === 'parkTree' ? 11 : 3);
+  const trunks = new THREE.InstancedMesh(trunkGeo, withSurface(new THREE.MeshStandardMaterial({ color: 0x3a2b1f, roughness: 1 }), 'bark'), trees.length);
   const canopies = new THREE.InstancedMesh(
     canopyGeo,
-    withSurface(new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, flatShading: true }), 'foliage'),
+    // Facets do the work here: only a whisper of surface detail, so the crown reads as clean
+    // flat planes of olive rather than a textured ball.
+    withSurface(new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.95, flatShading: true, vertexColors: true }), 'foliage', { tone: 0.25, bump: 0.2, cavity: 0.35, tile: 0.5 }),
     trees.length,
   );
   const m = new THREE.Matrix4();
@@ -403,7 +413,8 @@ function buildTrees(trees: Array<{ x: number; z: number; s: number }>, baseY: nu
     m.compose(new THREE.Vector3(t.x, baseY, t.z), q, new THREE.Vector3(t.s, t.s, t.s));
     trunks.setMatrixAt(i, m);
     canopies.setMatrixAt(i, m);
-    c.setHSL(rng.range(0.22, 0.3), rng.range(0.35, 0.55), rng.range(0.22, 0.32));
+    // Olive to khaki greens, the way street trees look under a grey sky.
+    c.setHSL(rng.range(0.16, 0.23), rng.range(0.3, 0.42), rng.range(0.2, 0.3));
     canopies.setColorAt(i, c);
     const collider = world.createCollider(
       RAPIER.ColliderDesc.cylinder(1.6 * t.s, 0.25 * t.s)
@@ -473,8 +484,8 @@ function buildWaterTowers(tanks: Array<{ x: number; y: number; z: number }>): TH
 function buildMarkings(layout: CityLayout): THREE.Mesh {
   const g = new GeoBuilder();
   const Y = 0.012;
-  const white: [number, number, number] = [0.92, 0.92, 0.9];
-  const yellow: [number, number, number] = [0.95, 0.72, 0.15];
+  const white: [number, number, number] = [0.84, 0.84, 0.8];
+  const yellow: [number, number, number] = [0.86, 0.66, 0.18];
   // Strip along X or Z: `along` from a to b, `across` centred at c with width w.
   const strip = (alongX: boolean, a: number, b: number, c: number, w: number, color: [number, number, number]): void => {
     const r: Rect = alongX ? { x0: a, x1: b, z0: c - w / 2, z1: c + w / 2 } : { x0: c - w / 2, x1: c + w / 2, z0: a, z1: b };
@@ -533,11 +544,16 @@ function buildMarkings(layout: CityLayout): THREE.Mesh {
       }
     }
   }
+  // Worn paint: flaked along the cracks and the wheel tracks, so the asphalt shows through.
+  const wear = makeMarkingWear();
   const mesh = new THREE.Mesh(
     g.build(),
     withSurface(new THREE.MeshStandardMaterial({
       vertexColors: true,
-      roughness: 0.75,
+      map: wear.map,
+      alphaMap: wear.alphaMap,
+      alphaTest: 0.4,
+      roughness: 0.7,
       polygonOffset: true,
       polygonOffsetFactor: -2,
       polygonOffsetUnits: -2,
@@ -592,8 +608,10 @@ function buildStreetFurniture(layout: CityLayout, world: RAPIER.World, rng: Rng,
       const faceZ = Math.abs(z - r.z0) < Math.abs(z - r.z1) ? r.z0 : r.z1;
       return x > r.x0 - 34 && x < r.x0 + 14 && Math.abs(z - faceZ) < 8 && (z < r.z0 || z > r.z1);
     });
+  // ... and in front of shop fronts that need the pavement (the showroom).
+  const clear = layout.clearFronts ?? [];
   for (const list of [lamps, trees, hydrants] as Array<Array<{ x: number; z: number }>>) {
-    for (let i = list.length - 1; i >= 0; i--) if (garageEntry(list[i].x, list[i].z)) list.splice(i, 1);
+    for (let i = list.length - 1; i >= 0; i--) if (garageEntry(list[i].x, list[i].z) || clear.some((c) => Math.hypot(c.x - list[i].x, c.z - list[i].z) < c.r)) list.splice(i, 1);
   }
 
   const m = new THREE.Matrix4();
@@ -674,7 +692,7 @@ function cylinderCollider(world: RAPIER.World, x: number, z: number, halfH: numb
 }
 
 /** Waterfront railing around the whole island (visual rails + a continuous collider). */
-function buildRailing(land: Rect, world: RAPIER.World): THREE.Group {
+function buildRailing(land: Rect, world: RAPIER.World, openings: ReadonlyArray<{ x: number; z0: number; z1: number }> = []): THREE.Group {
   const group = new THREE.Group();
   const h = 1.05;
   const edges: Array<[number, number, number, number]> = [
@@ -683,6 +701,14 @@ function buildRailing(land: Rect, world: RAPIER.World): THREE.Group {
     [land.x1, land.z1, land.x0, land.z1],
     [land.x0, land.z1, land.x0, land.z0],
   ];
+  // Split the east and west edges where a pier leaves the promenade.
+  for (const o of openings) {
+    const i = edges.findIndex(([ax, az, bx, bz]) => ax === o.x && bx === o.x && o.z0 > Math.min(az, bz) && o.z1 < Math.max(az, bz));
+    if (i < 0) continue;
+    const [ax, az, , bz] = edges[i];
+    const up = bz > az;
+    edges.splice(i, 1, [ax, az, ax, up ? o.z0 : o.z1], [ax, up ? o.z1 : o.z0, ax, bz]);
+  }
   const mat = withSurface(new THREE.MeshStandardMaterial({ color: 0x2f3436, roughness: 0.5, metalness: 0.7 }), 'paintedMetal');
   const postGeo = new THREE.BoxGeometry(0.1, h, 0.1);
   postGeo.translate(0, h / 2, 0);
@@ -714,4 +740,22 @@ function buildRailing(land: Rect, world: RAPIER.World): THREE.Group {
   inst.computeBoundingSphere();
   group.add(inst);
   return group;
+}
+
+/** Merges non-indexed copies of a few geometries into one. */
+function mergeGeometries(parts: THREE.BufferGeometry[]): THREE.BufferGeometry {
+  const pos: number[] = [];
+  const nor: number[] = [];
+  const uv: number[] = [];
+  for (const g0 of parts) {
+    const g = g0.index ? g0.toNonIndexed() : g0;
+    pos.push(...(g.getAttribute('position').array as Float32Array));
+    nor.push(...(g.getAttribute('normal').array as Float32Array));
+    uv.push(...(g.getAttribute('uv').array as Float32Array));
+  }
+  const out = new THREE.BufferGeometry();
+  out.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  out.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  out.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  return out;
 }

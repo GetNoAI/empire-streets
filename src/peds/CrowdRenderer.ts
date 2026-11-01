@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Humanoid, type BodyRole, type HumanoidLook } from '../player/Humanoid';
+import { Humanoid, partsFor, roleColor, type BodyPart, type BodyRole, type HumanoidLook } from '../player/Humanoid';
 import { copySurface } from '../render/Surfaces';
 
 export type CrowdPose = 'walk' | 'sit' | 'lie' | 'air';
@@ -11,7 +11,7 @@ export type CrowdPose = 'walk' | 'sit' | 'lie' | 'air';
  */
 interface Rig {
   template: Humanoid;
-  parts: Array<{ node: THREE.Mesh; role: BodyRole; inst: THREE.InstancedMesh }>;
+  parts: Array<{ node: THREE.Mesh; role: BodyRole; part: BodyPart | null; inst: THREE.InstancedMesh }>;
   count: number;
 }
 
@@ -24,6 +24,8 @@ export class CrowdRenderer {
   private readonly rootMatrix = new THREE.Matrix4();
   private readonly color = new THREE.Color();
   private readonly lie = new THREE.Matrix4().makeRotationZ(Math.PI / 2);
+  /** Collapses an unworn piece. */
+  private readonly zero = new THREE.Matrix4().makeScale(0, 0, 0);
 
   constructor(
     scene: THREE.Scene,
@@ -39,18 +41,23 @@ export class CrowdRenderer {
   }
 
   private makeRig(scene: THREE.Scene, look: HumanoidLook): Rig {
-    const template = new Humanoid(look, { lowDetail: true });
+    // The template carries every optional piece (hoods, coats, kit, bags); a person's unworn
+    // pieces are collapsed to nothing in the instance buffer.
+    const template = new Humanoid(look, { lowDetail: true, allParts: true });
     template.root.matrixAutoUpdate = false;
     const mats = new Map<BodyRole, THREE.MeshStandardMaterial>();
     const parts: Rig['parts'] = [];
     for (const node of template.meshes) {
       const role = node.userData['role'] as BodyRole;
-      let mat = mats.get(role);
+      const part = (node.userData['part'] as BodyPart | undefined) ?? null;
+      const src = node.material as THREE.MeshStandardMaterial;
+      // Same surface detail (skin, fabric, leather, hair) as the template it's copied from; the
+      // badge and the visor keep their own metal / glass materials.
+      const own = part === 'badge' || part === 'visor';
+      let mat = own ? undefined : mats.get(role);
       if (!mat) {
-        const src = node.material as THREE.MeshStandardMaterial;
-        // Same surface detail (skin, fabric, leather, hair) as the template it's copied from.
-        mat = copySurface(new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: src.roughness, side: src.side }), src);
-        mats.set(role, mat);
+        mat = own ? src.clone() : copySurface(new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: src.roughness, side: src.side }), src);
+        if (!own) mats.set(role, mat);
       }
       const inst = new THREE.InstancedMesh(node.geometry, mat, this.capacity);
       inst.count = 0;
@@ -61,7 +68,7 @@ export class CrowdRenderer {
       // Allocate per-instance colour.
       inst.setColorAt(0, this.color.set(0xffffff));
       scene.add(inst);
-      parts.push({ node, role, inst });
+      parts.push({ node, role, part, inst });
     }
     return { template, parts, count: 0 };
   }
@@ -89,9 +96,14 @@ export class CrowdRenderer {
     t.root.matrix.copy(this.rootMatrix);
     t.root.updateMatrixWorld(true);
     const i = rig.count++;
+    const wear = partsFor(look);
     for (const p of rig.parts) {
+      if (p.part && !wear.has(p.part)) {
+        p.inst.setMatrixAt(i, this.zero);
+        continue;
+      }
       p.inst.setMatrixAt(i, p.node.matrixWorld);
-      p.inst.setColorAt(i, this.color.set(look[p.role]));
+      p.inst.setColorAt(i, this.color.set(p.part === 'badge' || p.part === 'visor' ? '#ffffff' : roleColor(look, p.role)));
     }
   }
 
@@ -120,10 +132,18 @@ const SHOES = ['#151515', '#3b2a1c', '#e8e8e8', '#5a5a5a'];
 export function copLook(rand: () => number = Math.random): HumanoidLook {
   const base = randomLook(rand);
   // Uniform trousers for everyone; officers who are women wear their hair up.
-  return { ...base, top: '#1c2a4a', legs: '#18223a', shoes: '#0d0d0d', hair: '#141414', skirt: false, hairStyle: base.build === 'f' ? 'bun' : 'short' };
+  return { ...base, top: '#1c2a4a', legs: '#18223a', shoes: '#0d0d0d', hair: '#141414', skirt: false, hairStyle: base.build === 'f' ? 'bun' : 'short', outfit: 'uniform', bag: 'none', hat: 'none' };
+}
+
+/** Tactical unit: helmet and visor, plate vest, knee pads, everything dark navy. */
+export function swatLook(rand: () => number = Math.random): HumanoidLook {
+  const base = randomLook(rand);
+  return { ...base, top: '#1a2236', legs: '#161c2c', shoes: '#0d0d0d', hair: '#141414', skirt: false, hairStyle: 'short', outfit: 'swat', bag: 'none', hat: 'none', scale: 1.0 + rand() * 0.06 };
 }
 
 const SKIRTS = ['#7d1f22', '#22252b', '#204a7a', '#5a4a7a', '#c78a2a', '#3d5b3a', '#6b6f75'];
+const OUTERS = ['#23262c', '#2f3a4a', '#4a3b2e', '#1d1f24', '#3b4a3a', '#5a4c3f', '#2a2f3a', '#6b4a2a', '#2b2b2b', '#394452'];
+const BAGS = ['#2a2b2f', '#3a3a3f', '#4a3f32', '#23323f'];
 
 /** A random passer-by: about half are women (some in skirts), a little shorter on average. */
 export function randomLook(rand: () => number = Math.random): HumanoidLook {
@@ -136,5 +156,61 @@ export function randomLook(rand: () => number = Math.random): HumanoidLook {
     look.hairStyle = look.skirt ? 'long' : 'ponytail';
     if (look.skirt) look.legs = pick(SKIRTS);
   }
+  // Layers: most people wear something over the top in this city (hoodies, jackets, long coats,
+  // the odd suit), and about a third carry something.
+  const r = rand();
+  look.outfit = r < 0.2 ? 'tee' : r < 0.45 ? 'hoodie' : r < 0.75 ? 'jacket' : r < 0.92 ? 'coat' : 'suit';
+  if (look.outfit !== 'tee') look.outer = look.outfit === 'suit' ? pick(['#1d1f24', '#2a2f3a', '#3a3a3f']) : pick(OUTERS);
+  if (look.outfit === 'hoodie') look.hood = rand() < 0.35;
+  const b = rand();
+  look.bag = b < 0.18 ? 'backpack' : b < 0.28 ? 'duffel' : look.outfit === 'suit' && b < 0.6 ? 'briefcase' : 'none';
+  look.bagColor = pick(BAGS);
+  if (look.outfit !== 'hoodie' || !look.hood) {
+    const h = rand();
+    look.hat = h < 0.12 ? 'cap' : h < 0.2 ? 'beanie' : 'none';
+    look.hatColor = pick(['#1c1c22', '#3a2a22', '#2a3a4a', '#5a1f1f', '#2c2c2c']);
+  }
+  return look;
+}
+
+/** Mixes a hex colour towards grime (a grey-brown) by `k` (0..1). */
+export function grime(hex: string, k: number): string {
+  const n = parseInt(hex.replace('#', ''), 16);
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  const [gr, gg, gb] = [74, 66, 54];
+  const mix = (a: number, c: number): number => Math.round(a + (c - a) * k);
+  return `#${((1 << 24) | (mix(r, gr) << 16) | (mix(g, gg) << 8) | mix(b, gb)).toString(16).slice(1)}`;
+}
+
+const COATS = ['#3b3426', '#2f3328', '#4a3a2a', '#25282c', '#5a4a3a', '#3a2f2a'];
+const BEANIES = ['#4a2a22', '#2a3a4a', '#3a3a30', '#5a1f1f', '#2c2c2c'];
+
+/**
+ * Someone who lives rough in the sewers: everything faded and grimy, a heavy old coat, a beanie or
+ * a battered cap, a beard on most of the men, greying hair, shoes worn to the colour of the floor.
+ */
+export function weatheredLook(base: Partial<HumanoidLook>, rand: () => number = Math.random): HumanoidLook {
+  const pick = <T,>(a: readonly T[]): T => a[Math.floor(rand() * a.length)];
+  const b = { ...randomLook(rand), ...base } as HumanoidLook;
+  const k = 0.45 + rand() * 0.25;
+  const look: HumanoidLook = {
+    ...b,
+    top: grime(b.top, k),
+    legs: grime(b.legs, k),
+    shoes: grime(b.shoes, 0.7),
+    hair: rand() < 0.45 ? '#8a8680' : grime(b.hair, 0.3),
+    jacket: rand() < 0.8 ? pick(COATS) : undefined,
+    outfit: rand() < 0.6 ? 'coat' : 'hoodie',
+    hood: rand() < 0.3,
+    bag: rand() < 0.3 ? 'backpack' : 'none',
+    hat: rand() < 0.6 ? (rand() < 0.75 ? 'beanie' : 'cap') : 'none',
+    hatColor: grime(pick(BEANIES), 0.3),
+    // Slightly stooped and smaller-looking: a touch shorter.
+    scale: (b.scale ?? 1) * 0.97,
+  };
+  if (look.build !== 'f') look.facialHair = rand() < 0.75 ? (rand() < 0.7 ? 'beard' : 'goatee') : 'none';
+  if (look.skirt) look.legs = grime(b.legs, 0.6);
   return look;
 }

@@ -27,6 +27,61 @@ export const RACE_STATES = /** @type {const} */ ({
 });
 
 const PROP_TYPES = ['barricade', 'cones', 'tireStack', 'boostPad', 'ramp'];
+
+/**
+ * Race modes:
+ *  - sprint: point to point against rivals (one lap);
+ *  - circuit: laps against rivals;
+ *  - knockout: laps against rivals; at the end of every lap but the last, whoever is last is out;
+ *  - timeTrial: you alone against the clock; medal times decide the prize (gold = 1st);
+ *  - drift: you alone, score points sliding round the course (angle x speed); medal scores decide.
+ */
+export const RACE_MODES = /** @type {const} */ (['sprint', 'circuit', 'knockout', 'timeTrial', 'drift']);
+/** Car classes, slowest first (Performance.ts). */
+export const CLASS_ORDER = ['D', 'C', 'B', 'A', 'S'];
+
+export const MODE_NAMES = { sprint: 'Sprint', circuit: 'Circuit', knockout: 'Knockout', timeTrial: 'Time Trial', drift: 'Drift' };
+
+/** A track's mode (older tracks: by lap count). @param {any} t */
+export function modeOf(t) {
+  if (t.mode) return t.mode;
+  return t.laps > 1 ? 'circuit' : 'sprint';
+}
+
+/** Solo modes have no rival racers. @param {string} mode */
+export const isSolo = (mode) => mode === 'timeTrial' || mode === 'drift';
+
+/**
+ * Can a car of class `cls` enter a track (none given: any car)? @param {string | null | undefined} cls @param {any} track
+ */
+export function classOk(cls, track) {
+  if (!track.maxClass) return true;
+  if (!cls) return true;
+  return CLASS_ORDER.indexOf(cls) <= CLASS_ORDER.indexOf(track.maxClass);
+}
+
+/**
+ * The placing a solo result earns: a time trial by medal time, a drift event by medal score
+ * (1 gold, 2 silver, 3 bronze, 4 none). @param {any} track @param {number} value
+ */
+export function medalPlace(track, value) {
+  const m = track.medals ?? {};
+  if (modeOf(track) === 'timeTrial') return value <= m.gold ? 1 : value <= m.silver ? 2 : value <= m.bronze ? 3 : 4;
+  return value >= m.gold ? 1 : value >= m.silver ? 2 : value >= m.bronze ? 3 : 4;
+}
+
+/**
+ * Drift points for one frame: the slide angle (degrees) times speed (m/s), above 8 degrees and
+ * 5 m/s, with a chain multiplier that grows the longer a slide lasts (up to x4) and resets when
+ * the slide ends. Returns the points to add and the new chain.
+ * @param {number} dt @param {number} angleDeg @param {number} speed @param {number} chain  seconds of continuous sliding so far
+ */
+export function driftPoints(dt, angleDeg, speed, chain) {
+  const a = Math.abs(angleDeg);
+  if (a < 8 || speed < 5) return { points: 0, chain: 0 };
+  const mult = 1 + Math.min(3, chain / 2);
+  return { points: a * speed * 0.12 * mult * dt, chain: chain + dt };
+}
 const isNum = (/** @type {unknown} */ v) => typeof v === 'number' && Number.isFinite(v);
 
 /**
@@ -48,6 +103,19 @@ export function validateRaceConfig(cfg) {
     const p = t.payouts ?? {};
     if (!(p.first >= p.second && p.second >= p.third && p.third >= 0)) fail(`${w}: payouts must go first >= second >= third >= 0`);
     if (!(t.laps >= 1 && Number.isInteger(t.laps))) fail(`${w}: laps must be a whole number >= 1`);
+    const mode = modeOf(t);
+    if (!RACE_MODES.includes(mode)) fail(`${w}: unknown mode "${t.mode}" (use ${RACE_MODES.join(', ')})`);
+    if (mode === 'knockout' && t.laps < 2) fail(`${w}: a knockout needs at least 2 laps`);
+    if (mode === 'circuit' && t.laps < 2) fail(`${w}: a circuit needs at least 2 laps`);
+    if (t.maxClass !== undefined && t.maxClass !== null && !CLASS_ORDER.includes(t.maxClass)) fail(`${w}: maxClass must be one of ${CLASS_ORDER.join(', ')}`);
+    if (mode === 'timeTrial') {
+      const m = t.medals ?? {};
+      if (!(m.gold > 0 && m.silver >= m.gold && m.bronze >= m.silver)) fail(`${w}: a time trial needs medals { gold, silver, bronze } in seconds, gold the fastest`);
+    }
+    if (mode === 'drift') {
+      const m = t.medals ?? {};
+      if (!(m.bronze > 0 && m.silver >= m.bronze && m.gold >= m.silver)) fail(`${w}: a drift event needs medals { bronze, silver, gold } scores, gold the highest`);
+    }
     if (!(t.timeLimit > 10)) fail(`${w}: timeLimit (seconds) too short`);
     if (!t.start || !isNum(t.start.x) || !isNum(t.start.z) || !isNum(t.start.heading)) fail(`${w}: start needs x, z, heading`);
     if (!Array.isArray(t.checkpointPositions) || t.checkpointPositions.length < 2) fail(`${w}: needs at least 2 checkpoints`);
@@ -195,6 +263,8 @@ export class RaceTrackInstance {
  * @property {(dt: number, info: { state: string, course: any[], progress: Map<string, number>, standings: string[] }) => void} [updateRacers]
  * @property {(id: string) => ({ x: number, z: number } | null)} racerPosition
  * @property {() => void} removeRacers
+ * @property {(id: string) => void} [removeRacer]  one racer knocked out
+ * @property {() => (string | null)} [carClass]  the player's car's class letter (D..S), for class-limited races
  * @property {(slot: {x:number,z:number,heading:number}) => boolean} placePlayer
  * @property {(hold: boolean) => void} holdPlayer
  * @property {() => number} getMoney
@@ -215,6 +285,7 @@ export class RaceTrackInstance {
  * @property {number} speed  m/s
  * @property {boolean} freeRoam  playing on the street, no menus or battles (offers can appear)
  * @property {boolean} [dead]
+ * @property {number} [driftAngle]  the car's slide angle (degrees) for drift events
  */
 
 export class StreetRaceManager {
@@ -228,6 +299,8 @@ export class StreetRaceManager {
     /** @type {keyof typeof RACE_STATES} */
     this.state = 'IDLE';
     this.streetCred = 0;
+    /** Best times, laps and drift scores per track (saved). @type {Record<string, { best?: number, bestLap?: number, score?: number }>} */
+    this.records = {};
     /** Seconds until the next pop-up roll. */
     this.rollIn = this.nextRoll();
     this.cooldown = 0;
@@ -244,7 +317,7 @@ export class StreetRaceManager {
 
   // ------------------------------------------------------------------ events
 
-  /** @param {'offer' | 'accepted' | 'countdown' | 'go' | 'checkpoint' | 'finished' | 'failed' | 'resolved' | 'cleanup' | 'state'} type @param {(e: any) => void} fn */
+  /** @param {'offer' | 'accepted' | 'countdown' | 'go' | 'checkpoint' | 'lap' | 'knockout' | 'finished' | 'failed' | 'resolved' | 'cleanup' | 'state'} type @param {(e: any) => void} fn */
   on(type, fn) {
     if (!this.listeners.has(type)) this.listeners.set(type, new Set());
     this.listeners.get(type)?.add(fn);
@@ -303,6 +376,12 @@ export class StreetRaceManager {
   /** Takes the offer: now drive to the grid. */
   accept() {
     if (this.state !== 'PROMPT' || !this.offer || this.offer.accepted) return false;
+    const cls = this.adapter.carClass?.() ?? null;
+    if (!classOk(cls, this.offer.track)) {
+      this.adapter.notify?.(`${this.offer.track.name} is for class ${this.offer.track.maxClass} cars and below. Yours is class ${cls}.`, 4000);
+      this.decline();
+      return false;
+    }
     this.offer.accepted = true;
     this.offer.expiresIn = Infinity;
     this.emit('accepted', { track: this.offer.track });
@@ -333,7 +412,9 @@ export class StreetRaceManager {
     }
     const rules = this.config.rules ?? {};
     const preRace = this.adapter.getWanted();
-    const n = this.config.racers?.count ?? 3;
+    const mode = modeOf(track);
+    const solo = isSolo(mode);
+    const n = solo ? 0 : this.config.racers?.count ?? 3;
     const slots = gridSlots(track, n + 1, rules);
     const playerSlot = rules.playerGridSlot === 'last' ? n : 0;
     const npcSlots = slots.filter((_, i) => i !== playerSlot);
@@ -343,7 +424,7 @@ export class StreetRaceManager {
     for (let i = 0; i < n && pool.length; i++) drivers.push(pool.splice(Math.floor(this.rng() * pool.length), 1)[0]);
     const instance = new RaceTrackInstance(track, this.adapter.spawnProp);
     const course = instance.spawn();
-    const ids = this.adapter.spawnRacers(track, npcSlots, drivers, course);
+    const ids = n ? this.adapter.spawnRacers(track, npcSlots, drivers, course) : [];
     this.adapter.placePlayer(slots[playerSlot]);
     this.adapter.holdPlayer(true);
     this.race = {
@@ -355,11 +436,17 @@ export class StreetRaceManager {
       time: 0,
       countdown: rules.countdownSeconds ?? 3,
       outOfCar: 0,
+      mode,
       racers: [
-        { id: 'player', name: 'You', player: true, passed: 0, finishedAt: null, progress: 0 },
-        ...ids.map((id, i) => ({ id, name: drivers[i]?.name ?? `Racer ${i + 1}`, player: false, passed: 0, finishedAt: null, progress: 0, skill: drivers[i]?.skill ?? 0.9 })),
+        { id: 'player', name: 'You', player: true, passed: 0, finishedAt: null, progress: 0, lapStart: 0, lastLap: null, bestLap: null, out: false },
+        ...ids.map((id, i) => ({ id, name: drivers[i]?.name ?? `Racer ${i + 1}`, player: false, passed: 0, finishedAt: null, progress: 0, skill: drivers[i]?.skill ?? 0.9, lapStart: 0, lastLap: null, bestLap: null, out: false })),
       ],
       lastWhole: Math.ceil(rules.countdownSeconds ?? 3),
+      /** Drift mode: score and the current chain (seconds of continuous sliding). */
+      score: 0,
+      chain: 0,
+      /** Knockout: laps whose elimination has happened. */
+      knockedLaps: 0,
     };
     this.offer = null;
     instance.highlight(0);
@@ -414,7 +501,31 @@ export class StreetRaceManager {
     const pay = payoutFor(r.track, result.place);
     if (pay.cash > 0) this.adapter.earn(pay.cash);
     this.streetCred += pay.cred;
-    this.result = { ...result, track: r.track, cash: pay.cash, cred: pay.cred, standings: this.standings().map((x) => x.name) };
+    // Records: best time (finished only), best lap, best drift score.
+    const me = r.racers[0];
+    const rec = this.records[r.track.id] ?? (this.records[r.track.id] = {});
+    let newRecord = false;
+    if (result.reason === 'finished' && r.mode !== 'drift' && (rec.best === undefined || result.time < rec.best)) {
+      rec.best = Math.round(result.time * 100) / 100;
+      newRecord = true;
+    }
+    if (me.bestLap !== null && (rec.bestLap === undefined || me.bestLap < rec.bestLap)) rec.bestLap = Math.round(me.bestLap * 100) / 100;
+    if (r.mode === 'drift' && (rec.score === undefined || r.score > rec.score)) {
+      rec.score = Math.round(r.score);
+      newRecord = true;
+    }
+    this.result = {
+      ...result,
+      track: r.track,
+      mode: r.mode,
+      cash: pay.cash,
+      cred: pay.cred,
+      score: Math.round(r.score),
+      bestLap: me.bestLap,
+      newRecord,
+      record: { ...rec },
+      standings: this.standings().map((x) => `${x.name}${x.out ? ' (out)' : ''}`),
+    };
     this.emit('cleanup', { propsLeft: r.instance.count });
     if (result.place === null && (result.reason === 'busted' || result.reason === 'wasted')) this.adapter.respawnAt?.(r.grid, result.reason);
     this.race = null;
@@ -428,6 +539,8 @@ export class StreetRaceManager {
     const r = this.race;
     if (!r) return [];
     return [...r.racers].sort((a, b) => {
+      if (a.out !== b.out) return a.out ? 1 : -1;
+      if (a.out && b.out) return (b.outAt ?? 0) - (a.outAt ?? 0);
       if (a.finishedAt !== null && b.finishedAt !== null) return a.finishedAt - b.finishedAt;
       if (a.finishedAt !== null) return -1;
       if (b.finishedAt !== null) return 1;
@@ -544,13 +657,22 @@ export class StreetRaceManager {
     r.time += dt;
     const radius = r.track.checkpointRadius ?? 14;
     // Everyone's checkpoints.
+    const perLap = r.track.checkpointPositions.length;
     for (const x of r.racers) {
-      if (x.finishedAt !== null) continue;
+      if (x.finishedAt !== null || x.out) continue;
       const pos = x.player ? { x: ctx.x, z: ctx.z } : this.adapter.racerPosition(x.id);
       if (!pos) continue;
       const cp = r.course[x.passed];
       if (cp && Math.hypot(cp.x - pos.x, cp.z - pos.z) < radius) {
         x.passed++;
+        // A lap done (the last checkpoint of a lap): lap time, best lap.
+        if (x.passed % perLap === 0) {
+          const lapTime = r.time - x.lapStart;
+          x.lastLap = lapTime;
+          if (x.bestLap === null || lapTime < x.bestLap) x.bestLap = lapTime;
+          x.lapStart = r.time;
+          if (x.player) this.emit('lap', { lap: cp.lap, time: lapTime, best: x.bestLap });
+        }
         if (x.player) {
           r.instance.highlight(x.passed);
           this.emit('checkpoint', { index: x.passed, total: r.course.length, lap: cp.lap });
@@ -559,13 +681,37 @@ export class StreetRaceManager {
       }
       x.progress = progressOf(x.passed, pos, r.course, r.track.start);
     }
+    // Drift mode: points from the player's slide this frame.
+    if (r.mode === 'drift') {
+      const d = driftPoints(dt, ctx.driftAngle ?? 0, ctx.speed, r.chain);
+      r.score += d.points;
+      r.chain = d.chain;
+    }
+    // Knockout: when the leader completes a lap (not the last), the racer in last place is out.
+    if (r.mode === 'knockout') {
+      const leaderLaps = Math.max(...r.racers.filter((x) => !x.out).map((x) => Math.floor(x.passed / perLap)));
+      if (leaderLaps > r.knockedLaps && leaderLaps < r.track.laps) {
+        r.knockedLaps = leaderLaps;
+        const alive = this.standings().filter((x) => !x.out && x.finishedAt === null);
+        const last = alive[alive.length - 1];
+        if (last && alive.length > 1) {
+          last.out = true;
+          last.outAt = r.time;
+          this.emit('knockout', { id: last.id, name: last.name, lap: leaderLaps, player: last.player });
+          if (!last.player) this.adapter.removeRacer?.(last.id);
+          if (last.player) return this.cleanup({ place: alive.length, reason: 'knockedOut', time: r.time });
+        }
+      }
+    }
     const standings = this.standings();
     const progress = new Map(r.racers.map((x) => [x.id, x.progress]));
     this.adapter.updateRacers?.(dt, { state: 'RACING', course: r.course, progress, standings: standings.map((x) => x.id) });
     const me = r.racers[0];
     if (me.finishedAt !== null) {
-      const place = standings.findIndex((x) => x.player) + 1;
-      this.emit('finished', { track: r.track, place, time: r.time });
+      let place = standings.filter((x) => !x.out).findIndex((x) => x.player) + 1;
+      if (r.mode === 'timeTrial') place = medalPlace(r.track, r.time);
+      if (r.mode === 'drift') place = medalPlace(r.track, r.score);
+      this.emit('finished', { track: r.track, place, time: r.time, score: r.score });
       this.cleanup({ place, reason: 'finished', time: r.time });
       return;
     }
@@ -574,7 +720,14 @@ export class StreetRaceManager {
     if (r.outOfCar > (rules.outOfCarSeconds ?? 15)) return this.fail('abandoned');
     const next = r.course[me.passed];
     if (next && Math.hypot(next.x - ctx.x, next.z - ctx.z) > (rules.maxOffRouteMeters ?? 450)) return this.fail('lost');
-    if (r.time > r.track.timeLimit) return this.fail('time');
+    if (r.time > r.track.timeLimit) {
+      if (r.mode === 'drift') {
+        const place = medalPlace(r.track, r.score);
+        this.emit('finished', { track: r.track, place, time: r.time, score: r.score });
+        return this.cleanup({ place, reason: 'finished', time: r.time });
+      }
+      return this.fail('time');
+    }
   }
 
   // ------------------------------------------------------------------ HUD and saving
@@ -593,7 +746,9 @@ export class StreetRaceManager {
         track: t,
         prompt: this.offer.accepted
           ? `${t.name}: get to the start line (${d} m, ${Math.ceil(this.offer.reachIn)} s)`
-          : `${this.offer.source === 'organizer' ? 'Street race' : 'Street race nearby'}: ${t.name}, $${t.entryFee} to enter, $${t.payouts.first} to win (${d} m)`,
+          : `${this.offer.source === 'organizer' ? 'Street race' : 'Street race nearby'}: ${t.name} (${MODE_NAMES[modeOf(t)]}), $${t.entryFee} to enter, $${t.payouts.first} to win (${d} m)`,
+        mode: modeOf(t),
+        record: this.records[t.id] ?? null,
         accepted: this.offer.accepted,
         target: { x: t.start.x, z: t.start.z },
         expires01: Number.isFinite(this.offer.expiresIn) ? Math.max(0, this.offer.expiresIn) / (this.config.popUp?.offerSeconds ?? 20) : 1,
@@ -620,8 +775,18 @@ export class StreetRaceManager {
         next,
         after,
         finishNext: !!next?.finish,
-        racers: r.racers.filter((x) => !x.player).map((x) => ({ id: x.id, name: x.name, ...(this.adapter.racerPosition(x.id) ?? { x: 0, z: 0 }) })),
+        racers: r.racers.filter((x) => !x.player && !x.out).map((x) => ({ id: x.id, name: x.name, ...(this.adapter.racerPosition(x.id) ?? { x: 0, z: 0 }) })),
         outOfCar: r.outOfCar,
+        mode: r.mode,
+        lapTime: r.time - me.lapStart,
+        lastLap: me.lastLap,
+        bestLap: me.bestLap,
+        score: Math.round(r.score),
+        chain: r.chain,
+        medals: r.track.medals ?? null,
+        record: this.records[r.track.id] ?? null,
+        out: r.racers.filter((x) => x.out).map((x) => x.name),
+        alive: r.racers.filter((x) => !x.out).length,
       };
     }
     if (s === 'RESOLVED' && this.result) return { state: s, result: this.result };
@@ -630,12 +795,24 @@ export class StreetRaceManager {
 
   /** Street Cred to save. */
   serialize() {
-    return { streetCred: this.streetCred };
+    return { streetCred: this.streetCred, records: { ...this.records } };
   }
 
   /** @param {any} data */
   load(data) {
     this.streetCred = Math.max(0, Math.round(Number(data?.streetCred) || 0));
+    /** @type {Record<string, { best?: number, bestLap?: number, score?: number }>} */
+    const rec = {};
+    const raw = data?.records;
+    if (raw && typeof raw === 'object')
+      for (const [id, v] of Object.entries(raw)) {
+        if (!this.track(id) || !v || typeof v !== 'object') continue;
+        /** @type {any} */
+        const o = {};
+        for (const k of ['best', 'bestLap', 'score']) if (isNum(/** @type {any} */ (v)[k]) && /** @type {any} */ (v)[k] >= 0) o[k] = /** @type {any} */ (v)[k];
+        if (Object.keys(o).length) rec[id] = o;
+      }
+    this.records = rec;
   }
 }
 

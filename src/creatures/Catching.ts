@@ -21,15 +21,24 @@ export const CATCH = {
   shakes: 3,
 };
 
+/**
+ * Where the throw happens, for items whose bonus depends on it (the Night Net, the Dive Net, Rookie
+ * Cuffs). The game keeps this up to date; tests set it directly.
+ */
+export const catchSituation: { night: boolean; water: boolean; leadLevel: number } = { night: false, water: false, leadLevel: 0 };
+
 /** The item's multiplier against a particular creature (its bonus applies if the target matches). */
-export function itemMultiplier(it: CaptureItem, target: Creature): number {
+export function itemMultiplier(it: CaptureItem, target: Creature, at = catchSituation): number {
   const sp = species(target.speciesId);
   let m = it.catchMult;
   const b = it.bonus;
   if (b) {
     const typeOk = !b.types || b.types.some((t) => sp.types.includes(t));
     const speedOk = (b.minSpeed === undefined || sp.base.speed >= b.minSpeed) && (b.maxSpeed === undefined || sp.base.speed <= b.maxSpeed);
-    if (typeOk && speedOk) m *= b.mult;
+    const nightOk = !b.night || at.night;
+    const waterOk = !b.water || at.water;
+    const weakerOk = !b.weaker || (at.leadLevel > 0 && target.level < at.leadLevel);
+    if (typeOk && speedOk && nightOk && waterOk && weakerOk) m *= b.mult;
   }
   return m;
 }

@@ -15,8 +15,9 @@ import { move, species, type District, type Evolution, type TimeOfDay } from './
  */
 
 export const XP_TIER_BASE: Record<number, number> = { 1: 55, 2: 95, 3: 160 };
-/** Everything pays this much more XP than the original curve (levelling was a grind). */
-export const XP_MULTIPLIER = 2;
+/** Everything pays this much more XP than the original curve (levelling was a grind: the campaign
+ * playtest of 1 November 2026 raised it from 2 to 3, with the story level bonus in SpawnRules). */
+export const XP_MULTIPLIER = 3;
 /** Party members who sat the fight out still learn something: this share of the foe's XP. */
 export const BENCH_SHARE = 0.3;
 

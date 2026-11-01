@@ -742,7 +742,7 @@ export class LivingWorld {
     if (hit.type === 'gun') {
       this.d.effects.muzzle(from.x, from.y, from.z, 0.6);
       this.d.effects.tracer(from.x, from.y, from.z, to.x, to.y, to.z);
-      audio.gunshot('npc', dist);
+      audio.gunshot('npc', from);
       landed();
       return;
     }

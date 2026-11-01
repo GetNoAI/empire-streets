@@ -191,7 +191,7 @@
       },
       "security": {
         "level": 1,
-        "suspicionRate": 0.55,
+        "suspicionRate": 0.3,
         "alarmDelay": 12,
         "noiseLimit": 100
       },
@@ -207,7 +207,7 @@
         "seconds": 10
       },
       "escape": {
-        "stars": 2,
+        "stars": 1,
         "dropOffs": [
           "west-side-lockup",
           "east-river-lockup"

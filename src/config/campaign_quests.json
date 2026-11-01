@@ -211,16 +211,12 @@
       },
       "team": [
         [
-          "cinderblock",
-          12
-        ],
-        [
           "doubleshift",
-          12
+          6
         ],
         [
           "rebarb",
-          14
+          8
         ]
       ],
       "intro": "You're Rust's new grease monkey? The docks are mine, kid. Beat me and maybe the League gives you a pass.",
@@ -249,20 +245,16 @@
       },
       "team": [
         [
-          "exhaustfume",
-          18
-        ],
-        [
           "hazeling",
-          19
+          10
         ],
         [
           "flue",
-          20
+          11
         ],
         [
           "backfire",
-          22
+          13
         ]
       ],
       "intro": "You can't win what you can't see. My crew runs the smoke on every grid downtown.",
@@ -289,19 +281,19 @@
       "team": [
         [
           "subsonic",
-          19
+          13
         ],
         [
           "streetlamp",
-          20
+          14
         ],
         [
           "woofer",
-          22
+          16
         ],
         [
           "wirewhip",
-          23
+          17
         ]
       ],
       "intro": "Feel that? That's the Cartel. Every race downtown pays us a cut. You want to change that?",
@@ -328,19 +320,19 @@
       "team": [
         [
           "strapback",
-          28
+          21
         ],
         [
           "holster",
-          30
+          23
         ],
         [
           "hardcase",
-          31
+          24
         ],
         [
           "overwatch",
-          32
+          25
         ]
       ],
       "intro": "You've been running my roadblocks all month. Tonight it ends. Tactical unit: deploy.",
@@ -367,23 +359,23 @@
       "team": [
         [
           "moldmother",
-          40
+          19
         ],
         [
           "overtime",
-          41
+          20
         ],
         [
           "overpass",
-          42
+          21
         ],
         [
           "ratking",
-          43
+          22
         ],
         [
           "holster",
-          45
+          25
         ]
       ],
       "intro": "Do you know how much money this League makes me? Every buy-in, every bribe, every cop on the payroll. And you think you can take that away?",
@@ -443,7 +435,7 @@
     {
       "id": "vault-queen",
       "species": "marqueen",
-      "level": 32,
+      "level": 22,
       "shiny": true,
       "nickname": "Vault Queen",
       "description": "Lived in the First Empire vault's wiring for years. Now she's yours."
@@ -632,7 +624,7 @@
             ]
           },
           "t1": {
-            "text": "Look at that. You've got the hands for this.",
+            "text": "Look at that. You've got the hands for this. A Streetmon in a car rides with the car, not with you: pull it back out at the lift whenever you need it in a fight.",
             "choices": [
               [
                 "Thanks, Rust.",

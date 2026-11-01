@@ -24,11 +24,27 @@ export interface Placement {
   third: number;
 }
 
+export type RaceMode = 'sprint' | 'circuit' | 'knockout' | 'timeTrial' | 'drift';
+export declare const RACE_MODES: readonly RaceMode[];
+export declare const MODE_NAMES: Record<RaceMode, string>;
+export declare const CLASS_ORDER: readonly string[];
+export declare function modeOf(t: RaceTrack): RaceMode;
+export declare function isSolo(mode: RaceMode): boolean;
+export declare function classOk(cls: string | null | undefined, track: RaceTrack): boolean;
+export declare function medalPlace(track: RaceTrack, value: number): number;
+export declare function driftPoints(dt: number, angleDeg: number, speed: number, chain: number): { points: number; chain: number };
+
 export interface RaceTrack {
   id: string;
   name: string;
   district?: string;
   description?: string;
+  /** Default: circuit with laps > 1, else sprint. */
+  mode?: RaceMode;
+  /** Cars of this class and below only (D..S). */
+  maxClass?: string | null;
+  /** Time trial: seconds for gold/silver/bronze; drift: scores. */
+  medals?: { gold: number; silver: number; bronze: number };
   entryFee: number;
   minStreetCred?: number;
   laps: number;
@@ -47,6 +63,8 @@ export interface RacerDriver {
   vehicle: string;
   color: string;
   skill: number;
+  /** Favourite Streetmon types (rivals' loadouts lean to them). */
+  streetmon?: string[];
 }
 
 export interface RaceConfig {
@@ -110,6 +128,10 @@ export interface RaceAdapter {
   updateRacers?(dt: number, info: { state: RaceState; course: CoursePoint[]; progress: Map<string, number>; standings: string[] }): void;
   racerPosition(id: string): { x: number; z: number } | null;
   removeRacers(): void;
+  /** One racer knocked out of a knockout race. */
+  removeRacer?(id: string): void;
+  /** The player's car's class (D..S), for class-limited races. */
+  carClass?(): string | null;
   placePlayer(slot: GridSlot): boolean;
   holdPlayer(hold: boolean): void;
   getMoney(): number;
@@ -132,6 +154,8 @@ export interface RaceContext {
   /** On the street with no menu or battle open (offers can appear). */
   freeRoam: boolean;
   dead?: boolean;
+  /** The car's slide angle in degrees (drift events). */
+  driftAngle?: number;
 }
 
 export interface RaceResult {
@@ -142,6 +166,11 @@ export interface RaceResult {
   cash: number;
   cred: number;
   standings: string[];
+  mode: RaceMode;
+  score: number;
+  bestLap: number | null;
+  newRecord: boolean;
+  record: RaceRecord;
 }
 
 export interface RacerState {
@@ -152,11 +181,23 @@ export interface RacerState {
   finishedAt: number | null;
   progress: number;
   skill?: number;
+  lapStart: number;
+  lastLap: number | null;
+  bestLap: number | null;
+  /** Knocked out. */
+  out: boolean;
+  outAt?: number;
+}
+
+export interface RaceRecord {
+  best?: number;
+  bestLap?: number;
+  score?: number;
 }
 
 export type RaceHud =
   | { state: 'IDLE' | 'CLEANUP' }
-  | { state: 'PROMPT'; track: RaceTrack; prompt: string; accepted: boolean; target: { x: number; z: number }; expires01: number }
+  | { state: 'PROMPT'; track: RaceTrack; prompt: string; accepted: boolean; target: { x: number; z: number }; expires01: number; mode: RaceMode; record: RaceRecord | null }
   | {
       state: 'COUNTDOWN' | 'RACING';
       track: RaceTrack;
@@ -174,6 +215,16 @@ export type RaceHud =
       finishNext: boolean;
       racers: Array<{ id: string; name: string; x: number; z: number }>;
       outOfCar: number;
+      mode: RaceMode;
+      lapTime: number;
+      lastLap: number | null;
+      bestLap: number | null;
+      score: number;
+      chain: number;
+      medals: { gold: number; silver: number; bronze: number } | null;
+      record: RaceRecord | null;
+      out: string[];
+      alive: number;
     }
   | { state: 'RESOLVED'; result: RaceResult };
 
@@ -196,7 +247,7 @@ export declare class RaceTrackInstance {
   dispose(): void;
 }
 
-export type RaceEvent = 'offer' | 'accepted' | 'countdown' | 'go' | 'checkpoint' | 'finished' | 'failed' | 'resolved' | 'cleanup' | 'state';
+export type RaceEvent = 'offer' | 'accepted' | 'countdown' | 'go' | 'checkpoint' | 'lap' | 'knockout' | 'finished' | 'failed' | 'resolved' | 'cleanup' | 'state';
 
 export declare class StreetRaceManager {
   constructor(opts: { adapter: RaceAdapter; config?: RaceConfig; rng?: () => number });
@@ -216,6 +267,9 @@ export declare class StreetRaceManager {
     countdown: number;
     outOfCar: number;
     racers: RacerState[];
+    mode: RaceMode;
+    score: number;
+    chain: number;
   } | null;
   result: RaceResult | null;
   readonly active: boolean;
@@ -233,7 +287,8 @@ export declare class StreetRaceManager {
   standings(): RacerState[];
   update(dt: number, ctx: RaceContext): RaceHud;
   hud(ctx?: RaceContext): RaceHud;
-  serialize(): { streetCred: number };
+  records: Record<string, RaceRecord>;
+  serialize(): { streetCred: number; records: Record<string, RaceRecord> };
   load(data: unknown): void;
 }
 

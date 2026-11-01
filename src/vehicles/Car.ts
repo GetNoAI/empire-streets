@@ -5,6 +5,7 @@ import { clamp, damp } from '../util/math';
 import { buildCarVisual, chassisHalfExtents, chassisRestHeight, type CarVisual } from './CarModel';
 import type { VehicleSpec } from './specs';
 import { DRIFT, DriftState, counterSteer, driftBoost, rearGrip, slipAngle, yawAssist } from './Drift';
+import { NITRO, Nitrous, upgradeEffect, type UpgradeLevels } from './Performance';
 
 export interface CarInput {
   throttle: number;
@@ -17,6 +18,19 @@ export interface CarInput {
 }
 
 export type Driver = 'player' | 'ai' | 'police' | null;
+
+export interface CarMods {
+  speed: number;
+  accel: number;
+  grip: number;
+  steer: number;
+  armor: number;
+  brake: number;
+}
+/** Road conditions from the weather (Weather.ts): wet or snowy roads take grip off every car. */
+export const CAR_WEATHER = { grip: 1 };
+
+const MOD_KEYS: readonly (keyof CarMods)[] = ['speed', 'accel', 'grip', 'steer', 'armor', 'brake'];
 
 /** Wheels only ray-cast against the world and other cars, never people. */
 const WHEEL_RAY_GROUPS = groups(0xffff, GROUP.WORLD | GROUP.CAR);
@@ -58,20 +72,35 @@ export class Car {
   slip = 0;
   readonly drift = new DriftState();
   /**
-   * Per-car tuning on top of the shared spec (Chop Shop mods, nitrous, flat tyres). Multipliers;
-   * `armor` divides incoming damage.
+   * Per-car tuning on top of the shared spec: the product of every layer (`setLayer`): the
+   * Streetmon tune, bought upgrades, event chips and blueprints, race-prep. Multipliers; `armor`
+   * divides incoming damage, `brake` scales the brakes.
    */
-  readonly mods = { speed: 1, accel: 1, grip: 1, steer: 1, armor: 1 };
+  readonly mods: CarMods = { speed: 1, accel: 1, grip: 1, steer: 1, armor: 1, brake: 1 };
+  private readonly layers = new Map<string, Partial<CarMods>>();
+  /** Bought parts (Performance.ts). */
+  upgrades: UpgradeLevels | null = null;
+  readonly nitro = new Nitrous(0);
+  /** Nitrous being asked for this frame (the player holds Shift; a rival's brain). */
+  boost = false;
+  /** Grip multiplier for the surface under the car (grass, dirt): the game sets it each frame. */
+  surfaceGrip = 1;
+  /** Starts at the showroom and stays with the car: what you paid, for selling it back. */
+  paid = 0;
   /** Tyres popped by a spike strip: little grip, half speed, until the car is gone. */
   tyresPopped = false;
   /** Seconds left on an oil slick (low grip). */
   slipFor = 0;
+  /** Seconds left on a slow leak from a race rival's spike strip (racers and you: a puncture, not a wreck). */
+  flatFor = 0;
   /** Seconds the anti-roll bars are off (thrown by a shockwave, so it can roll over). */
   tumbleFor = 0;
   /** Stable id once the car is someone's tuned ride. */
   tuneId: string | null = null;
   /** Paint colour (kept so a tuned ride respawns looking the same). */
-  readonly color: string;
+  color: string;
+  /** Bought at the showroom (or built up at the Chop Shop): yours, saved with the game. */
+  bought = false;
   private prevSlip = 0;
   private steerAngle = 0;
   private readonly prevVel = new THREE.Vector3();
@@ -183,14 +212,56 @@ export class Car {
     return this.spec.maxSteer * this.mods.steer * (1 - (1 - this.spec.highSpeedSteer) * k);
   }
 
-  /** Top speed after mods and flat tyres (m/s). */
-  get topSpeed(): number {
-    return this.spec.maxSpeed * this.mods.speed * (this.tyresPopped ? 0.5 : 1);
+  /**
+   * Sets one layer of multipliers (missing keys count as 1) and recomputes `mods` as the product
+   * of every layer. Layers: 'tune' (the Streetmon slots), 'upgrade' (bought parts), 'bonus'
+   * (chips and blueprints), 'race' (race prep and rivals' Streetmon), 'event'.
+   */
+  setLayer(name: string, m: Partial<CarMods> | null): void {
+    if (m) this.layers.set(name, { ...m });
+    else this.layers.delete(name);
+    for (const k of MOD_KEYS) {
+      let v = 1;
+      for (const l of this.layers.values()) v *= l[k] ?? 1;
+      this.mods[k] = v;
+    }
   }
 
-  /** Tyre grip after mods, flat tyres and oil. */
+  layer(name: string): Partial<CarMods> | undefined {
+    return this.layers.get(name);
+  }
+
+  /** Fits bought parts: their multipliers go on the 'upgrade' layer, the nitrous bottle is sized. */
+  setUpgrades(u: UpgradeLevels | null): void {
+    this.upgrades = u ? { ...u } : null;
+    const e = upgradeEffect(u);
+    this.setLayer('upgrade', { speed: e.topSpeed, accel: e.acceleration, grip: e.grip, steer: e.steering, armor: e.durability, brake: e.brakes });
+    this.nitro.setCapacity(e.nitrous);
+    this.refreshMass();
+  }
+
+  /** Mass multiplier from the Streetmon tune (the Chop Shop sets it). */
+  tuneMass = 1;
+
+  /** Mass from the spec, the tune and the parts (lighter panels, heavier plating). */
+  refreshMass(): void {
+    this.setMass(this.spec.mass * this.tuneMass * upgradeEffect(this.upgrades).mass);
+  }
+
+  /** How beaten up it is: 0 fresh, 1 about to burn. */
+  get wear(): number {
+    return clamp(1 - this.health / this.spec.health, 0, 1);
+  }
+
+  /** Top speed after mods, damage, nitrous and flat tyres (m/s). */
+  get topSpeed(): number {
+    const dmg = 1 - 0.12 * Math.max(0, this.wear - 0.5) * 2;
+    return this.spec.maxSpeed * this.mods.speed * dmg * (this.nitro.active ? NITRO.overSpeed : 1) * (this.tyresPopped ? 0.5 : this.flatFor > 0 ? 0.8 : 1);
+  }
+
+  /** Tyre grip after mods, the surface, flat tyres and oil. */
   private gripScale(): number {
-    return this.mods.grip * (this.tyresPopped ? 0.45 : 1) * (this.slipFor > 0 ? 0.35 : 1);
+    return this.mods.grip * this.surfaceGrip * CAR_WEATHER.grip * (this.tyresPopped ? 0.45 : this.flatFor > 0 ? 0.72 : 1) * (this.slipFor > 0 ? 0.35 : 1);
   }
 
   /**
@@ -220,10 +291,15 @@ export class Car {
     const v = this.speed;
     const inp = this.input;
     if (this.slipFor > 0) this.slipFor -= dt;
+    if (this.flatFor > 0) this.flatFor -= dt;
     if (this.tumbleFor > 0) this.tumbleFor -= dt;
     const gripK = this.gripScale();
+    // Nitrous: a burst of extra force past the normal cap (player holds Shift; rivals' brains).
+    const boosting = this.nitro.step(dt, active && this.boost && inp.throttle > 0 && v > 1, !this.destroyed);
     const maxSpeed = this.topSpeed;
-    const engineForce = s.engineForce * this.mods.accel * (this.tyresPopped ? 0.7 : 1);
+    // A badly damaged engine (past half health) loses up to a fifth of its pull.
+    const dmg = 1 - 0.2 * Math.max(0, this.wear - 0.5) * 2;
+    const engineForce = s.engineForce * this.mods.accel * dmg * (this.tyresPopped ? 0.7 : 1) * (boosting ? 1 + NITRO.force : 1);
 
     // Drift model: only for the player. AI and police cars keep the plain grip model so they never spin out.
     const playerDriven = this.driver === 'player' && active;
@@ -248,13 +324,14 @@ export class Car {
     this.steerAngle += (target - this.steerAngle) * damp(inp.steer === 0 ? 7 : 5, dt);
 
     let engine = 0;
+    const brakeForce = s.brakeForce * this.mods.brake;
     // Parked cars (and drivers told to hold still) keep the brakes on.
-    let brake = active && !inp.park ? 0 : s.brakeForce * 0.7;
+    let brake = active && !inp.park ? 0 : brakeForce * 0.7;
     this.braking = false;
     if (active && !inp.park) {
       if (inp.throttle > 0) {
         if (v < -1) {
-          brake = s.brakeForce * inp.throttle;
+          brake = brakeForce * inp.throttle;
           this.braking = true;
         } else {
           const t = clamp(v / maxSpeed, 0, 1);
@@ -263,13 +340,15 @@ export class Car {
       }
       if (inp.brake > 0) {
         if (v > 1) {
-          brake = s.brakeForce * inp.brake;
+          brake = brakeForce * inp.brake;
           this.braking = true;
         } else if (v > -s.reverseSpeed) {
           engine = -engineForce * 0.45 * inp.brake;
         }
       }
-      if (inp.throttle === 0 && inp.brake === 0) brake = s.brakeForce * 0.06; // engine braking / rolling resistance
+      if (inp.throttle === 0 && inp.brake === 0) brake = brakeForce * 0.06; // engine braking / rolling resistance
+      // A bent car pulls to one side (bodywork damage past 70%).
+      if (this.wear > 0.7 && v > 3) this.steerAngle += (this.wear - 0.7) * 0.12 * Math.sin(this.spec.mass) * Math.min(1, v / 20) * dt * 4;
     }
 
     const driven = s.drive === 'fwd' ? [0, 1] : s.drive === 'rwd' ? [2, 3] : [0, 1, 2, 3];
@@ -286,7 +365,7 @@ export class Car {
       let b = brake;
       let grip = s.grip;
       if (active && inp.handbrake && !front) {
-        b = Math.max(b, s.brakeForce * 1.4);
+        b = Math.max(b, brakeForce * 1.4);
         grip = s.handbrakeGrip;
       } else if (playerDriven && !front) grip = rearGrip(s, this.slip, drifting, false);
       c.setWheelBrake(i, b);
@@ -372,6 +451,12 @@ export class Car {
 
     const upY = new THREE.Vector3(0, 1, 0).applyQuaternion(this.curQuat).y;
     this.flippedTime = upY < 0.3 && this.body.linvel().y ** 2 + lv.x * lv.x + lv.z * lv.z < 4 ? this.flippedTime + dt : 0;
+  }
+
+  /** A new coat of paint (the body shop). */
+  respray(color: string): void {
+    this.color = color;
+    if (!this.destroyed) this.visual.paint.color.set(color);
   }
 
   /** Starts the car already moving (spawning into traffic) without registering a crash. */

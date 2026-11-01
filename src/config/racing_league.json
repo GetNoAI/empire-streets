@@ -59,7 +59,9 @@
       "tracks": [
         "west-side-sprint",
         "uptown-switchback",
-        "central-green-circuit"
+        "central-green-circuit",
+        "hatch-cup",
+        "midtown-time-attack"
       ]
     },
     {
@@ -75,7 +77,9 @@
       "entryFee": 150,
       "payoutMult": 1.15,
       "tracks": [
-        "harbor-run"
+        "harbor-run",
+        "park-loop-drift",
+        "uptown-knockout"
       ]
     },
     {
@@ -91,7 +95,9 @@
       },
       "entryFee": 400,
       "payoutMult": 1.35,
-      "tracks": []
+      "tracks": [
+        "island-marathon"
+      ]
     },
     {
       "id": "elite",
@@ -105,7 +111,9 @@
       },
       "entryFee": 900,
       "payoutMult": 1.6,
-      "tracks": []
+      "tracks": [
+        "downtown-gp"
+      ]
     },
     {
       "id": "apex",

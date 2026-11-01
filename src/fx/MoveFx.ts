@@ -146,8 +146,7 @@ export class MoveFx {
    */
   cast(p: MoveFxPlan, from: THREE.Vector3, targets: THREE.Vector3[], onLand?: () => void): void {
     const to = targets[0] ?? from;
-    const d = this.dist(from);
-    audio.moveSfx(p.sound, d, p.scale);
+    audio.moveSfx(p.sound, from, p.scale);
     const c = rgb(p.color);
     const E = this.d.effects;
     switch (p.style) {
@@ -175,7 +174,7 @@ export class MoveFx {
         this.later(0.12, () => {
           E.sparks(to.x, to.y, to.z, 8);
           E.tracer(to.x, to.y, to.z, to.x + side.x, to.y + 1.2, to.z + side.z);
-          audio.bulletHit(true, d);
+          audio.bulletHit(true, to);
         });
         break;
       }
@@ -311,7 +310,7 @@ export class MoveFx {
           this.later(p.travel, () => {
             const gy = this.d.groundY(tgt.x, tgt.z);
             E.burst({ x: tgt.x, y: gy + 0.6, z: tgt.z, count: 24, ...c, speed: 3, up: 2, life: 0.9, size0: 0.1, size1: 0.06, jitter: 1.4, drag: 1, lift: -9 });
-            audio.moveSfx('glass', this.dist(tgt));
+            audio.moveSfx('glass', tgt);
           });
         }
         break;
@@ -328,7 +327,7 @@ export class MoveFx {
   /** The hit landing: its impact look, sound and shake (heavier for crits and super-effective hits). */
   impact(p: MoveFxPlan, at: THREE.Vector3, hit: { crit: boolean; mult: number } = { crit: false, mult: 1 }): void {
     const f = impactFor(p, hit);
-    audio.moveSfx(f.sound, this.dist(at), f.size);
+    audio.moveSfx(f.sound, at, f.size);
     this.burstImpact(f.impact, at, p.color, f.size);
     if (f.flash) {
       this.flashLight(at, hit.crit ? '#ffffff' : p.color, 25 * f.size);
@@ -526,7 +525,7 @@ export class MoveFx {
     this.d.effects.burst({ x: at.x, y: gy + 0.2, z: at.z, count: 40, r: 0.58, g: 0.55, b: 0.5, speed: radius * 0.9, up: 1, life: 1.4, size0: 0.6, size1: 2.6, alpha: 0.45, additive: false, drag: 2, flat: true });
     this.flashLight(at, color, 60);
     const d = this.dist(at);
-    audio.moveSfx('stomp', d, 1.6);
+    audio.moveSfx('stomp', at, 1.6);
     if (d < radius * 3) this.d.shake?.(Math.max(0.2, 1 - d / (radius * 3)));
   }
 

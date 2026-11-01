@@ -21,7 +21,8 @@ export interface CampaignWorldDeps {
   player(): { x: number; z: number; onFoot: boolean; layer: string };
 }
 
-type IconKind = 'offer' | 'turnIn' | 'boss';
+/** 'active': they gave you a job you're still on (a grey dots marker; talking repeats the brief). */
+type IconKind = 'offer' | 'turnIn' | 'boss' | 'active';
 
 interface Figure {
   id: string;
@@ -35,7 +36,7 @@ interface Figure {
   bob: number;
 }
 
-const ICON_COLORS: Record<IconKind, string> = { offer: '#ffd23f', turnIn: '#4be37a', boss: '#ff4b3a' };
+const ICON_COLORS: Record<IconKind, string> = { offer: '#ffd23f', turnIn: '#4be37a', boss: '#ff4b3a', active: '#9aa3ad' };
 
 function iconTexture(kind: IconKind): THREE.CanvasTexture {
   const c = document.createElement('canvas');
@@ -59,6 +60,13 @@ function iconTexture(kind: IconKind): THREE.CanvasTexture {
     g.textAlign = 'center';
     g.textBaseline = 'middle';
     g.fillText('M', 64, 68);
+  } else if (kind === 'active') {
+    // Three dots: "still on it".
+    for (const x of [40, 64, 88]) {
+      g.beginPath();
+      g.arc(x, 64, 8, 0, Math.PI * 2);
+      g.fill();
+    }
   } else if (kind === 'turnIn') {
     g.lineWidth = 14;
     g.lineCap = 'round';
@@ -98,6 +106,7 @@ export class CampaignWorld {
       offer: new THREE.SpriteMaterial({ map: iconTexture('offer'), depthTest: false, transparent: true }),
       turnIn: new THREE.SpriteMaterial({ map: iconTexture('turnIn'), depthTest: false, transparent: true }),
       boss: new THREE.SpriteMaterial({ map: iconTexture('boss'), depthTest: false, transparent: true }),
+      active: new THREE.SpriteMaterial({ map: iconTexture('active'), depthTest: false, transparent: true, opacity: 0.8 }),
     };
     // The objective: a column of light and a ring on the ground.
     this.beacon = new THREE.Group();
@@ -179,9 +188,10 @@ export class CampaignWorld {
     const want = new Map<string, { kind: 'npc' | 'boss'; id: string; icon: IconKind }>();
     if (p.layer === 'street') {
       for (const g of Q.givers()) {
-        if (g.role === 'active') continue;
-        // A tick for a turn-in; an M for a job on offer or someone you've been sent to.
-        want.set(`npc:${g.npc}`, { kind: 'npc', id: g.npc, icon: g.role === 'turnIn' && Q.status(g.quest) === 'ready' ? 'turnIn' : 'offer' });
+        // A tick for a turn-in; an M for a job on offer or someone you've been sent to; grey dots
+        // for someone whose job you're still on (they stay put rather than vanishing mid-chat).
+        const icon: IconKind = g.role === 'active' ? 'active' : g.role === 'turnIn' && Q.status(g.quest) === 'ready' ? 'turnIn' : 'offer';
+        want.set(`npc:${g.npc}`, { kind: 'npc', id: g.npc, icon });
       }
       for (const m of markers) if (m.kind === 'boss') {
         const a = [...Q.activeQuests.keys()].find((id) => id === m.quest);
@@ -239,6 +249,10 @@ export class CampaignWorld {
       const col = new THREE.Color(target.color);
       for (const c of this.beacon.children) ((c as THREE.Mesh).material as THREE.MeshBasicMaterial).color.copy(col).multiplyScalar(1.5);
       (this.ring.material as THREE.MeshBasicMaterial).opacity = 0.6 + Math.sin(this.time * 3) * 0.25;
+      // The column thins out as you arrive (it's a landmark from afar, a glare up close).
+      const near = Math.hypot(target.x - p.x, target.z - p.z);
+      const colMat = (this.beacon.children[0] as THREE.Mesh).material as THREE.MeshBasicMaterial;
+      colMat.opacity = 0.35 * Math.min(1, Math.max(0.12, (near - 6) / 24));
     }
   }
 

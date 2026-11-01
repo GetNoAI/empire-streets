@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { platform } from '../mobile/Platform';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { GRAPHICS } from '../config';
 import { Rng } from '../util/rng';
@@ -8,7 +9,7 @@ import { lightingAt, sunAzimuthDeg, sunElevationDeg } from './DayCycle';
 /** Sky, sun, ambient light, fog, image-based lighting, water and the far shorelines. */
 export class Environment {
   readonly sun: THREE.DirectionalLight;
-  private shadowSize: number = GRAPHICS.shadowMapSize;
+  private shadowSize: number = Math.min(GRAPHICS.shadowMapSize, platform.shadow);
   readonly hemi: THREE.HemisphereLight;
   private readonly sky: Sky;
   private readonly sunDir = new THREE.Vector3();
@@ -26,6 +27,12 @@ export class Environment {
   private readonly fogCol = { day: new THREE.Color(0xb9c4cc), dusk: new THREE.Color(0xc9a58e), night: new THREE.Color(0x1d2534) };
   private readonly hemiSky = { day: new THREE.Color(0xcfe3ff), night: new THREE.Color(0x4a5d8a) };
   private readonly hemiGround = { day: new THREE.Color(0x5a5145), night: new THREE.Color(0x1d1b22) };
+  /** The time of day's lighting, before the weather and the neighbourhood's colour grade go on top. */
+  private readonly base = { sun: 3.2, hemi: 0.9, env: 0.55, exposure: 1, fog: new THREE.Color(0xb9c4cc), hemiCol: new THREE.Color(0xcfe3ff) };
+  private readonly greyFog = new THREE.Color(0x8d969e);
+  /** An overcast layer over the sky dome: grey cloud that thickens with the weather. */
+  private cloudDome: THREE.Mesh | null = null;
+  private readonly tmpCol = new THREE.Color();
 
   constructor(
     private readonly scene: THREE.Scene,
@@ -62,7 +69,7 @@ export class Environment {
     skyCopy.geometry.dispose();
     skyCopy.material.dispose();
 
-    this.fog = new THREE.Fog(0xb9c4cc, 260, 1900);
+    this.fog = new THREE.Fog(0xb9c4cc, 260, Math.min(1900, platform.farFog));
     scene.fog = this.fog;
 
     this.hemi = new THREE.HemisphereLight(0xcfe3ff, 0x5a5145, 0.9);
@@ -71,7 +78,7 @@ export class Environment {
     this.sun = new THREE.DirectionalLight(0xfff0dc, 3.2);
     this.sun.castShadow = true;
     const sh = this.sun.shadow;
-    sh.mapSize.set(GRAPHICS.shadowMapSize, GRAPHICS.shadowMapSize);
+    sh.mapSize.set(this.shadowSize, this.shadowSize);
     const e = GRAPHICS.shadowExtent;
     sh.camera.left = -e;
     sh.camera.right = e;
@@ -164,6 +171,12 @@ export class Environment {
     this.fog.color.copy(this.fogCol.night).lerp(this.fogCol.day, L.daylight).lerp(this.fogCol.dusk, L.golden * 0.5);
     this.renderer.toneMappingExposure = L.exposure;
     if (this.lampMaterial) this.lampMaterial.emissiveIntensity = L.lampIntensity;
+    this.base.sun = this.sun.intensity;
+    this.base.hemi = this.hemi.intensity;
+    this.base.env = this.scene.environmentIntensity;
+    this.base.exposure = this.renderer.toneMappingExposure;
+    this.base.fog.copy(this.fog.color);
+    this.base.hemiCol.copy(this.hemi.color);
     if (this.layer === 'sewer') {
       // Underground: no sun or sky, a dim cold fill, close murky fog (the flashlight does the rest).
       this.sun.intensity = 0;
@@ -176,6 +189,43 @@ export class Environment {
     }
   }
 
+  /**
+   * The weather and the neighbourhood on top of the time of day (every frame): cloud dims the sun
+   * and greys the haze, fog pulls the horizon in, lightning flashes the sky, and the neighbourhood
+   * tints the ambient light and the haze a little.
+   */
+  applyAtmosphere(o: { cloud: number; fog: number; rain: number; flash: number; tint: number; haze: number }): void {
+    if (this.layer === 'sewer') return;
+    const b = this.base;
+    this.sun.intensity = b.sun * (1 - 0.8 * o.cloud) + o.flash * 2.5;
+    this.hemi.intensity = b.hemi * (1 - 0.2 * o.cloud) + o.flash * 1.5;
+    this.scene.environmentIntensity = b.env * (1 - 0.35 * o.cloud);
+    this.renderer.toneMappingExposure = b.exposure * (1 - 0.15 * o.cloud) + o.flash * 0.5;
+    this.tmpCol.set(o.tint);
+    this.hemi.color.copy(b.hemiCol).lerp(this.tmpCol, 0.3);
+    this.fog.color.copy(b.fog).lerp(this.greyFog.clone().multiplyScalar(0.55 + 0.45 * Math.min(1, b.exposure)), o.cloud * 0.55).lerp(this.tmpCol.multiply(b.fog), o.haze * 0.5);
+    const farBase = Math.min(1900, platform.farFog);
+    this.fog.near = 260 * (1 - 0.92 * o.fog) * (1 - 0.3 * o.rain);
+    this.fog.far = farBase * (1 - 0.82 * o.fog - 0.3 * o.rain) * (1 - 0.25 * o.haze);
+    const u = this.sky.material.uniforms;
+    u['turbidity'].value = 6 + o.cloud * 14;
+    u['rayleigh'].value = 1.6 * (1 - 0.7 * o.cloud) + o.flash;
+    if (!this.cloudDome) {
+      this.cloudDome = new THREE.Mesh(
+        new THREE.SphereGeometry(1300, 24, 12),
+        new THREE.MeshBasicMaterial({ color: 0x8a929a, side: THREE.BackSide, transparent: true, opacity: 0, depthWrite: false, fog: false }),
+      );
+      this.cloudDome.renderOrder = -1;
+      this.scene.add(this.cloudDome);
+    }
+    const dm = this.cloudDome.material as THREE.MeshBasicMaterial;
+    // Overcast from about half cloud up; a storm is a low dark lid, lit for an instant by lightning.
+    dm.opacity = Math.max(0, Math.min(0.92, (o.cloud - 0.35) * 1.5));
+    dm.color.copy(this.fog.color).lerp(this.tmpCol.set(0xffffff), o.flash * 0.6);
+    this.cloudDome.visible = dm.opacity > 0.01;
+    this.cloudDome.position.copy(this.sky.position);
+  }
+
   /** Switches lighting for a world layer (applied on the next setTime). */
   setLayer(layer: 'street' | 'roof' | 'sewer'): void {
     if (layer === this.layer) return;
@@ -183,9 +233,10 @@ export class Environment {
     this.lastHour = -99;
     const under = layer === 'sewer';
     this.sky.visible = !under;
+    if (this.cloudDome) this.cloudDome.visible = !under;
     this.water.visible = !under;
     this.fog.near = under ? 2 : 260;
-    this.fog.far = under ? 45 : 1900;
+    this.fog.far = under ? 45 : Math.min(1900, platform.farFog);
   }
 
   get currentLayer(): 'street' | 'roof' | 'sewer' {

@@ -67,15 +67,17 @@ async function loadKhronos(): Promise<Validator | null> {
 
 const MAP_SLOTS = ['map', 'normalMap', 'aoMap', 'roughnessMap', 'metalnessMap', 'emissiveMap'] as const;
 
-/** Writes the shared atlas images (once per build). */
+/** Writes the shared atlas images (once per build): the 2048 set the models reference, and the 1024 set phones load instead. */
 function writeAtlas(): string[] {
-  const img = atlasImages();
   fs.mkdirSync(path.join(outDir, 'atlas'), { recursive: true });
   const out: string[] = [];
-  for (const k of ['color', 'normal', 'orm'] as const) {
-    const file = ATLAS.files[k];
-    fs.writeFileSync(path.join(outDir, file), encodePng(img.size, img.size, img[k], k === 'color'));
-    out.push(file);
+  for (const size of [ATLAS.shipSize, ATLAS.phoneSize]) {
+    const img = atlasImages(size);
+    for (const k of ['color', 'normal', 'orm'] as const) {
+      const file = size === ATLAS.shipSize ? ATLAS.files[k] : ATLAS.files[k].replace(/\.png$/, `${ATLAS.phoneSuffix}.png`);
+      fs.writeFileSync(path.join(outDir, file), encodePng(size, size, img[k], k === 'color'));
+      if (size === ATLAS.shipSize) out.push(file);
+    }
   }
   return out;
 }
@@ -140,7 +142,7 @@ async function main(): Promise<void> {
   say(`validator: ${validatorName}; budget ${TRI_MIN}-${TRI_MAX} triangles, <= ${MAX_DRAW_CALLS} draw calls; warnings fail the build`);
   say('');
   const atlasFiles = writeAtlas();
-  say(`atlas: ${atlasFiles.map((f) => `public/creatures/${f}`).join(', ')} (${ATLAS.size} x ${ATLAS.size})`);
+  say(`atlas: ${atlasFiles.map((f) => `public/creatures/${f}`).join(', ')} (${ATLAS.shipSize} x ${ATLAS.shipSize}; ${ATLAS.phoneSize} copies with the ${ATLAS.phoneSuffix} suffix for phones)`);
   say('');
   say(`  ${'file'.padEnd(22)} ${'tris'.padStart(5)}  draws  ${'KB'.padStart(4)}  bevel/plain/cut  merged hidden  wear rust grime  errors warnings`);
   for (const spec of ALL_SPECIES()) {

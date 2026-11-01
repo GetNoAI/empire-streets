@@ -58,7 +58,12 @@
     },
     {
       "id": "chopShop",
-      "label": "Chop Shop",
+      "label": "Chop Shop & showroom",
+      "default": true
+    },
+    {
+      "id": "safehouses",
+      "label": "Safehouses",
       "default": true
     },
     {
@@ -103,7 +108,9 @@
       "star",
       "badge",
       "mission",
-      "skull"
+      "skull",
+      "car",
+      "house"
     ]
   },
   "icons": {
@@ -275,6 +282,24 @@
       "color": "#ff4b3a",
       "size": 28,
       "layer": "missions"
+    },
+    "dealership": {
+      "sprite": "car",
+      "color": "#21e6ff",
+      "size": 20,
+      "layer": "chopShop"
+    },
+    "safehouse": {
+      "sprite": "house",
+      "color": "#5dff8a",
+      "size": 20,
+      "layer": "safehouses"
+    },
+    "safehouseForSale": {
+      "sprite": "house",
+      "color": "#ff7a5a",
+      "size": 17,
+      "layer": "safehouses"
     }
   },
   "sets": [
@@ -423,6 +448,20 @@
       "source": "campaign.markers",
       "match": {
         "kind": "boss"
+      }
+    },
+    {
+      "icon": "safehouse",
+      "source": "safehouses",
+      "match": {
+        "owned": "yes"
+      }
+    },
+    {
+      "icon": "safehouseForSale",
+      "source": "safehouses",
+      "match": {
+        "owned": "no"
       }
     }
   ],

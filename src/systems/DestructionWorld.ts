@@ -244,7 +244,7 @@ export class DestructionWorld {
       car.body.setLinvel({ x: lv.x * r.slow, y: lv.y, z: lv.z * r.slow }, true);
       if (r.carDamage > 0) car.damage(r.carDamage);
       car.lastImpactAt = performance.now();
-      audio.crash(Math.min(1, sp / 25) * 0.6, this.d.listener().distanceTo(p));
+      audio.crash(Math.min(1, sp / 25) * 0.6, p);
     }
   }
 
@@ -256,7 +256,7 @@ export class DestructionWorld {
     const metal = DESTRUCTIBLES.kinds[p.kind].material !== 'wood';
     if (metal) this.d.effects.sparks(at.x, at.y, at.z, 5);
     else this.d.effects.burst({ x: at.x, y: at.y, z: at.z, count: 5, r: 0.45, g: 0.32, b: 0.2, speed: 2.5, up: 1, life: 0.6, size0: 0.08, size1: 0.05, additive: false, lift: -9 });
-    audio.bulletHit(metal, this.d.listener().distanceTo(at));
+    audio.bulletHit(metal, at);
     return true;
   }
 
@@ -273,7 +273,7 @@ export class DestructionWorld {
     const def = DESTRUCTIBLES.kinds[p.kind];
     const mat = DESTRUCTIBLES.materials[def.material];
     const dist = this.d.listener().distanceTo(this.tmpV.set(p.x, 1, p.z));
-    audio.sfx(`sfx_break_${mat.sound}`, dist);
+    audio.sfx(`sfx_break_${mat.sound}`, { x: p.x, y: 1, z: p.z });
     const push = Math.max(3, Math.min(14, speed * 0.6));
     const dx = dirX || Math.cos(p.rot);
     const dz = dirZ || Math.sin(p.rot);
@@ -427,7 +427,7 @@ export class DestructionWorld {
       g.sound -= dt;
       if (g.sound <= 0 && d < 50) {
         g.sound = 1.1;
-        audio.sfx('sfx_geyser', d);
+        audio.sfx('sfx_geyser', { x: g.x, y: CURB, z: g.z });
       }
     }
     this.manager.update(dt, { x: player.x, z: player.z, visible: (x, z) => this.d.inView(x, 2, z) });

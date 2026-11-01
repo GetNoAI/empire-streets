@@ -1,6 +1,7 @@
 import { LEVEL_CAP, MAX_MOVES, levelForXp, magazine, maxHp, movesAtLevel, xpForLevel, type Creature } from '../creatures/Creature';
 import { VEHICLES } from '../vehicles/specs';
-import { BIOMES, DATA, species, type Biome } from '../creatures/Data';
+import { sanitizeUpgrades } from '../vehicles/Performance';
+import { BIOMES, DATA, LAYER_BIOMES, species, type Biome } from '../creatures/Data';
 import { WEAPONS, isRanged, weapon } from '../weapons/WeaponTypes';
 import type { OwnedWeapon } from '../weapons/Inventory';
 
@@ -84,11 +85,29 @@ export interface SaveData {
   cinematics?: string[];
   /** The player's look (the wardrobe; playerLook.ts cleans it up). Missing in older saves. */
   look?: unknown;
+  /** Civic standing, the gangs' story and the weather (src/systems/WorldState.ts parses it). Missing in older saves. */
+  world?: unknown;
   /** Underground Chop Shop: tuned rides and the Streetmon riding in them. */
   garage: {
-    rides: Array<{ id: string; spec: string; color: string; slots: Record<'engineBay' | 'trunk' | 'roofRack', string | null> }>;
+    rides: Array<{
+      id: string;
+      spec: string;
+      color: string;
+      slots: Record<'engineBay' | 'trunk' | 'roofRack', string | null>;
+      /** Bought parts (Performance.ts); missing in older saves. */
+      upgrades?: Record<string, number>;
+      /** What it cost at the showroom (0 / missing: not bought there). */
+      paid?: number;
+      health?: number;
+      /** Where it was parked (missing: a Chop Shop bay). */
+      at?: { x: number; z: number; heading: number };
+    }>;
     streetmon: Creature[];
   };
+  /** Street races: best times and scores per track (missing in older saves). */
+  raceRecords?: Record<string, { best?: number; bestLap?: number; score?: number }>;
+  /** Safehouses: which you own, the last one you used, visits (Safehouses.ts cleans it; missing in older saves). */
+  safehouses?: { owned: string[]; last: string | null; visits: Record<string, number> };
 }
 
 export interface LoadResult {
@@ -223,7 +242,7 @@ export function loadSave(input: unknown): LoadResult {
     if (!q || typeof q !== 'object' || !/^[a-z0-9-]{1,40}$/.test(k)) continue;
     quests[k] = { step: Math.round(num(q.step, 0, 0, 99)), done: q.done === true };
   }
-  let layer: Biome = BIOMES.includes(raw['layer'] as Biome) ? (raw['layer'] as Biome) : 'street';
+  let layer: Biome = LAYER_BIOMES.includes(raw['layer'] as Biome) ? (raw['layer'] as Biome) : 'street';
   // A save made underground or on a roof that the current build can't place goes back to the street.
   if (layer !== 'street' && !(pl && typeof pl.y === 'number')) layer = 'street';
   const data: SaveData = {
@@ -253,6 +272,8 @@ export function loadSave(input: unknown): LoadResult {
     manholesFound: strs(raw['manholesFound'], (x) => /^[a-z0-9-]{1,40}$/.test(x)),
     sewerSeed: Math.round(num(raw['sewerSeed'], DEFAULT_SEWER_SEED, 1, 2 ** 31 - 1)),
     streetCred: Math.round(num(raw['streetCred'], 0, 0, 1e6)),
+    raceRecords: raw['raceRecords'] && typeof raw['raceRecords'] === 'object' ? (raw['raceRecords'] as SaveData['raceRecords']) : undefined,
+    safehouses: raw['safehouses'] && typeof raw['safehouses'] === 'object' ? (raw['safehouses'] as SaveData['safehouses']) : undefined,
     heists: parseHeists(raw['heists']),
     map: parseMap(raw['map']),
     streetEvents: parseStreetEvents(raw['streetEvents']),
@@ -260,6 +281,7 @@ export function loadSave(input: unknown): LoadResult {
     tutorials: raw['tutorials'] === undefined ? undefined : parseTutorials(raw['tutorials']),
     raids: raw['raids'] && typeof raw['raids'] === 'object' ? raw['raids'] : undefined,
     look: raw['look'] && typeof raw['look'] === 'object' ? raw['look'] : undefined,
+    world: raw['world'] && typeof raw['world'] === 'object' ? raw['world'] : undefined,
     cinematics: raw['cinematics'] === undefined ? undefined : strs(raw['cinematics'], (x) => /^[a-z0-9:-]{1,60}$/.test(x)),
     garage: parseGarage(raw['garage'], creatures, warnings),
   };
@@ -345,7 +367,7 @@ function parseGarage(v: unknown, creatures: (v: unknown) => Creature[], warnings
   const used = new Set<string>();
   const rides: SaveData['garage']['rides'] = [];
   for (const r of Array.isArray(g.rides) ? g.rides : []) {
-    const ride = r as { id?: unknown; spec?: unknown; color?: unknown; slots?: Record<string, unknown> };
+    const ride = r as { id?: unknown; spec?: unknown; color?: unknown; slots?: Record<string, unknown>; upgrades?: unknown; paid?: unknown; health?: unknown; at?: { x?: unknown; z?: unknown; heading?: unknown } };
     if (typeof ride.id !== 'string' || !/^[a-z0-9-]{1,40}$/.test(ride.id) || typeof ride.spec !== 'string' || !VEHICLES.some((s) => s.id === ride.spec)) {
       warnings.push('dropped a tuned car the game does not know');
       continue;
@@ -358,7 +380,17 @@ function parseGarage(v: unknown, creatures: (v: unknown) => Creature[], warnings
         used.add(id);
       }
     }
-    rides.push({ id: ride.id, spec: ride.spec, color: typeof ride.color === 'string' && /^#[0-9a-fA-F]{6}$/.test(ride.color) ? ride.color : '#888888', slots });
+    const at = ride.at && typeof ride.at === 'object' && Number.isFinite(ride.at.x) && Number.isFinite(ride.at.z) ? { x: num(ride.at.x, 0, -2000, 2000), z: num(ride.at.z, 0, -2000, 2000), heading: num(ride.at.heading, 0, -10, 10) } : undefined;
+    rides.push({
+      id: ride.id,
+      spec: ride.spec,
+      color: typeof ride.color === 'string' && /^#[0-9a-fA-F]{6}$/.test(ride.color) ? ride.color : '#888888',
+      slots,
+      upgrades: ride.upgrades ? sanitizeUpgrades(ride.upgrades) : undefined,
+      paid: ride.paid === undefined ? undefined : Math.round(num(ride.paid, 0, 0, 1e7)),
+      health: ride.health === undefined ? undefined : num(ride.health, 1, 1, 1e5),
+      at,
+    });
   }
   // Streetmon not in any car are kept (the game puts them back with the team).
   return { rides, streetmon };

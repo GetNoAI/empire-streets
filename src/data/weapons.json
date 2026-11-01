@@ -26,7 +26,7 @@
       "knockback": 6,
       "noiseRadius": 0,
       "price": 120,
-      "pickupCount": 6
+      "pickupCount": 0
     },
     {
       "id": "knife",
@@ -40,7 +40,7 @@
       "knockback": 1,
       "noiseRadius": 0,
       "price": 90,
-      "pickupCount": 5
+      "pickupCount": 0
     },
     {
       "id": "pistol",
@@ -66,7 +66,7 @@
       "price": 400,
       "ammoPrice": 60,
       "ammoPack": 24,
-      "pickupCount": 6,
+      "pickupCount": 0,
       "copDrop": true
     },
     {
@@ -93,7 +93,7 @@
       "price": 900,
       "ammoPrice": 80,
       "ammoPack": 12,
-      "pickupCount": 3
+      "pickupCount": 0
     },
     {
       "id": "shotgun",
@@ -120,7 +120,7 @@
       "price": 1200,
       "ammoPrice": 90,
       "ammoPack": 12,
-      "pickupCount": 3
+      "pickupCount": 0
     },
     {
       "id": "smg",
@@ -146,7 +146,7 @@
       "price": 1500,
       "ammoPrice": 100,
       "ammoPack": 60,
-      "pickupCount": 3
+      "pickupCount": 0
     },
     {
       "id": "rifle",
@@ -172,7 +172,7 @@
       "price": 3200,
       "ammoPrice": 150,
       "ammoPack": 60,
-      "pickupCount": 2
+      "pickupCount": 0
     },
     {
       "id": "sniper",
@@ -200,7 +200,7 @@
       "price": 5000,
       "ammoPrice": 200,
       "ammoPack": 10,
-      "pickupCount": 1
+      "pickupCount": 0
     },
     {
       "id": "molotov",
@@ -219,7 +219,7 @@
       "price": 300,
       "ammoPrice": 120,
       "ammoPack": 2,
-      "pickupCount": 3
+      "pickupCount": 0
     }
   ]
 }

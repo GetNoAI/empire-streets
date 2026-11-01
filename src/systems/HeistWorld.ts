@@ -148,7 +148,6 @@ export class HeistWorld {
   private workT = 0;
   private time = 0;
   private escaping: string[] = [];
-  private readonly tmpA = new THREE.Vector3();
 
   constructor(private readonly d: HeistWorldDeps) {
     d.scene.add(this.alarmLight);
@@ -757,7 +756,7 @@ export class HeistWorld {
         const x = F ? p.x - F.nx * 1.2 : p.x;
         const z = F ? p.z - F.nz * 1.2 : p.z;
         this.d.effects.sparks(x, 1.2, z, 5);
-        if (Math.random() < 0.3) audio.sfx('sfx_drill', this.d.listener().distanceTo(this.tmpA.set(x, 1, z)));
+        if (Math.random() < 0.3) audio.sfx('sfx_drill', { x, y: 1, z });
       }
     }
     // Bags on backs.

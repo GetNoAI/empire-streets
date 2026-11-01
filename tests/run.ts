@@ -51,10 +51,10 @@ import { ARENA, arenaProblems, cameraOf, chooseArena, nearestClear, spotOf } fro
 import { TutorialManager, parseKeys, triggerMatches, validateTutorials, type TutorialConfig } from '../src/systems/tutorialManager.js';
 import leagueJson from '../src/config/racing_league.json';
 import { OBJECTIVE_TYPES, QuestManager, validateCampaign, validateLeague, type CampaignConfig, type LeagueConfig, type QuestContext } from '../src/systems/questManager.js';
-import { SPAWN, capFor, detectionRadius, districtAt, hostileAt, pickSpecies, revealRadius, rollLevel, spawnTable } from '../src/creatures/SpawnRules';
+import { SPAWN, STORY_LEVEL_BONUS, capFor, detectionRadius, districtAt, hostileAt, pickSpecies, revealRadius, rollLevel, spawnTable, storyAllows, storyLevel } from '../src/creatures/SpawnRules';
 import { DISTRICTS, TIMES } from '../src/creatures/Data';
 import { clockText, lightingAt, phaseAt, sunElevationDeg } from '../src/world/DayCycle';
-import { Battle, baseDamage, finalDamage, stageMult, type Combatant } from '../src/creatures/BattleEngine';
+import { Battle, baseDamage, finalDamage, stageMult, type Action, type Combatant } from '../src/creatures/BattleEngine';
 import { Party } from '../src/creatures/Party';
 import { CATCH, catchChance, catchValue, itemMultiplier, rollCatch } from '../src/creatures/Catching';
 import { PITY, newPity, pityMessage, recordThrow, softBonus, withPity } from '../src/creatures/Pity';
@@ -63,7 +63,10 @@ import { BATTLE, CAR_DURABILITY, carDamageTaken } from '../src/config';
 import { DEFAULT_LOOK, LOOK_OPTIONS, OUTFITS, randomPlayerLook, sanitizeLook } from '../src/player/playerLook';
 import { VehicleTuningManager, computeStats, modFor, validateConfig, type StreetmonInfo, type VehicleStats } from '../src/systems/vehicleTuning.js';
 import tuningJson from '../src/config/vehicle_streetmon_tuning.json';
-import { RaceTrackInstance, StreetRaceManager, buildCourse, gridSlots, payoutFor, progressOf, validateRaceConfig, type RaceAdapter } from '../src/systems/streetRaceManager.js';
+import { RaceTrackInstance, StreetRaceManager, buildCourse, classOk, driftPoints, gridSlots, medalPlace, modeOf, payoutFor, progressOf, validateRaceConfig, type RaceAdapter } from '../src/systems/streetRaceManager.js';
+import { VEHICLES } from '../src/vehicles/specs';
+import { NITRO, Nitrous, classAllowed, classOf, performanceIndex, sanitizeUpgrades, upgradeEffect, upgradePrice } from '../src/vehicles/Performance';
+import { rivalUpgrades } from '../src/systems/rivalLoadout';
 import racesJson from '../src/config/races.json';
 import { CircleIndex, ObstacleField, WallGrid, clampToWall, moveWithCollision, rayCircle, wallRepulsion } from '../src/creatures/WallProbe';
 import { SmartFleeBehavior, newFleeMemory, steerWithRepulsion } from '../src/creatures/SmartFlee';
@@ -97,6 +100,38 @@ import { cryParams } from '../src/audio/Cries';
 import { routeAhead, trimRoute } from '../src/fx/WaypointGuide';
 import { ACCESS_SPACING } from '../src/world/Rooftops';
 import { getSpec } from '../src/vehicles/specs';
+import { ATTACK_CLIPS, ATTACK_STYLES, CLIP_FPS, attackPhase, attackStyleFor, defaultPose, rigInfo } from '../src/creatures/models/Motion';
+import { slicePlane, thinKeys } from '../src/creatures/models/Kit';
+import { slotMount } from '../src/vehicles/CarModel';
+import { RivalBrain, RIVAL_TIERS, opening, raceTier, rivalLoadouts } from '../src/systems/rivalLoadout';
+import { SaveManager, checksum, compressBase64, compressUTF16, decompressBase64, decompressUTF16, packForFile, packSave, unpackSave, type KV } from '../src/core/SaveManager';
+import { SAFEHOUSE, newSafehouseState, planSafehouses, sanitizeSafehouses, sleepHours } from '../src/world/Safehouses';
+import { BTN, PAD_MAPS, deadzone, nearestInDirection, padFrame, padGlyph, padPrompt, stick } from '../src/core/Gamepad';
+import { VISION, inVision } from '../src/police/Vision';
+import { wheelLayout, wheelPick, wheelRadius } from '../src/ui/QuickWheel';
+import { waterLift, waterRide } from '../src/creatures/WaterBattle';
+import { Dodge, ROLL } from '../src/player/Roll';
+import { cycleOption, DEFAULT_OPTIONS, loadOptions, optionLabel, parseOptions, saveOptions } from '../src/core/Options';
+import { Blackjack, VideoPoker, evaluatePoker, handValue, rouletteReturn, slotPayout, slotsReturn, type Card } from '../src/casino/Games';
+import { BOSS, GANG, ROSTER, fightSpot, gangEvent, gangHitChance, hideoutLayout, hostileOnSight, newGangState, parseGangState, questUnlocked, streetCrewsActive } from '../src/gangs/Gangs';
+import { applyRep, civicTier, streetTier } from '../src/systems/Reputation';
+import { planStreetCaches } from '../src/world/StreetCaches';
+import { Weather, weatherEffects } from '../src/world/Weather';
+import { NEIGHBOURHOODS, NeighbourhoodTracker, localLook, neighbourhoodAt } from '../src/world/Districts';
+import { roomChatter, streetChatter, type ChatterContext } from '../src/npc/Chatter';
+import { bubbleSeconds } from '../src/ui/Bubbles';
+import { blastFalloff, chainFrom, shockRadius } from '../src/systems/Hazards';
+import { WEAPONS as WEAPON_LIST } from '../src/weapons/WeaponTypes';
+import { applyHeal, effectsLine, newEffects, spawnModifiers, tickEffects } from '../src/items/Items';
+import { ASSIST, assistTurn, headingTo, pickAssist } from '../src/mobile/AimAssist';
+import { contextFromPrompt, touchParts } from '../src/mobile/Touch';
+import { FLIGHT, SKY, deepLevelBonus, deepTable, flightTarget, skyTable } from '../src/creatures/SpawnRules';
+import { DOCKS, planDocks } from '../src/world/Docks';
+import { planDeepSewers, poolAt, poolEdge } from '../src/world/Sewers';
+import { INTERIOR, planInteriors } from '../src/world/Interiors';
+import { interiorTalk, streetTalk, type TalkContext } from '../src/npc/Talk';
+import { gaitFrequency } from '../src/player/Humanoid';
+import { POND, bankPoint, carLift, depthAt, depthUV, inLake as inPond, nearestEdge, nearestWater, newCarWater, shouldClimbOut, stepCarWater, submersion, wadeFactor, waterState, waveY } from '../src/world/Pond';
 
 let fails = 0;
 const ok = (cond: boolean, msg: string): void => {
@@ -688,6 +723,19 @@ for (const seed of [1903, 1, 42, 777]) {
   const png = encodePng(img.size, img.size, img.orm);
   const back = decodePng(png);
   ok(back.width === 512 && back.rgba.every((v, i) => v === img.orm[i]), `PNG encoder round trip (${png.length} bytes)`);
+  // Higher resolutions keep the layout (same cells at the same UVs) and get sharper, not different.
+  const big = atlasImages(1024);
+  ok(big.size === 1024 && atlasImages(1024) === big && atlasImages() === img, 'atlas images are cached per size');
+  const atBig = (surface: string, style: string, s: number, t: number): number => {
+    const [u, v] = cellUV(surface as never, style as never, s, t);
+    return big.color[(Math.floor(v * 1024) * 1024 + Math.floor(u * 1024)) * 4];
+  };
+  ok(Math.abs(atBig('metal', 'vgrad', 0.3, 0.98) - at('color', 'metal', 'vgrad', 0.3, 0.98)[0]) < 24 && atBig('metal', 'vgrad', 0.3, 0.02) < atBig('metal', 'vgrad', 0.3, 0.98), 'a 1024 atlas matches the 512 one cell for cell');
+  // Weathering: rust streaks run down from the rivets, chipped edges show bare metal.
+  let streakOrange = 0;
+  for (let t = 0.05; t < 0.28; t += 0.02) { const c = at('color', 'metal', 'vstrong', 0.5, t); if (c[0] > c[2] + 12) streakOrange++; }
+  ok(streakOrange >= 3, `rust streaks run down from the rivets (${streakOrange} orange samples under the seam rivet)`);
+  ok(at('color', 'armor', 'wear', 0.01, 0.5)[0] > at('color', 'armor', 'wear', 0.3, 0.5)[0] - 6, 'chipped edges are no darker than the plate');
   // Geometry passes.
   const cyl = new THREE.CylinderGeometry(0.2, 0.2, 0.4, 8);
   const merged = mergeCoplanar(cyl);
@@ -935,7 +983,7 @@ for (const seed of [1903, 1, 42, 777]) {
   const cuffs = itemSpec('cuffs') as CaptureItem;
   const crate = itemSpec('crate') as CaptureItem;
   const net = itemSpec('net') as CaptureItem;
-  ok(captureItems().map((i) => i.id).join(',') === 'cuffs,crate,net,lure,cage,capturePod', 'Cuffs, Crate and Net exist, plus the black-market Sludge Lure and Cage and the event-only Capture Pod');
+  ok(captureItems().map((i) => i.id).join(',') === 'cuffs,crate,net,lure,cage,capturePod,nightNet,diveNet,rookieCuffs', 'Cuffs, Crate and Net exist, plus the black-market Sludge Lure and Cage and the event-only Capture Pod');
   const c = createCreature('hustlepup', 10, () => 0.5); // catch rate 180
   const mx = crMaxHp(c);
   // Formula: a = ((3M - 2H) * rate * item * status) / 3M.
@@ -1243,7 +1291,7 @@ console.log('\n— Data groundwork: biomes, dex, save v2');
   // Street spawn tables: street species only, full weight at home, strays elsewhere.
   const expect = (d: (typeof DISTRICTS)[number], t: (typeof TIMES)[number]) =>
     ALL_SPECIES()
-      .filter((s) => !s.spawn.biomes && s.spawn.districts.includes(d) && s.spawn.times.includes(t) && SPAWN.rarityWeight[s.spawn.rarity] > 0)
+      .filter((s) => (!s.spawn.biomes || s.spawn.biomes.includes('street')) && s.spawn.districts.includes(d) && s.spawn.times.includes(t) && SPAWN.rarityWeight[s.spawn.rarity] > 0)
       .map((s) => `${s.id}:${SPAWN.rarityWeight[s.spawn.rarity] * (s.spawn.districts[0] === d ? 1 : SPAWN.strayWeight)}`)
       .join(',');
   let same = true;
@@ -1477,7 +1525,7 @@ console.log('\n— Sewer community');
   ok(total >= (king.requiresReputation ?? 0), `the other quests give enough reputation (${total}) to unlock the last`);
   // Black market.
   const d1 = marketStock(1, 0);
-  ok(d1.length === MARKET.slots && d1[0].id === 'lure' && JSON.stringify(marketStock(1, 0)) === JSON.stringify(d1), 'market: 4 slots, always lures, same stock all day');
+  ok(d1.length === MARKET.slots && d1[0].id === 'lure' && JSON.stringify(marketStock(1, 0)) === JSON.stringify(d1), 'market: 5 slots, always lures, same stock all day');
   const days = new Set(Array.from({ length: 10 }, (_, d) => marketStock(d, 0).map((x) => x.id).join()));
   ok(days.size > 2, `market stock changes between days (${days.size} variants in 10 days)`);
   ok(Array.from({ length: 20 }, (_, d) => marketStock(d, 0)).every((s) => s.every((x) => x.id !== 'cage')), 'cages need reputation');
@@ -1528,7 +1576,7 @@ console.log('\n— Pity and economy');
 console.log('\n— Streetmondex');
 {
   const all = ALL_SPECIES();
-  ok(all.length === 51 && all.every((s) => dexBiomes(s).length > 0), `all ${all.length} species have a dex entry and a habitat`);
+  ok(all.length === 56 && all.every((s) => dexBiomes(s).length > 0), `all ${all.length} species have a dex entry and a habitat`);
   const p = { seen: new Set(['strapback', 'gutterat', 'ratking']), caught: new Set(['gutterat', 'ratking']), evolved: new Set(['gutterat', 'ratking']) };
   ok(dexState('holster', p) === 'unseen' && dexState('strapback', p) === 'seen' && dexState('ratking', p) === 'evolved', 'states: unseen, seen, evolved');
   ok(dexState('gutterat', { ...p, evolved: new Set() }) === 'captured', 'captured without evolving');
@@ -1544,9 +1592,9 @@ console.log('\n— Streetmondex');
   ok(sewer.length === 8 && sewer.every((s) => s.types.includes('sludge')), 'biome filter: 8 sewer species (Undertow and Clogger too)');
   ok(filterDex(all, { biome: 'roof' }, p).length === 6, 'biome filter: 6 rooftop species');
   ok(filterDex(all, { type: 'sludge' }, p).map((s) => s.id).join() === 'gutterat,ratking', 'type filter only shows types you know');
-  ok(filterDex(all, { state: 'captured' }, p).length === 2 && filterDex(all, { state: 'missing' }, p).length === 49 && filterDex(all, { state: 'seen' }, p).length === 3, 'state filters');
+  ok(filterDex(all, { state: 'captured' }, p).length === 2 && filterDex(all, { state: 'missing' }, p).length === 54 && filterDex(all, { state: 'seen' }, p).length === 3, 'state filters');
   const c = completion(all, p);
-  ok(c.all.total === 51 && c.all.seen === 3 && c.all.captured === 2 && c.all.evolved === 2 && c.sewer.captured === 2 && c.sewer.total === 8, 'completion counters overall and per biome');
+  ok(c.all.total === 56 && c.all.seen === 3 && c.all.captured === 2 && c.all.evolved === 2 && c.sewer.captured === 2 && c.sewer.total === 8, 'completion counters overall and per biome');
 }
 
 console.log('\n— 5-star escalation and tanks');
@@ -1723,7 +1771,7 @@ console.log('\n— Streetmon vehicle tuning');
   ok(Math.abs(hud.cooldown01 - (cdExpected - 5) / cdExpected) < 1e-6 && !hud.ready, `cooldown ${cdExpected.toFixed(1)} s (shorter for faster Streetmon): ${(hud.cooldown01 * 100).toFixed(0)}% left after 5 s`);
   t.update(cdExpected);
   ok(t.abilities('car1').find((a) => a.abilityId === 'sonicBassHorn')!.ready, 'ready again after the cooldown');
-  const gp = { buttons: Array.from({ length: 8 }, (_, i) => ({ pressed: i === 3 })) };
+  const gp = { buttons: Array.from({ length: 12 }, (_, i) => ({ pressed: i === 10 })) };
   ok(t.handleInput('car1', { isDown: () => false, gamepad: gp })[0] === 'sonicBassHorn', 'gamepad button fires it too');
   // Nitrous: timed boost raises stats while active, then drops back.
   const t2 = new VehicleTuningManager({ adapter: { getStreetmon: byId, getBaseStats: () => base, triggerAbility: () => true } });
@@ -1900,7 +1948,7 @@ console.log('\n— Street races');
     ok(w.stars === 0 && w.heat === 0, 'stars from the race cleared on a win');
     m.update(5.1, ctxFar);
     ok(m.state === 'IDLE' && m.cooldown > 100, 'back to free roam, pop-ups cool down');
-    ok(JSON.stringify(m.serialize()) === JSON.stringify({ streetCred: tr.streetCred.first }), 'Street Cred saves');
+    ok(m.serialize().streetCred === tr.streetCred.first && typeof m.serialize().records === 'object', 'Street Cred saves');
   }
   {
     // Losing, busted, wasted: no cash, stars back to the pre-race level.
@@ -4080,6 +4128,879 @@ console.log('\n— Soundtracks, sewer update, city map');
   ok(backwards === 0, 'walking a route: the arrows always lead onwards, all the way to the destination');
   const b = getSpec('beater');
   ok(b.spawnWeight === 0 && b.maxSpeed < getSpec('sedan').maxSpeed && b.engineForce < getSpec('sedan').engineForce, "Mama's Rustbucket: never in traffic, slower than anything else");
+}
+
+// ------------------------------------------------------------------ articulated motion, riders, rival Streetmon
+{
+  console.log('\n--- articulated motion, riders, rival Streetmon');
+  ok(CLIP_FPS === 30, 'clips are sampled at 30 fps');
+  // Every attack winds up, strikes and comes back to rest.
+  let phasesOk = true;
+  for (const st of ATTACK_STYLES) {
+    const T = ATTACK_CLIPS[st];
+    const a0 = attackPhase(st, 0);
+    const aw = attackPhase(st, T.w);
+    const ah = attackPhase(st, T.w + T.s + T.h * 0.5);
+    const a1 = attackPhase(st, 1);
+    if (!(a0.h === 0 && aw.w > 0.99 && ah.h > 0.95 && Math.abs(a1.h) < 1e-6 && Math.abs(a1.w) < 1e-6 && Math.abs(a1.held) < 1e-6)) phasesOk = false;
+    if (T.release < T.w * T.duration || T.release > (T.w + T.s) * T.duration + 0.02) phasesOk = false;
+  }
+  ok(phasesOk, `${ATTACK_STYLES.length} attack styles: wind-up, strike, hold, back to rest; the release lands in the strike`);
+  ok(attackStyleFor('shot') === 'shoot' && attackStyleFor('slam') === 'slam' && attackStyleFor('lob') === 'throw' && attackStyleFor('wave') === 'blast' && attackStyleFor('heal') === 'power' && attackStyleFor('debuff') === 'taunt' && attackStyleFor('dash') === 'strike', 'each move effect style picks its attack clip');
+  const rig = rigInfo(['root', 'body', 'head', 'arm_L', 'arm_L_lo', 'arm_R', 'arm_R_lo', 'leg_L', 'leg_L_lo', 'leg_R', 'leg_R_lo']);
+  const ctx = { H: 1, energy: 1, floating: false, flavour: 'gun' as const, rig, restBodyY: 0.4 };
+  // A strike swings the lead (right) arm forward at the hit; the elbow is cocked in the wind-up.
+  const T = ATTACK_CLIPS.strike;
+  const wind = defaultPose('arm_R', 'attack_strike', T.w * T.duration, T.duration, ctx)!;
+  const hit = defaultPose('arm_R', 'attack_strike', (T.w + T.s + 0.05) * T.duration, T.duration, ctx)!;
+  const elbow = defaultPose('arm_R_lo', 'attack_strike', T.w * T.duration, T.duration, ctx)!;
+  ok(wind.rot![0] > 0.5 && hit.rot![0] < -1 && elbow.rot![0] < -0.8, 'strike: the arm winds back with the elbow cocked, then swings through');
+  // Different moves use the extremities differently: a slam raises both arms, a shot aims one.
+  const S = ATTACK_CLIPS.slam;
+  const slamL = defaultPose('arm_L', 'attack_slam', S.w * S.duration, S.duration, ctx)!.rot![0];
+  const slamR = defaultPose('arm_R', 'attack_slam', S.w * S.duration, S.duration, ctx)!.rot![0];
+  const SH = ATTACK_CLIPS.shoot;
+  const aimR = defaultPose('arm_R', 'attack_shoot', (SH.w + SH.s + 0.1) * SH.duration, SH.duration, ctx)!.rot![0];
+  const aimL = defaultPose('arm_L', 'attack_shoot', (SH.w + SH.s + 0.1) * SH.duration, SH.duration, ctx)!.rot![0];
+  ok(slamL < -2 && slamR < -2 && aimR < -1.2 && aimL > aimR, 'slam: both arms overhead; shoot: the lead arm aims, the other supports');
+  // Overlap: the forearm runs behind the upper arm.
+  const up = (t: number): number => defaultPose('arm_R', 'attack_strike', t, T.duration, ctx)!.rot![0];
+  const loT = (t: number): number => defaultPose('arm_R_lo', 'attack_strike', t, T.duration, ctx)!.rot![0];
+  ok(Math.abs(loT(T.w * T.duration) - loT((T.w - 0.035) * T.duration)) < 0.25 && up(0) === 0, 'overlap: the elbow lags the shoulder');
+  // Loops close.
+  let loops = true;
+  for (const n of ['body', 'head', 'arm_L', 'arm_L_lo', 'leg_R', 'leg_R_lo', 'tail_2', 'wing_L_tip']) {
+    for (const [clip, dur] of [['idle', 2], ['walk', 1]] as const) {
+      const a = defaultPose(n, clip, 0, dur, { ...ctx, rig: { ...rig, tailSegs: 3, wings: true } });
+      const b = defaultPose(n, clip, dur, dur, { ...ctx, rig: { ...rig, tailSegs: 3, wings: true } });
+      const diff = (x?: number[], y?: number[]): number => (x && y ? Math.max(...x.map((v, i) => Math.abs(v - y[i]))) : x || y ? 1 : 0);
+      if (diff(a?.rot, b?.rot) > 1e-6 || diff(a?.pos, b?.pos) > 1e-6) loops = false;
+    }
+  }
+  ok(loops, 'idle and walk loop seamlessly on every kind of node');
+  // Walk knees fold through the swing only (never backwards).
+  let kneeOk = true;
+  for (let i = 0; i <= 30; i++) if ((defaultPose('leg_L_lo', 'walk', i / 30, 1, ctx)?.rot?.[0] ?? 0) < -1e-9) kneeOk = false;
+  ok(kneeOk, 'knees only ever bend the right way');
+  // Joints in the built models.
+  const hb = buildCreatureModel(species('strapback'));
+  const quad = buildCreatureModel(species('slugger'));
+  const bird = buildCreatureModel(species('longshot'));
+  ok(['arm_L_lo', 'arm_R_lo', 'leg_L_lo', 'leg_R_lo'].every((n) => hb.nodes.includes(n)) && ['leg_FL_lo', 'leg_BR_lo', 'tail_lo'].every((n) => quad.nodes.includes(n)) && bird.nodes.includes('wing_L_tip'), 'limbs get elbows and knees, wings tips, one-piece tails a tip');
+  let blended = 0;
+  let sumOk = true;
+  hb.root.traverse((o) => {
+    const m = o as THREE.SkinnedMesh;
+    if (!m.isSkinnedMesh) return;
+    const w = m.geometry.getAttribute('skinWeight');
+    for (let i = 0; i < w.count; i++) {
+      const a = w.getX(i);
+      const b2 = w.getY(i);
+      if (b2 > 0) blended++;
+      if (Math.abs(a + b2 + w.getZ(i) + w.getW(i) - 1) > 1e-4) sumOk = false;
+    }
+  });
+  ok(blended > 20 && sumOk, `joint-spanning parts are soft-skinned across the joint (${blended} blended vertices, weights sum to 1)`);
+  const names = hb.clips.map((c) => c.name);
+  ok(ATTACK_STYLES.every((st) => names.includes(`attack_${st}`)) && names.includes('attack'), 'every model has all seven attack clips (and the all-purpose one)');
+  // Key thinning keeps the curve.
+  const times = Array.from({ length: 31 }, (_, i) => i / 30);
+  const vals = times.map((t) => Math.sin(t * Math.PI));
+  const lin = times.map((t) => t * 2);
+  const th = thinKeys(times, vals, 1, 0.002);
+  const tl = thinKeys(times, lin, 1, 0.002);
+  let maxErr = 0;
+  for (let i = 0; i < times.length; i++) {
+    let j = 0;
+    while (j < th.times.length - 2 && th.times[j + 1] < times[i]) j++;
+    const f = (times[i] - th.times[j]) / (th.times[j + 1] - th.times[j]);
+    maxErr = Math.max(maxErr, Math.abs(th.values[j] + (th.values[j + 1] - th.values[j]) * f - vals[i]));
+  }
+  ok(tl.times.length === 2 && th.times.length < 31 && maxErr <= 0.002 + 1e-9, `key thinning: a straight line keeps 2 keys, a curve ${th.times.length} of 31 within tolerance`);
+  const sliced = slicePlane(new THREE.BoxGeometry(0.2, 1, 0.2), new THREE.Vector3(0, 0.5, 0), new THREE.Vector3(0, -1, 0), 0.5);
+  const sp = sliced.getAttribute('position');
+  let onPlane = 0;
+  for (let i = 0; i < sp.count; i++) if (Math.abs(sp.getY(i)) < 1e-6) onPlane++;
+  ok(onPlane >= 8 && sp.count / 3 > 12, `a limb sliced at its joint gets a ring of vertices to bend at (${sp.count / 3} triangles)`);
+  // Riders' mounts on every car body.
+  let mountsOk = true;
+  for (const id of VEHICLES.map((v) => v.id)) {
+    const spec = getSpec(id);
+    for (const sl of ['engineBay', 'trunk', 'roofRack'] as const) {
+      const m = slotMount(spec, sl);
+      const inLen = Math.abs(m.x) < spec.length / 2;
+      const facing = spec.style === 'bus' ? true : sl === 'trunk' ? m.face === -1 : m.face === 1;
+      const order = spec.style === 'bus' ? true : sl === 'engineBay' ? m.x > 0 : sl === 'trunk' ? m.x < 0 : true;
+      if (!inLen || !facing || !order || m.height <= 0 || m.sink < 0 || m.sink > 0.6) mountsOk = false;
+    }
+    if (spec.style !== 'bus' && slotMount(spec, 'roofRack').y <= slotMount(spec, 'engineBay').y) mountsOk = false;
+  }
+  ok(mountsOk, 'riders: engine bay up front facing forward, trunk at the back looking back, roof rack on top, on every body');
+  // Rival loadouts scale with the race tier.
+  const tcfg = validateConfig(tuningJson);
+  const pool = ALL_SPECIES().map((x) => ({ id: x.id, name: x.name, types: x.types, stage: x.stage, legendary: !!x.legendary }));
+  const ivs = { hp: 15, attack: 15, defense: 15, speed: 15, loud: 15 };
+  const drivers = [{ name: 'A', streetmon: ['bass'] }, { name: 'B' }, { name: 'C', streetmon: ['smoke'] }];
+  let seed = 7;
+  const rng = (): number => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const loadout = (tier: number) => rivalLoadouts(drivers, tier, { config: tcfg, species: pool, statsOf: (id, lv) => calcStats(species(id), lv, ivs), rng });
+  const t1 = loadout(1);
+  const t3 = loadout(3);
+  const t5 = loadout(5);
+  const count = (l: typeof t1): number => l.reduce((a, x) => a + x.slots.length, 0);
+  const allowed = (l: typeof t1, tier: number): boolean => l.every((x) => x.slots.every((sl) => !sl.ability || RIVAL_TIERS[tier - 1].abilities.includes(sl.ability)));
+  ok(count(t1) === 1 && count(t3) >= 3 && count(t5) >= 6 && allowed(t1, 1) && allowed(t3, 3) && allowed(t5, 5), `more rivals armed with more Streetmon as the tier rises (${count(t1)} / ${count(t3)} / ${count(t5)} slots) and only the tier's abilities`);
+  const lv = (l: typeof t1): number => Math.max(...l.flatMap((x) => x.slots.map((sl) => sl.level)), 0);
+  const minLv = (l: typeof t1): number => Math.min(...l.flatMap((x) => x.slots.map((sl) => sl.level)));
+  ok(lv(t1) <= 12 && minLv(t5) >= 46, `rival Streetmon levels scale (rookie up to ${lv(t1)}, apex from ${minLv(t5)})`);
+  const a5 = t5.find((x) => x.slots.length)!;
+  ok(t5.every((x) => x.slots.length && new Set(x.slots.map((sl) => sl.slot)).size === x.slots.length) && Object.values(a5.multipliers).every((v) => v > 0.8 && v < 1.6), 'each rival fills distinct slots, with sensible stat changes');
+  ok(t5.some((x) => x.driver === 'A' && x.slots.some((sl) => pool.find((p) => p.id === sl.speciesId)!.types.includes('bass'))), 'racers lean to their favourite types');
+  ok(raceTier(1, 3) === 3 && raceTier(4, 2) === 4 && raceTier(null, null) === 1, 'race tier: the higher of the track and your division');
+  // The brain: waits out its reaction time, fires on an opening, then cools down.
+  const horn = { driver: 'X', tier: 5, multipliers: {}, slots: [{ slot: 'trunk' as const, speciesId: 'woofer', name: 'Woofer', level: 50, info: { id: 'x', speciesId: 'woofer', types: ['bass'], level: 50, stats: calcStats(species('woofer'), 50, ivs) }, ability: 'sonicBassHorn', cooldown: 10, power: 1 }] };
+  const brain = new RivalBrain(horn, () => 0);
+  const close = { speed: 20, playerDist: 6, playerBehind: false, playerLateral: 2, straight: true };
+  const far = { ...close, playerDist: 60 };
+  let fired = 0;
+  for (let i = 0; i < 300; i++) fired += brain.update(1 / 30, far).length;
+  const before = fired;
+  for (let i = 0; i < 30; i++) fired += brain.update(1 / 30, close).length;
+  const afterFirst = fired;
+  for (let i = 0; i < 60; i++) fired += brain.update(1 / 30, close).length;
+  ok(before === 0 && afterFirst === 1 && fired === 1 && brain.cooldownLeft('trunk') > 7, 'rival brain: no opening, no horn; an opening, one blast; then a cooldown');
+  ok(opening('spikeStripDispenser', { speed: 25, playerDist: 25, playerBehind: true, playerLateral: 1, straight: false }) && !opening('spikeStripDispenser', { speed: 25, playerDist: 25, playerBehind: false, playerLateral: 1, straight: false }), 'spike strips only drop with you behind and in line');
+  const slow = new RivalBrain({ ...horn, tier: 1 }, () => 0);
+  let slowFired = 0;
+  for (let i = 0; i < 300; i++) slowFired += slow.update(1 / 30, far).length;
+  for (let i = 0; i < 30; i++) slowFired += slow.update(1 / 30, close).length;
+  ok(slowFired === 0, 'a rookie reacts slower than an apex racer (no blast within the same second)');
+}
+
+// ------------------------------------------------------------------ cars: classes, parts, nitrous, race modes
+{
+  console.log('\n--- car classes, parts, nitrous and race modes');
+  const cls = Object.fromEntries(VEHICLES.map((v) => [v.id, classOf(performanceIndex(v))]));
+  ok(VEHICLES.length >= 15, `${VEHICLES.length} car models`);
+  ok(cls.bus === 'D' && cls.van === 'D' && cls.beater === 'D' && cls.limo === 'D', 'class D: bus, van, limo, the Rustbucket');
+  ok(cls.sedan === 'C' && cls.taxi === 'C' && cls.hatch === 'C' && cls.suv === 'C' && cls.pickup === 'C', 'class C: the everyday cars');
+  ok(cls.muscle === 'B' && cls.police === 'B' && cls.rally === 'B', 'class B: muscle, police, rally');
+  ok(cls.sports === 'A' && cls.supercar === 'S', 'class A sports car, class S supercar');
+  ok(VEHICLES.filter((v) => v.price > 0).length >= 14 && VEHICLES.find((v) => v.id === 'police')!.price === 0, 'everything but the police car is for sale');
+  const eff = upgradeEffect({ engine: 3, tyres: 3, brakes: 3, suspension: 3, nitrous: 3, weight: 3, armor: 0 });
+  const h = VEHICLES.find((v) => v.id === 'hatch')!;
+  const built = classOf(performanceIndex(h, eff));
+  ok(eff.topSpeed > 1.1 && eff.acceleration > 1.3 && eff.grip > 1.15 && eff.nitrous === 8 && eff.mass < 0.9 && built !== 'C' && classAllowed(built, 'B'), `a maxed hatchback climbs to class ${built}`);
+  ok(upgradePrice('engine', 0, 9000) < upgradePrice('engine', 2, 9000) && upgradePrice('engine', 3, 9000) === 0 && upgradePrice('tyres', 0, 180000) > upgradePrice('tyres', 0, 9000), 'parts cost more per level and on dearer cars; nothing past max');
+  const san = sanitizeUpgrades({ engine: 9, tyres: -2, nitrous: 1.6, junk: 3 });
+  ok(san.engine === 3 && san.tyres === 0 && san.nitrous === 2 && !('junk' in san), 'saved upgrade levels are clamped and cleaned');
+  const nos = new Nitrous(5);
+  let boosted = 0;
+  for (let i = 0; i < 100; i++) if (nos.step(0.1, true)) boosted++;
+  const emptyAt = nos.charge;
+  for (let i = 0; i < 100; i++) nos.step(0.1, false);
+  ok(boosted >= 49 && boosted <= 60 && emptyAt < 1 && nos.charge > 5 * (10 / NITRO.refill) * 0.95 && !nos.active, `nitrous: a 5 s bottle boosts ${boosted / 10} s, then refills`);
+  const stingy = new Nitrous(5);
+  stingy.charge = 0.2;
+  ok(!stingy.step(0.1, true), 'a dribble of nitrous does not fire');
+  ok(rivalUpgrades(1, () => 0.5).engine === 0 && rivalUpgrades(5, () => 0.99).engine === 3 && rivalUpgrades(2, () => 0.5).nitrous === 0, 'rivals run stock as rookies and built cars at the top');
+  // Race modes.
+  const cfg2 = validateRaceConfig(racesJson as any);
+  const modes = new Set(cfg2.tracks.map((t: any) => modeOf(t)));
+  ok(['sprint', 'circuit', 'knockout', 'timeTrial', 'drift'].every((m) => modes.has(m)) && cfg2.tracks.length >= 10, `${cfg2.tracks.length} tracks across ${modes.size} modes`);
+  const tt = cfg2.tracks.find((t: any) => t.mode === 'timeTrial')!;
+  const dr = cfg2.tracks.find((t: any) => t.mode === 'drift')!;
+  ok(medalPlace(tt, tt.medals.gold - 1) === 1 && medalPlace(tt, tt.medals.silver) === 2 && medalPlace(tt, tt.medals.bronze + 1) === 4 && medalPlace(dr, dr.medals.gold) === 1 && medalPlace(dr, 0) === 4, 'medals: a time trial by time, a drift event by score');
+  const d1 = driftPoints(0.1, 30, 20, 0);
+  const d2 = driftPoints(0.1, 30, 20, 4);
+  ok(d1.points > 0 && d2.points > d1.points * 2.5 && driftPoints(0.1, 3, 20, 2).points === 0 && driftPoints(0.1, 3, 20, 2).chain === 0, 'drift points grow with the chain and reset when the slide ends');
+  const cc = cfg2.tracks.find((t: any) => t.id === 'hatch-cup')!;
+  ok(classOk('C', cc) && classOk('D', cc) && !classOk('A', cc) && classOk('S', cfg2.tracks[0]) && classOk(null, cc), 'class limits: C and below for the Hatch Cup, anything for an open race');
+  let bad = '';
+  try {
+    validateRaceConfig({ ...cfg2, tracks: [{ ...cfg2.tracks[0], mode: 'knockout', laps: 1 }] });
+  } catch (e) {
+    bad = (e as Error).message;
+  }
+  ok(/knockout/.test(bad), 'a one-lap knockout is rejected');
+  // A knockout race against a fake world: the last racer is out after each lap, the player can win.
+  {
+    const ko = cfg2.tracks.find((t: any) => t.id === 'uptown-knockout')!;
+    const crs = buildCourse(ko);
+    const racers = new Map<string, { x: number; z: number }>();
+    const removed: string[] = [];
+    let money = 5000;
+    const m = new StreetRaceManager({
+      adapter: {
+        spawnProp: () => ({ dispose: () => {}, setState: () => {} }),
+        spawnRacers: (_t, sl) => sl.map((s, i) => (racers.set(`n${i}`, { x: s.x, z: s.z }), `n${i}`)),
+        racerPosition: (id) => racers.get(id) ?? null,
+        removeRacers: () => racers.clear(),
+        removeRacer: (id) => (removed.push(id), racers.delete(id), undefined),
+        carClass: () => 'B',
+        placePlayer: () => true,
+        holdPlayer: () => {},
+        getMoney: () => money,
+        spend: (n) => (money >= n ? ((money -= n), true) : false),
+        earn: (n) => void (money += n),
+        getWanted: () => ({ stars: 0, heat: 0 }),
+        restoreWanted: () => {},
+      },
+      config: cfg2,
+      rng: () => 0.3,
+    });
+    m.streetCred = 50;
+    m.offerRace('uptown-knockout', 'organizer');
+    m.accept();
+    m.startRace();
+    const kos: string[] = [];
+    m.on('knockout', (e: { name: string }) => kos.push(e.name));
+    for (let i = 0; i < 20; i++) m.update(0.2, { inVehicle: true, x: ko.start.x, z: ko.start.z, speed: 0, freeRoam: true });
+    // The player leads; n2 dawdles; everyone else keeps up.
+    const perLap = ko.checkpointPositions.length;
+    for (let k = 0; k < crs.length && m.state === 'RACING'; k++) {
+      const p = crs[k];
+      for (const [id, r] of racers) if (id !== 'n2' || k < perLap - 1) Object.assign(r, p);
+      m.update(0.5, { inVehicle: true, x: p.x, z: p.z, speed: 20, freeRoam: true });
+    }
+    ok(m.state === 'RESOLVED' && m.result?.place === 1 && kos.length === ko.laps - 1 && removed[0] === 'n2' && m.result!.standings.filter((x) => /\(out\)/.test(x)).length === ko.laps - 1, `knockout: ${kos.length} racers out over ${ko.laps} laps, the dawdler first, the player wins`);
+    ok(m.records['uptown-knockout']?.best !== undefined && m.records['uptown-knockout'].bestLap !== undefined, 'the win sets a best time and best lap');
+    const saved = m.serialize();
+    const m2 = new StreetRaceManager({ adapter: m.adapter, config: cfg2 });
+    m2.load({ ...saved, records: { ...saved.records, 'no-such-track': { best: 1 }, 'uptown-knockout': { best: -5, score: 'x' } } });
+    ok(m2.records['uptown-knockout'] === undefined && !('no-such-track' in m2.records) && m2.streetCred === m.streetCred, 'bad records are dropped on load; the good ones round-trip');
+    m2.load(saved);
+    ok(m2.records['uptown-knockout'].best === m.records['uptown-knockout'].best, 'records round-trip through a save');
+  }
+  // A class-limited race turns away a car that is too fast.
+  {
+    const notes: string[] = [];
+    const m = new StreetRaceManager({
+      adapter: {
+        spawnProp: () => ({ dispose: () => {} }),
+        spawnRacers: () => [],
+        racerPosition: () => null,
+        removeRacers: () => {},
+        carClass: () => 'S',
+        placePlayer: () => true,
+        holdPlayer: () => {},
+        getMoney: () => 9999,
+        spend: () => true,
+        earn: () => {},
+        getWanted: () => ({ stars: 0, heat: 0 }),
+        restoreWanted: () => {},
+        notify: (t) => notes.push(t),
+      },
+      config: cfg2,
+    });
+    m.offerRace('hatch-cup', 'organizer');
+    const acc = m.accept();
+    ok(!acc && m.state === 'IDLE' && /class C/.test(notes[0] ?? ''), 'a supercar is turned away from the Hatch Cup');
+  }
+  // A drift event scores and ends on the clock with a medal.
+  {
+    const dt2 = cfg2.tracks.find((t: any) => t.id === 'park-loop-drift')!;
+    const m = new StreetRaceManager({
+      adapter: {
+        spawnProp: () => ({ dispose: () => {}, setState: () => {} }),
+        spawnRacers: () => {
+          throw new Error('solo');
+        },
+        racerPosition: () => null,
+        removeRacers: () => {},
+        placePlayer: () => true,
+        holdPlayer: () => {},
+        getMoney: () => 9999,
+        spend: () => true,
+        earn: () => {},
+        getWanted: () => ({ stars: 0, heat: 0 }),
+        restoreWanted: () => {},
+      },
+      config: cfg2,
+    });
+    m.streetCred = 50;
+    m.offerRace('park-loop-drift', 'organizer');
+    m.accept();
+    const started = m.startRace();
+    for (let i = 0; i < 20; i++) m.update(0.2, { inVehicle: true, x: dt2.start.x, z: dt2.start.z, speed: 0, freeRoam: true });
+    let t = 0;
+    while (m.state === 'RACING' && t < 400) {
+      m.update(0.5, { inVehicle: true, x: dt2.start.x, z: dt2.start.z, speed: 22, freeRoam: true, driftAngle: 32 });
+      t += 0.5;
+    }
+    ok(started && m.state === 'RESOLVED' && m.result!.reason === 'finished' && m.result!.score > 0 && m.result!.place! >= 1 && m.result!.place! <= 4 && m.race === null, `drift event: no rivals, ${m.result!.score} points on the clock, medal place ${m.result!.place}`);
+  }
+}
+
+
+// ------------------------------------------------------------------ SaveManager (compressed saves, two stores, backups)
+{
+  let seed77 = 77;
+  const rnd = (): number => ((seed77 = (Math.imul(seed77, 1664525) + 1013904223) >>> 0) / 4294967296);
+  const samples = ['', 'a', 'aaaaaaaaaaaaaaaa', 'héllo wörld ✓ 漢字 🚗', JSON.stringify({ money: 1234, party: Array.from({ length: 30 }, (_, i) => ({ id: `c${i}`, speciesId: 'holster', level: i, moves: ['jab', 'pistolWhip'], ivs: { hp: i % 7 } })) })];
+  for (let n = 0; n < 40; n++) samples.push(Array.from({ length: 1 + Math.floor(rnd() * 3000) }, () => String.fromCharCode(32 + Math.floor(rnd() * (rnd() < 0.1 ? 3000 : 90)))).join(''));
+  let rt = true;
+  for (const t of samples) {
+    if (decompressUTF16(compressUTF16(t)) !== t || decompressBase64(compressBase64(t)) !== t) rt = false;
+  }
+  ok(rt, `LZ compression round-trips ${samples.length} strings (UTF-16 and base64, unicode included)`);
+  const big = samples[4];
+  ok(compressUTF16(big).length * 2 < big.length * 0.6, `a save-like JSON packs small (${big.length} chars -> ${compressUTF16(big).length} UTF-16 chars)`);
+  const packed = packSave(big, 1000);
+  ok(unpackSave(packed).text === big && unpackSave(packed).savedAt === 1000 && unpackSave(packForFile(big, 5)).text === big, 'packed saves (storage and file kinds) unpack with their time');
+  ok(unpackSave(big).text === big, 'plain JSON saves from before compression still load');
+  let caught = 0;
+  for (const bad of [packed.slice(0, packed.length - 40), packed.replace(checksum(big), '00000000'), 'garbage', 'ESZ1:zz']) {
+    try {
+      unpackSave(bad);
+    } catch {
+      caught++;
+    }
+  }
+  ok(caught === 4, 'a truncated, tampered or foreign save is refused (not loaded half-read)');
+  const mem = (): KV & { m: Map<string, string> } => {
+    const m = new Map<string, string>();
+    return { m, getItem: (k) => m.get(k) ?? null, setItem: (k, v) => void m.set(k, v), removeItem: (k) => void m.delete(k) };
+  };
+  const kv = mem();
+  const sm = new SaveManager(kv, null, 'test-save');
+  ok(sm.read() === null && sm.info.source === 'none', 'empty store: no save');
+  sm.write('{"savedAt":"x","v":1}');
+  sm.write('{"savedAt":"x","v":2}');
+  ok(sm.read() === '{"savedAt":"x","v":2}' && kv.m.get('test-save')!.startsWith('ESZ1:') && unpackSave(kv.m.get('test-save.bak')!).text === '{"savedAt":"x","v":1}', 'writes are packed; the previous save is kept as a backup');
+  kv.m.set('test-save', kv.m.get('test-save')!.slice(0, 30));
+  ok(sm.read() === '{"savedAt":"x","v":1}' && sm.info.recovered && sm.info.source === 'local-backup', 'a damaged save falls back to the backup (and says so)');
+  sm.write('{"savedAt":"x","v":3}');
+  ok(unpackSave(kv.m.get('test-save.bak')!).text === '{"savedAt":"x","v":1}', 'a damaged save never overwrites the good backup');
+  const legacy = mem();
+  legacy.m.set('old', '{"version":2,"savedAt":"2026-01-01T00:00:00Z"}');
+  ok(new SaveManager(legacy, null, 'old').read() === '{"version":2,"savedAt":"2026-01-01T00:00:00Z"}', 'an old uncompressed localStorage save is read as it is');
+  const full: KV = { getItem: () => null, setItem: () => { throw new Error('QuotaExceeded'); }, removeItem: () => {} };
+  ok(new SaveManager(full, null, 'x').write('{}') === false, 'storage full with no IndexedDB: write reports failure (the menu offers Export)');
+  sm.clear();
+  ok(sm.read() === null, 'clear removes the save and its backup');
+}
+
+// ------------------------------------------------------------------ safehouses
+{
+  const L = generateLayout(1903);
+  const spots = planSafehouses(L, [], L.playerSpawn);
+  ok(spots.length === 4 && new Set(spots.map((s) => s.district)).size === 4, `a safehouse in each of ${spots.map((s) => s.district).join(', ')}`);
+  ok(spots.every((s) => (s.district === 'waterfront' ? districtAt(L, s.x + s.nx * 16, s.z + s.nz * 16) : districtAt(L, s.x, s.z)) === s.district), 'each door is in its own district (the Waterfront one faces the promenade)');
+  ok(spots.every((s) => L.buildings.some((b) => s.fx >= b.rect.x0 - 0.6 && s.fx <= b.rect.x1 + 0.6 && s.fz >= b.rect.z0 - 0.6 && s.fz <= b.rect.z1 + 0.6) && Math.hypot(s.x - s.fx, s.z - s.fz) < 3 && Math.abs(Math.hypot(s.nx, s.nz) - 1) < 1e-6), 'each door is on a building facade, facing the street');
+  const starter = spots.find((s) => s.starter)!;
+  ok(!!starter && starter.district === districtAt(L, L.playerSpawn.x, L.playerSpawn.z) && starter.price === 0 && spots.filter((x) => x.starter).length === 1 && Math.hypot(starter.x - L.playerSpawn.x, starter.z - L.playerSpawn.z) < 120, `the free starter safehouse is near where a new game starts (${Math.round(Math.hypot(starter.x - L.playerSpawn.x, starter.z - L.playerSpawn.z))} m)`);
+  let apart = true;
+  for (const a of spots) for (const b of spots) if (a !== b && Math.hypot(a.x - b.x, a.z - b.z) < 150) apart = false;
+  ok(apart, 'safehouses are well apart');
+  const avoid = [{ x: starter.x, z: starter.z }];
+  ok(planSafehouses(L, avoid, L.playerSpawn).every((s) => Math.hypot(s.x - starter.x, s.z - starter.z) >= 45), 'safehouses keep clear of shops, clinics and the Chop Shop');
+  ok(JSON.stringify(planSafehouses(generateLayout(1903), [], L.playerSpawn)) === JSON.stringify(spots), 'planning is deterministic');
+  const st = newSafehouseState(spots);
+  ok(st.owned.length === 1 && st.owned[0] === starter.id && st.last === starter.id, 'a new game owns the starter safehouse');
+  const clean = sanitizeSafehouses({ owned: ['uptown', 'nowhere', 7], last: 'downtown', visits: { uptown: 3, x: 1, midtown: -2 } }, spots);
+  ok(clean.owned.includes(starter.id) && clean.owned.includes('downtown') === false && clean.owned.length === (starter.id === 'uptown' ? 1 : 2) && clean.last === starter.id && clean.visits['uptown'] === 3 && !('x' in clean.visits) && !('midtown' in clean.visits), 'saved safehouse state is cleaned (unknown ids, unowned last, bad counts)');
+  ok(sleepHours(23, 7) === 8 && sleepHours(6.5, 7) === 24.5 && sleepHours(10, 20) === 10 && sleepHours(21, 20) === 23, 'sleeping runs to the next wake time (at least an hour)');
+  ok(SAFEHOUSE.useRadius > 1.5 && SAFEHOUSE.useRadius < 4, 'safehouse doors are used from close up');
+}
+
+
+// ------------------------------------------------------------------ gamepad mapping
+{
+  const btns = (on: Partial<Record<number, number>>): number[] => Array.from({ length: 17 }, (_, i) => on[i] ?? 0);
+  const prev: boolean[] = [];
+  let f = padFrame({ buttons: btns({ [BTN.A]: 1 }), axes: [0, -1, 0, 0] }, prev, 'foot');
+  ok(f.press.includes('Space') && f.hold.has('Space') && !!f.move && f.move.y > 0.99, 'on foot: A jumps, the left stick walks forward (pad up is game forward)');
+  f = padFrame({ buttons: btns({ [BTN.A]: 1 }), axes: [0, 0, 0, 0] }, prev, 'foot');
+  ok(!f.press.includes('Space') && f.hold.has('Space') && f.move === null, 'a held button presses once (no repeat), a centred stick is null');
+  f = padFrame({ buttons: btns({ [BTN.A]: 1, [BTN.RT]: 0.6, [BTN.LT]: 0.3 }), axes: [0.5, -1, 0, 0] }, prev, 'car');
+  ok(f.hold.has('Space') && !f.press.includes('Space') && f.throttle > 0.5 && f.throttle < 0.6 && f.brake > 0.2 && f.brake < 0.3 && !!f.move && f.move.y === 0 && f.move.x > 0.3, 'driving: analogue triggers are the pedals, the stick only steers, A stays held across the switch (handbrake, no new press)');
+  f = padFrame({ buttons: btns({ [BTN.Y]: 1 }), axes: [0, 0, 0, 0] }, [], 'car');
+  ok(f.press.includes('KeyF') && padFrame({ buttons: btns({ [BTN.Y]: 1 }), axes: [0, 0, 0, 0] }, [], 'foot').press.includes('KeyZ'), 'Y gets out of cars (F); on foot it rolls (Z)');
+  ok(padFrame({ buttons: btns({ [BTN.LEFT]: 1 }), axes: [0, 0, 0, 0] }, [], 'foot', { heist: true }).press.includes('KeyZ') && padFrame({ buttons: btns({ [BTN.LEFT]: 1 }), axes: [0, 0, 0, 0] }, [], 'foot').press.includes('WheelUp'), "in a heist the d-pad's sides are the crew's abilities");
+  f = padFrame({ buttons: btns({ [BTN.A]: 1, [BTN.B]: 1, [BTN.DOWN]: 1 }), axes: [0, 0, 0, 0] }, [], 'ui');
+  ok(f.press.includes('Enter') && f.press.includes('Escape') && f.dirs.down && f.hold.size === 0, 'menus: A confirms, B backs out, the d-pad moves (no game keys held)');
+  ok(padFrame({ buttons: btns({ [BTN.A]: 1 }), axes: [0, 0, 0, 0] }, [], 'battle').press.includes('Digit1') && padFrame({ buttons: btns({ [BTN.RB]: 1 }), axes: [0, 0, 0, 0] }, [], 'battle').press.includes('Digit5'), 'real-time fights: face buttons are the four moves, RB swaps');
+  ok(deadzone(0.1) === 0 && Math.abs(deadzone(1) - 1) < 1e-9 && deadzone(-0.6) < 0 && stick(0.1, 0.1).x === 0 && Math.abs(stick(1, 0).x - 1) < 1e-9 && Math.abs(Math.hypot(stick(0.6, 0.6).x, stick(0.6, 0.6).y) - (Math.hypot(0.6, 0.6) - 0.2) / 0.8) < 1e-9, 'dead zones: radial for sticks, rescaled to start at zero');
+  let clash = false;
+  for (const ctx of Object.keys(PAD_MAPS) as Array<keyof typeof PAD_MAPS>) {
+    const codes = Object.values(PAD_MAPS[ctx]).filter((c) => c && !c.startsWith('Wheel') && c !== 'Escape');
+    if (new Set(codes).size !== codes.length) clash = true;
+  }
+  ok(!clash, 'no two buttons do the same thing in a context (bar Start and B both backing out of the map)');
+  ok(padGlyph('KeyE', 'foot') === 'X' && padPrompt('E  Get in the Sedan', 'foot') === 'X  Get in the Sedan' && padPrompt('F  Out', 'car') === 'Y  Out' && padPrompt('Hello', 'foot') === 'Hello', 'prompts show the pad button after a pad was used');
+  const cs = [{ e: 'up', c: { x: 100, y: 0 } }, { e: 'right', c: { x: 200, y: 100 } }, { e: 'down', c: { x: 100, y: 200 } }, { e: 'far', c: { x: 100, y: 400 } }];
+  ok(nearestInDirection({ x: 100, y: 100 }, cs, 'down') === 'down' && nearestInDirection({ x: 100, y: 100 }, cs, 'up') === 'up' && nearestInDirection({ x: 100, y: 100 }, cs, 'right') === 'right' && nearestInDirection({ x: 100, y: 100 }, cs, 'left') === null, 'menu focus moves to the nearest button that way');
+}
+
+// ------------------------------------------------------------------ police vision cones
+{
+  const V = VISION.car;
+  ok(inVision(V, 0, 0, 0, 100, 0) && !inVision(V, 0, 0, 0, -100, 0) && inVision(V, 0, 0, 0, -30, 0), 'a cruiser sees far ahead, only close behind');
+  ok(inVision(V, 0, 0, Math.PI / 2, 0, -90) && !inVision(V, 0, 0, Math.PI / 2, 0, 90), 'heading PI/2 looks down -Z (the game convention)');
+  ok(!inVision(V, 0, 0, 0, 120, 0) && inVision(VISION.foot, 0, 0, 0, 50, 10) && !inVision(VISION.foot, 0, 0, 0, 80, 0), 'out of range is unseen; officers on foot see less far');
+  ok(inVision(V, 0, 0, 3.1, -60, 1) && inVision(V, 0, 0, -3.1, -60, -1), 'the cone wraps round at ±PI');
+}
+
+// ------------------------------------------------------------------ quick-select wheel
+{
+  const a = wheelLayout(3, 2);
+  ok(a.length === 5 && a.slice(0, 3).every((x) => x < 0) && a.slice(3).every((x) => x > 0), 'the wheel: team across the top, capture items across the bottom');
+  ok(wheelPick(a, 0, -1) === 1 && wheelPick(a, 0, 1) >= 3 && wheelPick(a, 0.05, 0.05) === -1, 'pointing up picks the middle Streetmon, down an item, the centre nothing');
+  const one = wheelLayout(4, 0);
+  ok(one.length === 4 && new Set(one.map((x) => Math.round(x * 100))).size === 4, 'with no items the team uses the whole wheel');
+  ok(wheelLayout(0, 0).length === 0 && wheelPick([], 1, 0) === -1, 'an empty wheel picks nothing');
+  let roomy = true;
+  for (const [m, i] of [[1, 1], [3, 2], [6, 6], [6, 0], [0, 5]]) {
+    const ang = wheelLayout(m, i);
+    const r = wheelRadius(ang);
+    for (let x = 0; x < ang.length; x++) for (let y = x + 1; y < ang.length; y++) if (Math.hypot(Math.cos(ang[x]) - Math.cos(ang[y]), Math.sin(ang[x]) - Math.sin(ang[y])) * r < 88) roomy = false;
+  }
+  ok(roomy, 'wheel slots never overlap (the wheel widens for a full team and bag)');
+}
+
+
+// ------------------------------------------------------------------ the pond
+{
+  const lake = generateLayout(1903).parkLake;
+  const cx = (lake.x0 + lake.x1) / 2;
+  const cz = (lake.z0 + lake.z1) / 2;
+  ok(Math.abs(depthAt(lake, lake.x0 + 0.01, cz) - POND.edgeDepth) < 0.05 && depthAt(lake, cx, cz) > 2 && depthAt(lake, cx, cz) <= POND.maxDepth + 0.15, `a bowl: ${POND.edgeDepth} m at the rim, ${depthAt(lake, cx, cz).toFixed(2)} m in the middle`);
+  let mono = true;
+  for (let i = 1; i < 30; i++) if (depthUV(i / 200, 0.5) < depthUV((i - 1) / 200, 0.5) - 1e-9) mono = false;
+  ok(mono && Math.abs(depthUV(0.2, 0.7) - depthUV(0.7, 0.2)) < 0.2, 'it deepens steadily away from the rim (same both ways)');
+  ok(POND.surface - POND.maxDepth - 0.12 + 0.5 > -3, 'a car or a swimmer over the deepest bed stays above the river kill height');
+  ok(waterState(lake, cx, cz, POND.surface - POND.floatDepth) === 'swimming' && waterState(lake, lake.x0 + 1, cz, POND.surface - 0.6) === 'wading' && waterState(lake, lake.x0 - 2, cz, 0.15) === 'dry' && waterState(lake, cx, cz, 0.3) === 'dry', 'deep water swims, the shelf wades, the bank (and above the surface) is dry');
+  ok(wadeFactor(0) === 1 && wadeFactor(0.6) < 1 && wadeFactor(5) === 1 - POND.wadeMax, 'wading slows you with depth, up to a limit');
+  const e = nearestEdge(lake, lake.x0 + 0.5, cz);
+  ok(e.nx === -1 && Math.abs(e.d - 0.5) < 1e-9, 'nearest edge and its outward direction');
+  const b = bankPoint(lake, lake.x0 + 0.5, cz);
+  ok(!inPond(lake, b.x, b.z) && b.x < lake.x0 - POND.rimWidth, 'climbing out puts you on the grass past the rim');
+  ok(shouldClimbOut(lake, lake.x0 + 0.5, cz, -1, 0, false) && !shouldClimbOut(lake, lake.x0 + 0.5, cz, 1, 0, false) && shouldClimbOut(lake, lake.x0 + 0.5, cz, 0, 0, true) && !shouldClimbOut(lake, cx, cz, -1, 0, true), 'you climb out at the edge heading out (or jumping), never from the middle');
+  const nw = nearestWater(lake, lake.x0 - 5, lake.z0 - 5, 2.5);
+  ok(inPond(lake, nw.x, nw.z, 2), 'a Streetmon on the bank heads for the nearest open water');
+  ok(Math.abs(waveY(10, 20, 3) - POND.surface) <= POND.waves.reduce((s, w) => s + w.amp, 0) + 1e-9, 'waves stay within their amplitude');
+  ok(submersion([POND.surface + 1, POND.surface + 1], 1.4).avg === 0 && submersion([POND.surface - 5], 1.4).avg === 1 && Math.abs(submersion([POND.surface - 0.595], 1.4).avg - 0.5) < 0.01, 'how much of a car is under water');
+  const w = newCarWater();
+  stepCarWater(w, 0.2, 1);
+  ok(!w.stalled && w.flood > 0 && carLift(w) < POND.carBuoyancy, 'a car floats a while, filling as it goes');
+  for (let i = 0; i < 30; i++) stepCarWater(w, 0.8, 1);
+  ok(w.stalled && w.flood === 1 && carLift(w) === 0, 'under for long enough: engine drowned, full of water, it sinks');
+  for (let i = 0; i < 25; i++) stepCarWater(w, 0, 1);
+  ok(!w.stalled && w.flood < 1, 'pulled out, it drains and the engine catches again');
+  const pondSpecies = ALL_SPECIES().filter((s) => (s.spawn.biomes ?? []).includes('pond'));
+  ok(pondSpecies.length === 6 && spawnTable('park', 'day', 'pond').length >= 3 && spawnTable('park', 'night', 'pond').some((o) => o.spec.id === 'wishmaw') && !spawnTable('park', 'day').some((o) => (o.spec.spawn.biomes ?? ['street']).every((b) => b === 'pond')), `pond spawn tables (${pondSpecies.map((s) => s.id).join(', ')}), never on dry land`);
+  ok(pondSpecies.filter((s) => s.id !== 'fogbank').every((s) => (s.model.sink ?? 0) > 0 && (s.model.sink ?? 1) < 0.6), 'water Streetmon float with part of themselves under');
+}
+
+
+// ------------------------------------------------------------------ s160: gait, flyers, docks, deep sewers, interiors, talk
+{
+  ok(gaitFrequency(2.4) > 1.1 && gaitFrequency(2.4) < 1.5 && gaitFrequency(4.6) < 1.9 && gaitFrequency(7.2) < 2.3 && gaitFrequency(0) < gaitFrequency(7.2), `a natural cadence: ${gaitFrequency(2.4).toFixed(2)} / ${gaitFrequency(4.6).toFixed(2)} / ${gaitFrequency(7.2).toFixed(2)} strides a second walking / jogging / sprinting`);
+  const fl = Object.keys(FLIGHT);
+  ok(fl.every((id) => ALL_SPECIES().some((s) => s.id === id)) && fl.length >= 8, `${fl.length} flying species, all real`);
+  ok(flightTarget('neonmoth', 'flee', 0) === FLIGHT.neonmoth.high && flightTarget('neonmoth', 'fainted', 0) === 0 && flightTarget('longshot', 'wander', 0, 25) === 25 && flightTarget('cashew', 'wander', 0) === 0 && flightTarget('overwatch', 'engaged', 0) < 1, 'flyers climb to flee, hover low in a fight, fall when fainted, soarers hold their height; walkers stay down');
+  ok(SKY.reach < Math.min(...fl.map((id) => FLIGHT[id].high)) && SKY.alt[0] > SKY.reach, 'soaring and fleeing flyers are out of reach');
+  const L = generateLayout(1903);
+  const docks = planDocks(L);
+  ok(docks.length === 2 && docks.every((d) => (d.side < 0 ? d.pier.x1 === L.land.x0 && d.head.x1 === d.pier.x0 : d.pier.x0 === L.land.x1 && d.head.x0 === d.pier.x1)), 'two docks, each pier running out from the land edge to its T-head');
+  ok(docks.every((d) => d.pier.z1 - d.pier.z0 === DOCKS.pierWidth && d.head.z1 - d.head.z0 === DOCKS.headWidth && d.boats.length === 2 && d.boats.every((b) => (d.side < 0 ? b.x < L.land.x0 : b.x > L.land.x1))), 'piers and heads the right size; boats moored out on the river');
+  const centres = (['uptown', 'midtown', 'downtown'] as const).map((d, i) => ({ district: d, x: -150 + i * 150, z: [-380, 50, 420][i] }));
+  const top = planSewers(L, 9137, centres, () => true);
+  const deep = planDeepSewers(9137, top);
+  ok(deep.length === 6 && deep.every((m) => m.level >= 2 && m.floor < top[0].floor && m.manholes.length === 0), 'two deep levels under every district sewer, no manholes down there');
+  ok(deep.every((m) => reachableCount(m.open).reached === reachableCount(m.open).open), 'every deep level is one connected maze');
+  ok([...top, ...deep].every((m) => m.caches.length >= 3 && m.caches.every((c) => c.tier === m.level && m.open[c.i][c.j])), 'caches on every level, better ones deeper');
+  const m0 = top[0];
+  const poolKeys = [...m0.pools.keys()];
+  ok(poolKeys.length > 10 && [...m0.pools.values()].some((p) => p.toxic) && [...m0.pools.values()].some((p) => !p.toxic && p.depth > 1.3), `the sewers have real water (${poolKeys.length} pool blocks: cisterns and channels deep enough to swim, toxic sludge to wade)`);
+  const [pi, pj] = poolKeys[0].split(',').map(Number);
+  const pc = { x: m0.x0 + (pi + 0.5) * SEWER.block, z: m0.z0 + (pj + 0.5) * SEWER.block };
+  ok(!!poolAt(m0, pc.x, pc.z), 'a pool under its block');
+  let edges = 0;
+  for (const k of poolKeys) {
+    const [i, j] = k.split(',').map(Number);
+    const e = poolEdge(m0, m0.x0 + (i + 0.5) * SEWER.block, m0.z0 + (j + 0.5) * SEWER.block);
+    if (e && !poolAt(m0, e.outX, e.outZ)) edges++;
+  }
+  ok(edges > 0, `pools have dry edges to climb out onto (${edges} edge blocks)`);
+  const t2 = deepTable('night', 2);
+  const t3 = deepTable('night', 3);
+  const share = (t: ReturnType<typeof deepTable>, r: string): number => t.filter((o) => o.spec.spawn.rarity === r).reduce((a, o) => a + o.weight, 0) / t.reduce((a, o) => a + o.weight, 0);
+  ok(t2.length > 0 && share(t3, 'rare') > share(t2, 'rare') && share(t2, 'rare') > share(spawnTable('midtown', 'night', 'sewer'), 'rare') && deepLevelBonus(3) > deepLevelBonus(2) && deepLevelBonus(1) === 0, `rarer and stronger deeper (rare share ${(share(t2, 'rare') * 100).toFixed(0)}% then ${(share(t3, 'rare') * 100).toFixed(0)}%)`);
+  const skies = (['uptown', 'midtown', 'downtown'] as const).map((d) => skyTable(d, 'day'));
+  ok(skies.every((t) => t.length >= 2 && t.every((o) => FLIGHT[o.spec.id]?.soar && o.spec.spawn.rarity !== 'legendary')), `every district's sky has soaring flyers (${skies.map((t) => t.length).join('/')})`);
+  const ins = planInteriors(L, []);
+  ok(ins.length >= 6 && new Set(ins.map((i) => i.kind)).size >= 5, `${ins.length} buildings you can walk into (${[...new Set(ins.map((i) => i.kind))].join(', ')})`);
+  let apart = true;
+  for (const a of ins) for (const b of ins) if (a !== b && Math.hypot(a.x - b.x, a.z - b.z) < 60) apart = false;
+  ok(apart && ins.every((i) => L.buildings.some((b) => i.fx >= b.rect.x0 - 0.6 && i.fx <= b.rect.x1 + 0.6 && i.fz >= b.rect.z0 - 0.6 && i.fz <= b.rect.z1 + 0.6)), 'their doors are on facades, far enough apart that the rooms below never overlap');
+  ok(INTERIOR.floorY < SEWER.levels[SEWER.levels.length - 1].floor - 10, 'the rooms are below the deepest sewer');
+  const ctx: TalkContext = { hour: 22, district: 'midtown', wanted: 0, money: 9000, lead: { name: 'Lefty', species: 'Holster', level: 12 }, places: { safehouseForSale: { name: 'Midtown Studio', price: 8000, x: 1, z: 2 }, clinic: { x: 3, z: 4 }, diner: { name: 'The Night Owl Diner', x: 5, z: 6 }, pond: { x: 0, z: 0 }, docks: { name: 'the West Ave Docks', x: -470, z: -232 } }, race: 'Midnight Sprint', deepVisited: false, met: 0 };
+  const valid = (t: ReturnType<typeof streetTalk>): boolean => !!t.nodes[t.start] && Object.values(t.nodes).every((n) => n.text.length > 10 && !/[{}]|undefined|NaN/.test(n.text) && n.choices.length > 0 && n.choices.every((c) => c.next === 'end' || !!t.nodes[c.next]));
+  let allOk = true;
+  const openers = new Set<string>();
+  for (let seed = 0; seed < 60; seed++) {
+    const t = streetTalk(seed, { ...ctx, hour: (seed * 5) % 24, wanted: seed % 7 === 0 ? 2 : 0, met: seed % 5 === 0 ? 1 : 0 });
+    if (!valid(t)) allOk = false;
+    openers.add(t.nodes[t.start].text);
+  }
+  ok(allOk && openers.size > 20, `street conversations are complete and varied (${openers.size} different openings in 60 people)`);
+  const roles = ['clerk', 'pawnbroker', 'cook', 'waitress', 'regular', 'receptionist', 'worker', 'manager', 'attendant', 'customer', 'gamer'];
+  ok(roles.every((r) => valid(interiorTalk(r, { name: "Sal's Corner Deli", kind: r === 'attendant' ? 'laundromat' : 'deli' }, 7, ctx))), 'everyone inside has something to say, every answer leads somewhere');
+  const w = streetTalk(3, { ...ctx, wanted: 2 });
+  ok(/cops|sirens|didn't see/i.test(w.nodes[w.start].text), 'people get nervous when the cops are on you');
+}
+
+console.log('\n# phones: aim assist and the context button');
+{
+  const from = { x: 0, z: 0, heading: 0 };
+  const near = pickAssist(from, [{ x: 20, z: -2 }, { x: 20, z: 15 }]);
+  ok(!!near && Math.abs(near.delta - headingTo(0, 0, 20, -2)) < 1e-9 && near.delta > 0, 'aim assist picks the target nearest the crosshair (and turns left toward one on the left)');
+  ok(pickAssist(from, [{ x: 20, z: 15 }, { x: -20, z: 0 }, { x: 60, z: 0 }]) === null, 'nothing outside the cone, behind you or out of range');
+  const cop = pickAssist(from, [{ x: 15, z: 0.5 }, { x: 15, z: -1.5, threat: true }]);
+  ok(!!cop?.target.threat, 'a cop a little further off the crosshair wins over a bystander');
+  const t1 = assistTurn(0.2, 1 / 60, true);
+  const t2 = assistTurn(0.2, 1 / 60, false);
+  ok(t1 > 0 && t1 <= ASSIST.rate / 60 + 1e-9 && t2 < t1 && assistTurn(0.001, 1 / 60, true) <= 0.001, 'it eases a little each frame, tighter when aiming, never past the target');
+  const a = contextFromPrompt("E  Go into Sal's Corner Deli");
+  const b = contextFromPrompt('Space  Climb out');
+  const c = contextFromPrompt('E  Talk   ·   B  Set Lefty on them');
+  const d = contextFromPrompt("E  Midtown Studio: for sale, $8,000");
+  ok(a?.code === 'KeyE' && a.label === "Go into Sal's Corner Deli" && b?.code === 'Space' && b.label === 'Climb out' && c?.label === 'Talk' && d?.label === 'Midtown Studio', 'prompts become labelled buttons (key, short label)');
+  const tp = touchParts(['Walk with ', { key: 'W' }, ' ', { key: 'A' }, ' ', { key: 'S' }, ' ', { key: 'D' }, ', hold ', { key: 'Shift' }, ' to sprint, ', { key: 'N' }, ' for the Dex']);
+  const txt = tp.map((p) => (typeof p === 'string' ? p : `[${p.key}]`)).join('');
+  ok(txt === 'Walk with [the stick], hold [the stick pushed all the way] to sprint, [N] for the Dex', `tips speak touch: "${txt}"`);
+  ok(contextFromPrompt('') === null && contextFromPrompt("The Chop Shop won't open while the cops are on you") === null, 'messages that are not actions make no button');
+}
+
+console.log('\n# s171: items');
+{
+  const mk = (id: string, lv: number) => createCreature(id, lv, () => 0.5);
+  const a = mk('strapback', 40);
+  a.hp = 5;
+  const r1 = applyHeal(itemSpec('streetSnack'), a, [a]);
+  ok(r1.ok && a.hp === 35 && r1.healed === 30, `a sandwich heals 30 (${a.hp} HP)`);
+  const r2 = applyHeal(itemSpec('medkit'), a, [a]);
+  ok(r2.ok && a.hp === crMaxHp(a) && !applyHeal(itemSpec('medkit'), a, [a]).ok, 'a medkit fills it up; a second does nothing');
+  a.hp = 0;
+  ok(!applyHeal(itemSpec('energyDrink'), a, [a]).ok && applyHeal(itemSpec('smellingSalts'), a, [a]).ok && a.hp === Math.round(crMaxHp(a) * 0.5), 'fainted ones need smelling salts (back at half)');
+  const b = mk('strapback', 42);
+  b.hp = 1;
+  a.hp = 1;
+  ok(applyHeal(itemSpec('familyBucket'), null, [a, b]).ok && a.hp === 51 && b.hp === 51, 'the family bucket feeds everyone');
+  const fx = newEffects();
+  fx.repel = 240;
+  fx.lucky = 1;
+  tickEffects(fx, 2);
+  const m = spawnModifiers(fx, 14);
+  ok(m.repelBelow === 14 && m.shinyMult === 1 && m.rateMult === 1 && effectsLine(fx) === 'Musk 4m', 'timed effects run down and drive the spawner');
+  const night = itemSpec('nightNet') as CaptureItem;
+  const dive = itemSpec('diveNet') as CaptureItem;
+  const rook = itemSpec('rookieCuffs') as CaptureItem;
+  const t = mk('strapback', 5);
+  const day = { night: false, water: false, leadLevel: 10 };
+  ok(itemMultiplier(night, t, day) === 1 && itemMultiplier(night, t, { ...day, night: true }) === 3 && itemMultiplier(dive, t, { ...day, water: true }) === 3.5 && itemMultiplier(rook, t, day) === 3 && itemMultiplier(rook, t, { ...day, leadLevel: 4 }) === 1, 'situational nets and cuffs');
+  ok(marketStock(3, 0).every((x) => x.id !== 'rabbitFoot' && x.id !== 'proteinShake'), 'the good stuff on the black market needs reputation');
+}
+
+console.log('\n# s171: water battles');
+{
+  ok(waterRide('koinfish') === 'swim' && waterRide('longshot') === 'fly' && waterRide('strapback') === 'raft', 'pond species swim, flyers hover, the rest take a raft');
+  const lifts = [0, 0.7, 1.9].map((t) => waterLift('fly', 1, t));
+  ok(lifts.every((l) => l > 1) && waterLift('swim', 1, 0) < 0 && Math.abs(waterLift('raft', 1, 0) - 0.12) < 1e-9, 'flyers ride high, swimmers sit low, rafts on the surface');
+}
+
+console.log('\n# s171: casino');
+{
+  const L = generateLayout(1903);
+  let seed = 7;
+  const rnd = (): number => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296);
+  const rtp = slotsReturn();
+  ok(rtp > 0.85 && rtp < 0.98, `slots pay back ${(rtp * 100).toFixed(1)}% (the house keeps the rest)`);
+  ok(slotPayout(['STAR', 'STAR', 'STAR']) === 200 && slotPayout(['CHERRY', 'BAR', 'CHERRY']) === 2 && slotPayout(['BAR', 'SEVEN', 'BELL']) === 0, 'slot lines pay by the table');
+  const C = (rank: number, suit = 0): Card => ({ rank, suit: suit as Card['suit'] });
+  ok(handValue([C(14), C(14), C(9)]).total === 21 && handValue([C(14), C(13)]).total === 21 && handValue([C(10), C(9), C(5)]).total === 24, 'blackjack hands count aces right');
+  // Stacked shoe (draws from the end): player 10+9, dealer 10+7 -> stand -> win.
+  const bj = new Blackjack(rnd, [C(7), C(10), C(9), C(10)]);
+  bj.deal(100);
+  bj.stand();
+  ok(bj.outcome === 'win' && bj.returned() === 200, 'beat the dealer: even money');
+  const bj2 = new Blackjack(rnd, [C(7), C(10), C(13), C(14)]);
+  bj2.deal(100);
+  ok(bj2.done && bj2.outcome === 'blackjack' && bj2.returned() === 250, 'a natural pays 3:2');
+  ok(rouletteReturn({ kind: 'red' }, 1) === 2 && rouletteReturn({ kind: 'red' }, 0) === 0 && rouletteReturn({ kind: 'number', n: 17 }, 17) === 36 && rouletteReturn({ kind: 'dozen', n: 3 }, 30) === 3, 'roulette pays evens, dozens and numbers; zero takes the outside bets');
+  ok(evaluatePoker([C(10, 1), C(11, 1), C(12, 1), C(13, 1), C(14, 1)]) === 'royalFlush' && evaluatePoker([C(2), C(3, 1), C(4), C(5), C(14)]) === 'straight' && evaluatePoker([C(11), C(11, 2), C(4), C(7), C(9, 3)]) === 'jacksOrBetter' && evaluatePoker([C(10), C(10, 2), C(4), C(7), C(9, 3)]) === 'nothing', 'video poker reads its hands');
+  const vp = new VideoPoker(rnd);
+  vp.deal(10, [C(11), C(11, 2), C(4), C(7), C(9, 3), C(11, 3), C(2), C(3), C(5)]);
+  vp.toggle(0);
+  vp.toggle(1);
+  vp.draw();
+  ok(vp.result === 'threeKind' && vp.returned() === 30, 'hold the jacks, draw a third: three of a kind pays 3');
+  const casino = planInteriors(L, []).find((i) => i.kind === 'casino');
+  ok(!!casino && INTERIOR.size.casino[0] >= 30, `the Empire Royale has a door (${casino?.name})`);
+}
+
+console.log('\n# s171: gangs, reputation, stashes');
+{
+  const L = generateLayout(1903);
+  const s = newGangState();
+  ok(!questUnlocked(9) && questUnlocked(GANG.unlockLevel) && !streetCrewsActive(s, 30), 'no gangs for a new player, and none until the story brings them');
+  s.stage = 1;
+  ok(gangEvent(s, 'metAlvarez') !== '' && s.stage === 2 && streetCrewsActive(s, 15), 'Alvarez sends you to the corner; crews come out');
+  for (let i = 0; i < 4; i++) gangEvent(s, 'memberBeaten');
+  ok(s.stage === 3 && s.cornerBeaten === 4, 'four down breaks the corner');
+  gangEvent(s, 'courierBeaten');
+  ok(s.stage === 4 && s.hasKey, 'the courier drops the key');
+  gangEvent(s, 'enteredHideout');
+  gangEvent(s, 'bossBeaten');
+  ok(s.stage === 6 && s.bossBeaten && !streetCrewsActive(s, 15) && streetCrewsActive(s, 30), 'Rook falls; only stragglers later, for strong players');
+  ok(JSON.stringify(parseGangState(JSON.parse(JSON.stringify(s)))) === JSON.stringify(s) && parseGangState({ stage: 99 }).stage === 6 && parseGangState(null).stage === 0, 'the story saves and loads (and bad saves are clamped)');
+  ok(!hostileOnSight({ ...s, stage: 6 }, 80, false) && hostileOnSight({ ...s, stage: 6 }, 10, false) && hostileOnSight({ ...s, stage: 6 }, 80, true), 'respected Street Cred keeps leftover crews off you (unless you start it)');
+  ok(gangHitChance(5, false, false) > gangHitChance(20, false, false) && gangHitChance(8, true, false) < gangHitChance(8, false, false), 'they hit more up close and less if you keep moving');
+  const spot = fightSpot({ x: 30, z: 0 }, { x: 0, z: 0 }, 1);
+  ok(Math.abs(Math.hypot(spot.x, spot.z) - GANG.fightRange[1]) < 1e-6, 'they close to their fighting range');
+  const H = hideoutLayout();
+  ok(H.guards.length >= 5 && H.lockers.length === 4 && H.cover.every((c) => Math.abs(c.x) < H.w / 2 && Math.abs(c.z) < H.d / 2) && Math.abs(H.boss.z) < H.d / 2, 'the hideout: guards, cover, lockers and the throne, all inside its walls');
+  ok(BOSS.team.every(([id]) => !!species(id)) && ROSTER.every((id) => !!species(id)), "the gang's Streetmon all exist");
+  let r = applyRep(0, 0, 'crime', 3);
+  ok(r.street === 3 && r.civic === -6, 'crimes: a little street cred, a lot of civic standing');
+  r = applyRep(r.street, r.civic, 'gangBossBeaten');
+  ok(r.civic > 0 && civicTier(70).prices < 1 && civicTier(-70).witness > 1 && streetTier(160).respected && !streetTier(5).respected, 'two standings, each with its own effects');
+  L.alleys = planAlleys(L).map((a) => ({ id: a.id, rect: a.rect, x: a.x, z: a.z, district: a.district }));
+  const sc = planStreetCaches(L);
+  ok(sc.length >= 6 && sc.some((c) => c.locked) && sc.every((c) => !L.buildings.some((b) => c.x > b.rect.x0 && c.x < b.rect.x1 && c.z > b.rect.z0 && c.z < b.rect.z1)), `${sc.length} weapon stashes in the alleys (${sc.filter((c) => c.locked).length} padlocked)`);
+  ok(WEAPON_LIST.every((w) => (w.pickupCount ?? 0) === 0), 'no guns lying around in the open any more');
+}
+
+console.log('\n# s171: weather, neighbourhoods, chatter, the environment as a weapon');
+{
+  const L = generateLayout(1903);
+  let seed = 3;
+  const rnd = (): number => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296);
+  const w = new Weather(rnd, 'clear');
+  const seen = new Set<string>();
+  let turns = 0;
+  for (let h = 0; h < 24 * 20; h += 0.25) if (w.update(0.25, 1)) {
+    turns++;
+    seen.add(w.kind);
+  }
+  ok(turns > 20 && seen.size >= 4, `weather changes through the days (${turns} changes; ${[...seen].join(', ')})`);
+  w.set('storm');
+  const st = w.params();
+  const eff = weatherEffects(st);
+  ok(st.rain === 1 && st.lightning === 1 && eff.grip < 0.85 && eff.vision < 0.85 && eff.crowd < 0.7 && (eff.types.wire ?? 1) > 2 && (eff.types.sludge ?? 1) > 2, 'a storm: slick roads, short sight, empty streets, Wire and Sludge types out');
+  w.set('clear');
+  const clr = weatherEffects(w.params());
+  ok(clr.grip === 1 && clr.vision === 1 && clr.crowd === 1, 'a clear day changes nothing');
+  w.set('rain');
+  w.set('clear');
+  w.wet = 1;
+  w.update(1, 0.016);
+  ok(w.wet < 1 && w.wet > 0.2, 'roads dry slowly after the rain');
+  const w2 = new Weather(rnd);
+  w2.load(JSON.parse(JSON.stringify({ ...w.serialize(), kind: 'fog' })));
+  ok(w2.kind === 'fog', 'weather saves and loads');
+  const land = L.land;
+  const at = (fx: number, fz: number) => neighbourhoodAt(L, land.x0 + (land.x1 - land.x0) * fx, land.z0 + (land.z1 - land.z0) * fz);
+  const names = new Set([at(0.3, 0.2), at(0.7, 0.2), at(0.3, 0.6), at(0.7, 0.6), at(0.3, 0.9), at(0.7, 0.9)].map((n) => n.name));
+  ok(names.size === 6 && NEIGHBOURHOODS.every((n) => n.lines.length >= 3 && n.tops.length >= 3), `six named neighbourhoods across the districts (${[...names].join(', ')})`);
+  const tr = new NeighbourhoodTracker();
+  const a = at(0.3, 0.2);
+  const b = at(0.7, 0.2);
+  ok(tr.update(a, 0.1) === a && tr.update(b, 0.5) === null && tr.update(b, 1) === b && tr.update(b, 1) === null, 'the name card shows once you are properly in (not when you clip a corner)');
+  const look = localLook(at(0.3, 0.9), { skin: '#fff', hair: '#000', top: '#123456', legs: '#654321', shoes: '#000', scale: 1 }, () => 0.9);
+  ok(at(0.3, 0.9).tops.includes(look.top), 'locals dress for their neighbourhood');
+  const ctx: ChatterContext = { hour: 14, weather: 'rain', mood: 'neutral', wanted: 0, district: 'x', near: false, gangFight: false };
+  const lines = new Set(Array.from({ length: 80 }, (_, i) => streetChatter(i * 7919, ctx)));
+  ok(lines.size > 12 && [...lines].every((l) => l.length > 3), `passers-by say all sorts (${lines.size} different lines)`);
+  ok(/gunfire|Kings|inside|911/i.test(streetChatter(5, { ...ctx, gangFight: true })) && roomChatter('croupier', 1).length > 0 && roomChatter('nobody', 1) === '', 'chatter fits the moment and the role');
+  ok(bubbleSeconds('Hi.') >= 2 && bubbleSeconds('x'.repeat(300)) <= 6.5, 'bubbles stay up long enough to read, not forever');
+  ok(shockRadius(1) > shockRadius(0) && blastFalloff(0, 6, 100) === 100 && blastFalloff(6, 6, 100) === 0 && blastFalloff(3, 6, 100) > 0, 'shocks reach further on wet ground; blasts fall off with distance');
+  const drums = [{ x: 0, z: 0 }, { x: 3, z: 0 }, { x: 10, z: 0 }, { x: 2, z: 1, spent: true }];
+  ok(JSON.stringify(chainFrom(drums, 0, 0, 4.5)) === '[1]', 'a blast sets off the next drum, not the far one or a spent one');
+}
+
+console.log('\n# s179: rolls, dives and i-frames');
+{
+  const d = new Dodge();
+  ok(d.start('roll', 1, 0) && !d.invulnerable, 'a roll starts without i-frames for a moment');
+  d.update(0.1);
+  ok(d.invulnerable && d.damageFactor('hit') === 0 && d.damageFactor('blast') === 0.5 && d.damageFactor('env') === 1, 'mid-roll: hits miss, blasts halve, falls/fire/sludge still hurt');
+  d.update(0.4);
+  ok(!d.invulnerable && d.damageFactor('hit') === 1, 'the end of the roll is open again');
+  ok(!d.start('roll', 1, 0), 'no new roll until this one (and its recovery) is done');
+  // Distance: integrate the speed.
+  const e = new Dodge();
+  e.start('roll', 1, 0);
+  let x = 0;
+  for (let i = 0; i < 60; i++) {
+    x += e.speed() / 60;
+    e.update(1 / 60);
+  }
+  ok(Math.abs(x - ROLL.roll.dist) < 0.3, `a roll covers about ${x.toFixed(1)} m`);
+  // Spamming: chained rolls cost more and protect less, and the tank runs dry.
+  const s = new Dodge();
+  const windows: number[] = [];
+  let rolls = 0;
+  for (let t = 0; t < 6; t += 1 / 60) {
+    if (s.start('roll', 1, 0)) {
+      rolls++;
+      windows.push(s.active!.iEnd - s.active!.iStart);
+    }
+    s.update(1 / 60);
+  }
+  ok(rolls <= 5 && windows[1] < windows[0] && windows[2] < windows[0] * 0.5, `mashing roll for 6 s: ${rolls} rolls, i-frames ${windows.map((w) => w.toFixed(2)).join(' > ')} s`);
+  ok(s.winded > 0 || s.stamina < 30, 'and you end up winded (or close to it)');
+  // Uptime of invulnerability over a long spam is small.
+  const u = new Dodge();
+  let inv = 0;
+  for (let t = 0; t < 30; t += 1 / 60) {
+    u.start('roll', 1, 0);
+    if (u.invulnerable) inv += 1 / 60;
+    u.update(1 / 60);
+  }
+  ok(inv / 30 < 0.15, `spamming rolls for 30 s keeps you invulnerable only ${((inv / 30) * 100).toFixed(0)}% of the time`);
+  const dv = new Dodge();
+  dv.start('dive', 0, 1);
+  dv.update(0.2);
+  ok(dv.timeScale(true) < 1 && dv.timeScale(false) === 1, 'a dive with a gun up slows time a little');
+  dv.update(0.7);
+  ok(dv.recovering && !dv.invulnerable && dv.timeScale(true) === 1, 'then you land and get up, open to anything');
+  const r = new Dodge();
+  r.stamina = 5;
+  ok(!r.start('dive', 1, 0), 'no stamina, no dive');
+}
+
+console.log('\n# s183: player options (look speed, invert, volumes, HUD size)');
+{
+  ok(JSON.stringify(parseOptions(null)) === JSON.stringify(DEFAULT_OPTIONS), 'no saved options: the defaults');
+  ok(parseOptions('{bad json').lookSpeed === 1 && parseOptions('{"lookSpeed": 99, "music": -1, "invertY": "yes"}').music === 1, 'malformed or out-of-range values fall back to the defaults');
+  const a = parseOptions('{"lookSpeed": 1.3, "invertY": true, "music": 0.5, "effects": 0.25, "hudSize": 1.15}');
+  ok(a.lookSpeed === 1.3 && a.invertY && a.music === 0.5 && a.effects === 0.25 && a.hudSize === 1.15, 'good values load');
+  let o = { ...DEFAULT_OPTIONS };
+  const seen: number[] = [];
+  for (let i = 0; i < 7; i++) {
+    seen.push(o.lookSpeed);
+    o = cycleOption(o, 'lookSpeed');
+  }
+  ok(seen[0] === 1 && seen[6] === 1 && new Set(seen.slice(0, 6)).size === 6, `look speed cycles its ladder and wraps: ${seen.join(' → ')}`);
+  ok(cycleOption(DEFAULT_OPTIONS, 'invertY').invertY && !cycleOption(cycleOption(DEFAULT_OPTIONS, 'invertY'), 'invertY').invertY, 'invert look toggles');
+  ok(cycleOption({ ...DEFAULT_OPTIONS, music: 0.6 }, 'music').music === 0.25, 'a value off the ladder snaps to the nearest rung, then steps on');
+  ok(optionLabel(DEFAULT_OPTIONS, 'music') === 'Music: 100%' && optionLabel({ ...DEFAULT_OPTIONS, effects: 0 }, 'effects') === 'Effects: off' && optionLabel({ ...DEFAULT_OPTIONS, hudSize: 1.3 }, 'hudSize') === 'HUD size: 130%', 'labels read as the player sees them');
+  const store = new Map<string, string>();
+  const fake = { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => void store.set(k, v) };
+  saveOptions({ ...DEFAULT_OPTIONS, hudSize: 1.3 }, fake);
+  ok(loadOptions(fake).hudSize === 1.3, 'options round-trip through storage');
+  const broken = { getItem: () => { throw new Error('blocked'); } };
+  ok(loadOptions(broken).lookSpeed === 1, 'blocked storage still gives the defaults');
+}
+
+console.log('\n# s187: campaign playthrough and balance');
+{
+  // The Brace soft-lock: two walled-up Concrete types used to brace at each other forever.
+  const seq = (seed: number) => { let x = seed >>> 0 || 1; return () => { x = (Math.imul(x, 1664525) + 1013904223) >>> 0; return x / 4294967296; }; };
+  const b = new Battle({ name: 'you', members: [createCreature('overpass', 40, seq(1))], ai: false }, { name: 'boss', members: [createCreature('overpass', 42, seq(2))], ai: true }, seq(3), { wild: false, canRun: false });
+  const me = b.sides[0].active[0];
+  const foe = b.sides[1].active[0];
+  me.stages.defense = 6;
+  foe.stages.defense = 6;
+  let braced = 0;
+  for (let i = 0; i < 40; i++) {
+    const a = b.chooseAI(foe);
+    if (a.type === 'move' && a.moveId === 'brace') braced++;
+  }
+  ok(braced === 0, `at +6 Defense the AI never picks Brace again (picked it ${braced} of 40 times)`);
+  // Real-time style: both sides on AI, acting in turn, until someone drops.
+  const rt = (team: ReturnType<typeof createCreature>[], foes: ReturnType<typeof createCreature>[], seed: number): { win: boolean; actions: number } => {
+    const bt = new Battle({ name: 'you', members: team, ai: false }, { name: 'boss', members: foes, ai: true }, seq(seed), { wild: false, canRun: false });
+    const cd = new Map<Combatant, number>();
+    const cool = (c: Combatant): number => Math.max(BATTLE.realtimeCooldown[0], Math.min(BATTLE.realtimeCooldown[1], BATTLE.realtimeCooldown[1] - (bt.stat(c, 'speed') / 140) * (BATTLE.realtimeCooldown[1] - BATTLE.realtimeCooldown[0])));
+    let n = 0;
+    let round = BATTLE.realtimeRound;
+    for (let t = 0; t < 900 && !bt.over; t += 0.1) {
+      if (bt.needsSwitch(1).length) bt.autoSwitch(1);
+      const dead = bt.needsSwitch(0)[0];
+      if (dead) {
+        const idx = bt.sides[0].members.findIndex((m) => m.hp > 0 && !bt.sides[0].active.some((a) => a.creature === m));
+        if (idx >= 0) bt.switchIn(0, idx, dead);
+      }
+      for (const sd of bt.sides)
+        for (const c of sd.active) {
+          if (bt.over || c.creature.hp <= 0) continue;
+          const left = (cd.get(c) ?? cool(c) * 0.6) - 0.1;
+          cd.set(c, left);
+          if (left > 0) continue;
+          const a: Action = bt.chooseAI(c);
+          bt.act(a);
+          n++;
+          cd.set(c, cool(c));
+        }
+      round -= 0.1;
+      if (round <= 0 && !bt.over) {
+        round = BATTLE.realtimeRound;
+        bt.endRound();
+      }
+    }
+    return { win: bt.winner === 0, actions: n };
+  };
+  const wall = rt([createCreature('overpass', 40, seq(4))], [createCreature('overpass', 42, seq(5))], 6);
+  ok(wall.actions < 400, `two Overpass slug it out to a finish (${wall.actions} actions)`);
+  // Wild levels follow the story.
+  ok(storyLevel(9, 0, 7) === 7, 'before Act 1 is done, a wild one never outlevels your strongest Streetmon');
+  ok(storyLevel(5, 0, 7) === 5, '...weaker ones stay as they are');
+  ok(storyLevel(8, 2, 7) === 8 + STORY_LEVEL_BONUS[2] && STORY_LEVEL_BONUS[2] > 0, `after two acts they're ${STORY_LEVEL_BONUS[2]} levels tougher`);
+  ok(storyLevel(68, 5, 90) === 70, 'never past level 70');
+  ok(!storyAllows(species('overwatch'), 0, 7) && storyAllows(species('doubleshift'), 0, 7) && storyAllows(species('overwatch'), 1, 7), 'early on, high-level species stay away instead of turning up shrunk');
+  // Bosses climb act by act and match the team you'll have then.
+  const C = campaignJson as unknown as CampaignConfig;
+  const order = ['dockside-dutch', 'haze', 'sal', 'captain-hale', 'commissioner-varga'];
+  const aces = order.map((id) => Math.max(...C.bosses.find((x) => x.id === id)!.team.map((t) => t[1])));
+  ok(aces.every((a, i) => i === 0 || a >= aces[i - 1]), `boss aces climb: ${aces.join(' → ')}`);
+  ok(C.bosses.find((x) => x.id === 'dockside-dutch')!.team.length === 2, 'Dockside Dutch brings two Streetmon (you have about two by then)');
+  const vq = C.legendaries.find((l) => l.id === 'vault-queen')!;
+  ok(vq.level < aces[3], `the Vault Queen (Lv ${vq.level}) helps against Captain Hale but doesn't outclass him (ace Lv ${aces[3]})`);
+  ok(BATTLE.starterLevel >= 7, 'starters begin at level 7');
+  // A team two levels above the casual par beats each boss more often than not.
+  const par: Record<string, { L: number; team: string[] }> = {
+    'dockside-dutch': { L: 10, team: ['subsonic', 'doubleshift'] },
+    haze: { L: 13, team: ['subsonic', 'streetlamp', 'cinderblock'] },
+    sal: { L: 16, team: ['cinderblock', 'subsonic', 'curbstone', 'rebarb'] },
+    'captain-hale': { L: 20, team: ['cinderblock', 'curbstone', 'subsonic', 'rebarb'] },
+    'commissioner-varga': { L: 24, team: ['strapback', 'curbstone', 'flue', 'doubleshift', 'neonmoth'] },
+  };
+  // What those Streetmon will have grown into by then (level and condition evolutions).
+  const grown = (id: string, L: number): string => {
+    let sp = id;
+    for (let k = 0; k < 3; k++) {
+      const e = (species(sp) as unknown as { evolution?: Array<{ to: string; method: string; level?: number; minLevel?: number }> }).evolution?.[0];
+      const at = e ? (e.method === 'level' ? e.level : e.method === 'condition' ? e.minLevel : undefined) : undefined;
+      if (!e || at === undefined || L < at) break;
+      sp = e.to;
+    }
+    return sp;
+  };
+  for (const id of order) {
+    const p = par[id];
+    let w = 0;
+    for (let i = 0; i < 16; i++) {
+      const r = seq(100 + i * 7);
+      const team = p.team.map((sp, j) => createCreature(grown(sp, p.L + 2 - (j ? 1 : 0)), p.L + 2 - (j ? 1 : 0), r));
+      const foes = C.bosses.find((x) => x.id === id)!.team.map(([sp, l]) => createCreature(sp, l, r));
+      if (rt(team, foes, 50 + i).win) w++;
+    }
+    ok(w >= 8, `${id}: a sensible team at Lv ${p.L + 2} wins ${w} of 16`);
+  }
+  // Levelling: a casual Act 1 (eight wild fights) gets the starter to about Dutch's level.
+  {
+    const r = seq(9);
+    const st = createCreature('cinderblock', BATTLE.starterLevel, r);
+    for (let k = 0; k < 8; k++) gainXp(st, xpYield(createCreature('gutterat', storyLevel(2 + Math.floor(r() * 9), 0, st.level), r), st.level), { timeOfDay: 'day', district: 'midtown' } as never);
+    ok(st.level >= 9, `eight wild fights take the starter from Lv ${BATTLE.starterLevel} to Lv ${st.level}`);
+  }
+  // The first heist is a gentle one.
+  const qc = (heistsJson as unknown as { targets: Array<{ id: string; security: { suspicionRate: number }; escape: { stars: number } }> }).targets.find((t) => t.id === 'quik-cash')!;
+  ok(qc.security.suspicionRate <= 0.35 && qc.escape.stars === 1, 'Quik Cash: a careful first job can stay quiet, and the getaway starts at one star');
 }
 
 console.log(fails ? `\n${fails} FAILED` : '\nALL PASSED');

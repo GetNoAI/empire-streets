@@ -1,3 +1,4 @@
+import type { PoliceBlip } from '../police/Vision';
 import type { CityLayout } from '../world/CityLayout';
 
 /** DOM overlay: minimap, health, speedometer, location, prompts, toasts and big messages. */
@@ -8,6 +9,7 @@ export class Hud {
   private readonly mapImage: HTMLCanvasElement;
   private readonly health: HTMLDivElement;
   private readonly speedo: HTMLDivElement;
+  private readonly nitroEl: HTMLDivElement;
   private readonly speedVal: HTMLDivElement;
   private readonly gearVal: HTMLDivElement;
   private readonly vehicleBar: HTMLDivElement;
@@ -20,7 +22,7 @@ export class Hud {
   private readonly starEls: HTMLSpanElement[] = [];
   private readonly arrestWrap: HTMLDivElement;
   private readonly arrestBar: HTMLDivElement;
-  private blips: Array<{ x: number; z: number }> = [];
+  private blips: PoliceBlip[] = [];
   private markers: Array<{ x: number; z: number; color: string; size: number; letter?: string }> = [];
   /** Minimap radius in metres (the Early Warning Radar widens it). */
   private radarRange = 105;
@@ -74,6 +76,10 @@ export class Hud {
     const unit = div('speed-unit');
     unit.textContent = 'KM/H';
     this.speedo.append(this.speedVal, unit, this.gearVal);
+    this.nitroEl = div('nitro');
+    this.nitroEl.innerHTML = '<span>NOS</span><div class="nitro-bar"><i></i></div>';
+    this.nitroEl.style.display = 'none';
+    this.speedo.appendChild(this.nitroEl);
     this.el.appendChild(this.speedo);
 
     this.location = div('location');
@@ -127,12 +133,23 @@ export class Hud {
     for (const b of layout.buildings) rect(b.rect, '#6d6f73');
     rect(layout.park, '#4f7a3a');
     rect(layout.parkLake, '#3a6782');
+    for (const d of layout.docks ?? []) rect(d, '#8a7458');
   }
 
   private setText(key: string, el: HTMLElement, text: string): void {
     if (this.lastText[key] === text) return;
     this.lastText[key] = text;
     el.textContent = text;
+  }
+
+  /** The nitrous gauge under the speedometer (null hides it). */
+  setNitro(n: { charge01: number; active: boolean } | null): void {
+    const want = n ? 'flex' : 'none';
+    if (this.nitroEl.style.display !== want) this.nitroEl.style.display = want;
+    if (!n) return;
+    const bar = this.nitroEl.querySelector('i') as HTMLElement;
+    bar.style.width = `${Math.round(n.charge01 * 100)}%`;
+    this.nitroEl.classList.toggle('active', n.active);
   }
 
   /** Minimap radius in metres. */
@@ -262,7 +279,7 @@ export class Hud {
     /** Stars blink while police search for you out of sight. */
     searching: boolean;
     arrest01: number;
-    blips: Array<{ x: number; z: number }>;
+    blips: PoliceBlip[];
     search: { x: number; z: number; r: number } | null;
     /** Static map markers (shops, pickups): square icons. */
     markers?: Array<{ x: number; z: number; color: string; size: number; letter?: string }>;
@@ -302,6 +319,7 @@ export class Hud {
   locationName(x: number, z: number): string {
     const L = this.layout;
     if (x > L.park.x0 && x < L.park.x1 && z > L.park.z0 && z < L.park.z1) return 'Central Green';
+    if ((L.docks ?? []).some((d) => x >= d.x0 && x <= d.x1 && z >= d.z0 && z <= d.z1)) return x < 0 ? 'West Ave Docks' : 'East Ave Docks';
     if (x < L.land.x0 || x > L.land.x1 || z < L.land.z0 || z > L.land.z1) return 'River';
     let ave = L.roads.filter((r) => r.kind === 'ave')[0];
     let st = L.roads.filter((r) => r.kind === 'street')[0];
@@ -485,6 +503,31 @@ export class Hud {
       ctx.strokeRect(mx(m.x) - s / 2, mz(m.z) - s / 2, s, s);
     }
     const flash = Math.floor(performance.now() / 250) % 2 === 0;
+    // Vision cones first (under the dots): where each officer and cruiser is looking, out to its
+    // sight range; red when it can see you.
+    for (const b of this.blips) {
+      if (!b.vision || b.heading === undefined) continue;
+      const bx = mx(b.x);
+      const bz = mz(b.z);
+      const r = b.vision.range / this.mapScale;
+      const a = -b.heading;
+      const g = ctx.createRadialGradient(bx, bz, 0, bx, bz, r);
+      const col = b.sees ? '255,60,60' : '120,170,255';
+      g.addColorStop(0, `rgba(${col},${b.sees ? 0.45 : 0.3})`);
+      g.addColorStop(1, `rgba(${col},0)`);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(bx, bz);
+      ctx.arc(bx, bz, r, a - b.vision.half, a + b.vision.half);
+      ctx.closePath();
+      ctx.fill();
+      // The short all-round range they'd notice you in anyway.
+      ctx.strokeStyle = `rgba(${col},0.35)`;
+      ctx.lineWidth = 1 / zoom;
+      ctx.beginPath();
+      ctx.arc(bx, bz, b.vision.near / this.mapScale, 0, Math.PI * 2);
+      ctx.stroke();
+    }
     for (const b of this.blips) {
       ctx.fillStyle = flash ? '#ff2a2a' : '#2a5cff';
       ctx.strokeStyle = '#000';
@@ -551,6 +594,38 @@ export class Hud {
     window.setTimeout(() => t.classList.add('out'), ms);
     window.setTimeout(() => t.remove(), ms + 600);
   }
+
+  /** The autosave indicator: a spinning disc and what triggered it, bottom right, for a couple of seconds. */
+  saved(note: string): void {
+    if (!this.savedEl) {
+      this.savedEl = div('autosave');
+      this.el.appendChild(this.savedEl);
+    }
+    const el = this.savedEl;
+    el.innerHTML = `<i></i><span>Autosaved</span><em></em>`;
+    el.querySelector('em')!.textContent = note;
+    el.classList.remove('out');
+    el.classList.add('on');
+    window.clearTimeout(this.savedTimer);
+    this.savedTimer = window.setTimeout(() => el.classList.add('out'), 2600);
+  }
+  private savedEl: HTMLDivElement | null = null;
+  private savedTimer = 0;
+
+  /** A neighbourhood's name card, low on the screen as you cross into it (fades on its own). */
+  showDistrict(name: string, tagline: string): void {
+    if (!this.districtEl) {
+      this.districtEl = div('district-card');
+      this.el.appendChild(this.districtEl);
+    }
+    const el = this.districtEl;
+    el.innerHTML = `<div class="dc-name">${name}</div><div class="dc-tag">${tagline}</div>`;
+    el.classList.remove('show');
+    void el.offsetWidth;
+    el.classList.add('show');
+  }
+
+  private districtEl: HTMLDivElement | null = null;
 
   showBig(text: string, color: string, ms: number): void {
     this.big.textContent = text;

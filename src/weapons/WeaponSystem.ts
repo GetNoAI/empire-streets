@@ -189,7 +189,11 @@ export class WeaponSystem {
       let pose: ArmPose = 'none';
       if (!input.active) pose = 'none';
       else if (this.swingKind) pose = this.swingKind;
-      else if (isRanged(w) && w.kind === 'hitscan' && this.armsUp(input.aiming)) pose = TWO_HANDED.has(w.id) ? 'twohand' : 'onehand';
+      else if (isRanged(w) && w.kind === 'hitscan') {
+        // Aiming (or just fired): raised; otherwise carried at the low ready / across the hip.
+        if (this.armsUp(input.aiming)) pose = TWO_HANDED.has(w.id) ? 'twohand' : 'onehand';
+        else pose = TWO_HANDED.has(w.id) ? 'carry' : 'lowready';
+      }
       m.setArms(pose, this.swing);
     }
 
@@ -297,7 +301,7 @@ export class WeaponSystem {
       const ko = ch.target.hit(w.damage * fall, dir.x, dir.z, false);
       this.effects.impact(end.x, end.y, end.z, false);
       this.effects.sparks(end.x, end.y, end.z, 4);
-      audio.bulletHit(false, this.player.position.distanceTo(end));
+      audio.bulletHit(false, end);
       return { hit: true, kill: ko };
     }
     const t = ph ? ph.t : tWorld;
@@ -314,19 +318,19 @@ export class WeaponSystem {
     if (wh) {
       if (this.armour?.hit(wh.collider.handle, w.damage * fall, end)) {
         this.effects.sparks(end.x, end.y, end.z, 10);
-        audio.bulletHit(true, this.player.position.distanceTo(end));
+        audio.bulletHit(true, end);
         return { hit: true, kill: false };
       }
       const car = this.vehicles.carByCollider(wh.collider);
       if (car) {
         this.shootCar(car, w.damage * fall, end, dir, w.knockback ?? 1);
         this.effects.impact(end.x, end.y, end.z, true);
-        audio.bulletHit(true, this.player.position.distanceTo(end));
+        audio.bulletHit(true, end);
         return { hit: true, kill: false };
       }
       if (this.events.onWorldHit?.(wh.collider.handle, w.damage * fall, end, wh.normal, dir)) return { hit: false, kill: false };
       this.effects.impact(end.x, end.y, end.z, false);
-      audio.bulletHit(false, this.player.position.distanceTo(end));
+      audio.bulletHit(false, end);
     }
     return { hit: false, kill: false };
   }
@@ -491,7 +495,7 @@ export class WeaponSystem {
     light.intensity = 60;
     light.position.set(at.x, y + 1, at.z);
     this.fires.push({ x: at.x, y, z: at.z, r: w.fireRadius!, until: this.time + w.fireDuration!, dps: w.damage, light, byPlayer });
-    audio.molotov(this.player.position.distanceTo(at));
+    audio.molotov(at);
     this.events.onNoise(at.x, at.z, w.noiseRadius, 'molotov');
     this.peds.alarm(at.x, at.z, w.fireRadius! + 12);
   }
@@ -542,6 +546,14 @@ export class WeaponSystem {
    * An NPC (police) fires a pistol at a target point. `hitChance` decides whether the round connects;
    * misses go wide. Returns true on a hit.
    */
+  /** A blast or a shock from the environment: every Streetmon in reach takes it (falling off with distance). */
+  creatureBlast(x: number, z: number, r: number, damage: number): void {
+    for (const c of this.creatureTargets?.() ?? []) {
+      const d = Math.hypot(c.x - x, c.z - z);
+      if (d < r) c.hit(damage * (1 - d / r), c.x - x, c.z - z, false);
+    }
+  }
+
   npcFire(from: THREE.Vector3, target: THREE.Vector3, hitChance: number): boolean {
     const hit = Math.random() < hitChance;
     const end = target.clone();
@@ -559,7 +571,7 @@ export class WeaponSystem {
     const stop = from.clone().addScaledVector(dir, t);
     this.effects.tracer(from.x, from.y, from.z, stop.x, stop.y, stop.z);
     this.effects.muzzle(from.x, from.y, from.z, 0.8);
-    audio.gunshot('npc', this.player.position.distanceTo(from));
+    audio.gunshot('npc', from);
     if (wh) {
       this.effects.impact(stop.x, stop.y, stop.z, !!this.vehicles.carByCollider(wh.collider));
       return false;

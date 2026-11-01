@@ -58,7 +58,7 @@ export interface TutorialView {
   title: string;
   category: string;
   intro: string;
-  steps: Array<{ text: string; parts: Array<string | { key: string }>; practice: boolean; done: boolean }>;
+  steps: Array<{ text: string; parts: Array<string | { key: string }>; /** The same step worded for a touch screen (a step's optional `touch` text). */ touchParts: Array<string | { key: string }> | null; practice: boolean; done: boolean }>;
   practice: number;
   practiced: number;
   replay: boolean;

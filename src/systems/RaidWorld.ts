@@ -328,10 +328,10 @@ export class RaidWorld {
     w.animLock = performance.now() + 800;
     const at = this.tmp.set(w.x, w.y, w.z);
     this.d.moveFx.stomp(at, R, def.color);
-    const dist = this.d.listener().distanceTo(at);
-    audio.moveSfx(def.id === 'gridlock' ? 'quake' : 'roar', dist, 2);
-    if (this.boss) playCry(this.boss.spec.id, dist);
-    if (Math.random() < 0.5) audio.moveSfx('roar', dist + 5, 2.2);
+    const where = { x: at.x, y: at.y + 2, z: at.z };
+    audio.moveSfx(def.id === 'gridlock' ? 'quake' : 'roar', where, 2);
+    if (this.boss) playCry(this.boss.spec.id, where);
+    if (Math.random() < 0.5) audio.moveSfx('roar', where, 2.2);
     this.d.decals.ground('crack', w.x, w.y, w.z, R * 0.55);
     const street = w.biome === 'street';
     if (street) this.d.destruction?.manager.stomp(w.x, w.z, R * 0.8);

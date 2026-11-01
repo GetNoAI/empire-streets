@@ -464,7 +464,7 @@ export class TutorialManager {
       title: c.def.title,
       category: cat?.name ?? c.def.category,
       intro: c.def.intro ?? '',
-      steps: c.def.steps.map((s, i) => ({ text: s.text, parts: parseKeys(s.text), practice: !!s.do, done: c.done[i] })),
+      steps: c.def.steps.map((s, i) => ({ text: s.text, parts: parseKeys(s.text), touchParts: s.touch ? parseKeys(s.touch) : null, practice: !!s.do, done: c.done[i] })),
       practice,
       practiced: c.def.steps.filter((s, i) => s.do && c.done[i]).length,
       replay: c.forced,

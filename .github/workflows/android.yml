@@ -1,0 +1,59 @@
+# Builds the Android APK (the WebView app in android/ with the game inside) on every push to main,
+# on a version tag, or by hand (Actions -> Android APK -> Run workflow). The APK is attached to the
+# run as an artifact ("empire-streets-apk"); a v* tag also publishes it on a GitHub release.
+#
+# It's a debug-signed APK: installable on any phone with "Install unknown apps" allowed for the
+# browser or file manager you open it from. For the Play Store, build a signed bundle in Android
+# Studio (Build -> Generate Signed Bundle / APK) with your own key.
+name: Android APK
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: bash scripts/android-sync.sh
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Build the APK
+        working-directory: android
+        run: gradle --no-daemon assembleDebug
+
+      - name: Name it
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk empire-streets.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: empire-streets-apk
+          path: empire-streets.apk
+
+      - name: Publish on the release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: empire-streets.apk

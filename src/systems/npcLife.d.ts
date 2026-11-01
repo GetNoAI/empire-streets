@@ -3,7 +3,7 @@ import type { AmbientHit, Fighter } from './livingCore.js';
 
 export type HunterState = 'SEARCHING' | 'BATTLING' | 'CATCHING' | 'FLEEING' | 'DONE';
 export const HUNTER_STATES: { readonly [K in HunterState]: K };
-export type Topic = 'tips' | 'league' | 'brag' | 'news';
+export type Topic = 'tips' | 'league' | 'brag' | 'news' | 'life' | 'rumor';
 export const TOPICS: readonly Topic[];
 
 /** A person in the crowd, as the world sees them this tick. */

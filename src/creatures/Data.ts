@@ -67,8 +67,13 @@ export type Temperament = 'wander' | 'flee' | 'aggro';
 
 export const DISTRICTS: readonly District[] = ['uptown', 'midtown', 'downtown', 'park', 'waterfront'];
 /** World layers a species can live in. Street is the default for every species. */
-export type Biome = 'street' | 'roof' | 'sewer';
-export const BIOMES: readonly Biome[] = ['street', 'roof', 'sewer'];
+/** Where a Streetmon lives: a world layer, or the Central Green pond (on the street layer, in the water). */
+export type Biome = 'street' | 'roof' | 'sewer' | 'pond';
+export const BIOMES: readonly Biome[] = ['street', 'roof', 'sewer', 'pond'];
+/** The world layers you can be in (the pond is part of the street). */
+export const LAYER_BIOMES: readonly Biome[] = ['street', 'roof', 'sewer'];
+/** The layer a habitat is in. */
+export const layerOfBiome = (b: Biome): Biome => (b === 'pond' ? 'street' : b);
 export const TIMES: readonly TimeOfDay[] = ['day', 'dusk', 'night'];
 
 export type Evolution =
@@ -115,7 +120,8 @@ export interface SpeciesSpec {
     sewer?: { zones?: Array<'tunnel' | 'chamber' | 'hub' | 'deadEnd'>; nearHazard?: 'sludge' | 'steam' | 'channel' };
   };
   /** weightKg: used when cars hit it (and shown in the dex). */
-  model: { height: number; weightKg?: number; palette: Palette };
+  /** `sink`: a water Streetmon floats with this share of its height under the surface (the pond). */
+  model: { height: number; weightKg?: number; palette: Palette; sink?: number };
   description: string;
   /** People (passers-by, police) who can be fought but not caught; not in the dex. */
   human?: boolean;
@@ -135,7 +141,7 @@ export interface CaptureItem extends ItemSpec {
   kind: 'capture';
   catchMult: number;
   /** Extra multiplier against matching targets (by type and/or base Speed). */
-  bonus?: { types?: TypeId[]; minSpeed?: number; maxSpeed?: number; mult: number };
+  bonus?: { types?: TypeId[]; minSpeed?: number; maxSpeed?: number; night?: boolean; water?: boolean; weaker?: boolean; mult: number };
   model?: string;
 }
 

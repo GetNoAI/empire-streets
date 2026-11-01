@@ -239,6 +239,34 @@ const GLYPHS: Record<string, Draw> = {
     g.arc(s * 0.68, s * 0.32, s * 0.17, Math.PI * 0.95, Math.PI * 2.55);
     g.stroke();
   },
+  house: (g, s) => {
+    // A house: a roof triangle over a box with a door cut out.
+    g.beginPath();
+    g.moveTo(s * 0.5, s * 0.12);
+    g.lineTo(s * 0.9, s * 0.46);
+    g.lineTo(s * 0.1, s * 0.46);
+    g.closePath();
+    g.fill();
+    g.fillRect(s * 0.2, s * 0.44, s * 0.6, s * 0.42);
+    g.globalCompositeOperation = 'destination-out';
+    g.fillRect(s * 0.42, s * 0.6, s * 0.16, s * 0.26);
+    g.globalCompositeOperation = 'source-over';
+  },
+  car: (g, s) => {
+    // A little car seen from the side: body, cabin, two wheels.
+    g.fillRect(s * 0.12, s * 0.46, s * 0.76, s * 0.24);
+    g.fillRect(s * 0.3, s * 0.3, s * 0.4, s * 0.2);
+    g.globalCompositeOperation = 'destination-out';
+    g.beginPath();
+    g.arc(s * 0.3, s * 0.72, s * 0.11, 0, Math.PI * 2);
+    g.arc(s * 0.7, s * 0.72, s * 0.11, 0, Math.PI * 2);
+    g.fill();
+    g.globalCompositeOperation = 'source-over';
+    g.beginPath();
+    g.arc(s * 0.3, s * 0.72, s * 0.08, 0, Math.PI * 2);
+    g.arc(s * 0.7, s * 0.72, s * 0.08, 0, Math.PI * 2);
+    g.fill();
+  },
   flag: (g, s) => {
     g.fillRect(s * 0.2, s * 0.1, s * 0.07, s * 0.82);
     const c = 4;
@@ -541,16 +569,42 @@ export class MapOverlay {
       const r = c.getBoundingClientRect();
       this.view = clampView(zoomAt(this.view, e.clientX - r.left, e.clientY - r.top, e.deltaY < 0 ? 1.18 : 1 / 1.18, this.cfg.map.minZoom, this.cfg.map.maxZoom), this.layout.land);
     }, { passive: false });
+    // Touch: two fingers pinch to zoom (about the point between them); one drags.
+    const fingers = new Map<number, { x: number; y: number }>();
+    let pinch: number | null = null;
+    const spread = (): number => {
+      const [a, b] = [...fingers.values()];
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    };
     c.addEventListener('pointerdown', (e) => {
       if (e.button === 2) {
         this.setWaypoint(null);
         return;
       }
       c.setPointerCapture(e.pointerId);
+      fingers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (fingers.size === 2) {
+        pinch = spread();
+        this.drag = null;
+        return;
+      }
       this.drag = { sx: e.clientX, sy: e.clientY, cx: this.view.cx, cz: this.view.cz, moved: false };
     });
+    const lift = (e: PointerEvent): void => {
+      fingers.delete(e.pointerId);
+      if (fingers.size < 2) pinch = null;
+    };
+    c.addEventListener('pointercancel', lift);
     c.addEventListener('pointermove', (e) => {
       const r = c.getBoundingClientRect();
+      if (fingers.has(e.pointerId)) fingers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pinch !== null && fingers.size === 2) {
+        const d = spread();
+        const [a, b] = [...fingers.values()];
+        if (pinch > 0 && d > 0) this.view = clampView(zoomAt(this.view, (a.x + b.x) / 2 - r.left, (a.y + b.y) / 2 - r.top, d / pinch, this.cfg.map.minZoom, this.cfg.map.maxZoom), this.layout.land);
+        pinch = d;
+        return;
+      }
       this.hover = screenToWorld(this.view, e.clientX - r.left, e.clientY - r.top);
       const dg = this.drag;
       if (!dg) return;
@@ -560,6 +614,12 @@ export class MapOverlay {
       this.view = clampView({ ...this.view, cx: dg.cx - dx / this.view.zoom, cz: dg.cz - dy / this.view.zoom }, this.layout.land);
     });
     c.addEventListener('pointerup', (e) => {
+      const wasPinch = pinch !== null || fingers.size > 1;
+      lift(e);
+      if (wasPinch) {
+        this.drag = null;
+        return;
+      }
       const dg = this.drag;
       this.drag = null;
       if (!dg || dg.moved) return;
@@ -692,6 +752,8 @@ export class MapOverlay {
     lake.addColorStop(1, '#3f8aa8');
     g.fillStyle = lake;
     g.fillRect(X(lk.x0), Z(lk.z0), (lk.x1 - lk.x0) * S, (lk.z1 - lk.z0) * S);
+    // The docks: timber piers out into the rivers.
+    for (const d of L.docks ?? []) rect(d, '#8a7458');
     // Buildings: shadow first, then the roof, lighter the taller it is, with a lit north-west edge.
     const maxH = Math.max(...L.buildings.map((b) => b.height));
     g.fillStyle = 'rgba(10, 12, 16, 0.28)';
@@ -970,7 +1032,7 @@ export class MapOverlay {
         .map((l) => `<label>${iconFor(l.id)}<input type="checkbox" data-layer="${l.id}" ${shown.has(l.id) ? 'checked' : ''}> ${esc(l.label)}</label>`)
         .join('')}</div>
       <div class="cm-wp">${this.waypoint ? `Waypoint: ${esc(this.d.placeName(this.waypoint.x, this.waypoint.z))} <button class="btn small" data-act="clear">Clear</button>` : 'Click the map to set a waypoint.'}</div>
-      <div class="cm-help">Drag or WASD to pan · wheel or +/- to zoom · C centre · right-click clears · M or Esc closes</div>
+      <div class="cm-help">Drag or WASD to pan · wheel, pinch or +/- to zoom · tap/click for a waypoint · C centre · right-click clears · M or Esc closes</div>
       <div class="cm-btns"><button class="btn small" data-act="centre">Centre on me</button><button class="btn small" data-act="close">Close (M)</button></div>`;
   }
 }

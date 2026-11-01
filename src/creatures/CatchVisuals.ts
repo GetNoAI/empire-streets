@@ -167,7 +167,7 @@ export class CatchVisuals {
       onDone,
       baseScale: target.root?.scale.x ?? 1,
     };
-    audio.swing(false);
+    audio.pod('throw', from);
   }
 
   cancel(): void {
@@ -196,7 +196,7 @@ export class CatchVisuals {
       const u = (t - FLIGHT) / ABSORB;
       if (u < dt / ABSORB + 1e-3) {
         this.effects.sparks(r.to.x, r.to.y, r.to.z, 16);
-        audio.ui();
+        audio.pod('open', r.to);
       }
       it.position.copy(r.to);
       it.rotation.set(0, 0, 0);
@@ -205,6 +205,7 @@ export class CatchVisuals {
       // Drop to the ground with a little bounce.
       const u = (t - r.land) / SETTLE;
       if (root) root.scale.setScalar(0.001);
+      if (u >= 0.62 && u - dt / SETTLE < 0.62) audio.pod('land', r.ground);
       it.position.lerpVectors(r.to, r.ground, Math.min(1, u * 1.6));
       if (u > 0.62) it.position.y = r.ground.y + Math.abs(Math.sin((u - 0.62) * Math.PI * 2.6)) * 0.08 * (1 - u);
     } else if (t < r.end - OUTRO) {
@@ -215,7 +216,7 @@ export class CatchVisuals {
       if (n >= r.shakesDone && within < SHAKE) {
         r.shakesDone = n + 1;
         r.onShake?.(n + 1);
-        audio.dryFire();
+        audio.pod('shake', r.ground);
       }
       it.position.copy(r.ground);
       it.rotation.z = within < SHAKE ? Math.sin((within / SHAKE) * Math.PI * 3) * 0.45 * Math.sin((within / SHAKE) * Math.PI) : 0;
@@ -225,7 +226,7 @@ export class CatchVisuals {
       if (r.roll.caught) {
         // Click! Locked shut.
         this.effects.sparks(r.ground.x, r.ground.y + 0.2, r.ground.z, 22);
-        audio.cash();
+        audio.pod('click', r.ground);
         it.traverse((o) => {
           const m = o as THREE.Mesh;
           if (m.isMesh) m.material = this.mats.glow;
@@ -233,7 +234,7 @@ export class CatchVisuals {
       } else {
         // Bursts open: the creature pops back out.
         this.effects.sparks(r.ground.x, r.ground.y + 0.3, r.ground.z, 14);
-        audio.thud();
+        audio.pod('burst', r.ground);
         it.visible = false;
       }
     } else {

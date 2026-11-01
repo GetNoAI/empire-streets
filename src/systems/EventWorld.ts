@@ -330,7 +330,7 @@ export class EventWorld {
     if (this.d.vehicles.cars.some((c) => Math.hypot(c.position.x - p0.x, c.position.z - p0.z) < 7)) return null;
     const car = this.d.vehicles.spawn(spec, p0.x, p0.z, DIR_HEADING[d0], T.color);
     car.driver = 'ai';
-    car.mods.armor = T.armor;
+    car.setLayer('event', { armor: T.armor });
     car.setMass(spec.mass * (T.massMult ?? 1));
     this.d.vehicles.owned.add(car);
     const path = G.routeWaypoints(route.slice(1), d0, 0, car.topSpeed, 9);
@@ -471,7 +471,7 @@ export class EventWorld {
       }
     }
     this.d.effects.sparks(rear.x, rear.y + 1, rear.z, 24);
-    audio.crash(0.6, this.d.listener().distanceTo(rear));
+    audio.crash(0.6, rear);
     // The guards bail out, guns drawn.
     if (!burnt)
       h.guardLooks.forEach((look, i) => {
@@ -628,7 +628,7 @@ export class EventWorld {
       const mz = ped.z - Math.sin(ped.heading) * 0.5;
       this.d.effects.muzzle(mx, ped.y + 1.35, mz, 0.7);
       this.d.effects.tracer(mx, ped.y + 1.35, mz, p.pos.x, p.pos.y + 1, p.pos.z);
-      audio.gunshot('pistol', this.d.listener().distanceTo(this.tmp.set(ped.x, ped.y, ped.z)));
+      audio.gunshot('pistol', { x: ped.x, y: ped.y + 1.3, z: ped.z });
       // Harder to hit you at range or in a car.
       const chance = (p.vehicle ? 0.25 : 0.4) * (1 - dist / (range * 1.4));
       if (Math.random() < chance) this.d.damagePlayer(T.guardDamage ?? 6, 'Shot by an armored-car guard');

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { districtAt } from '../creatures/SpawnRules';
 import type { CityLayout, Rect } from './CityLayout';
+import type { District } from '../creatures/Data';
 import { withSurface } from '../render/Surfaces';
 
 /**
@@ -40,6 +41,14 @@ export const CHOP_SHOP = {
  * planGarages and before the city is built.
  */
 export function planChopShop(layout: CityLayout): ChopShopSpot {
+  return planKerbSpot(layout, 'midtown', [], 2);
+}
+
+/**
+ * A kerb-lane spot in front of a building in `district`, nearest the park and away from garages
+ * and `avoid` (other spots), with `bayCount` bays behind it. Removes parking around it.
+ */
+export function planKerbSpot(layout: CityLayout, district: District, avoid: Array<{ x: number; z: number }>, bayCount: number): ChopShopSpot {
   const park = layout.park;
   const pcx = (park.x0 + park.x1) / 2;
   const pcz = (park.z0 + park.z1) / 2;
@@ -55,8 +64,9 @@ export function planChopShop(layout: CityLayout): ChopShopSpot {
         if (side > 0 ? Math.abs(b.z0 - (r.center + r.width / 2)) > 0.5 : Math.abs(b.z1 - (r.center - r.width / 2)) > 0.5) continue;
         if (b.x1 - b.x0 < 80) continue;
         const x = (b.x0 + b.x1) / 2;
-        if (districtAt(layout, x, laneZ) !== 'midtown') continue;
+        if (districtAt(layout, x, laneZ) !== district) continue;
         if (x > park.x0 - 30 && x < park.x1 + 30 && laneZ > park.z0 - 30 && laneZ < park.z1 + 30) continue;
+        if (avoid.some((a) => Math.hypot(a.x - x, a.z - laneZ) < 120)) continue;
         if (garages.some((g) => x > g.x0 - 50 && x < g.x1 + 50 && Math.abs((side > 0 ? g.z0 : g.z1) - faceZ) < 25)) continue;
         // A building right behind the sidewalk for the door.
         const bld = layout.buildings.some((o) => x > o.rect.x0 + 2 && x < o.rect.x1 - 2 && Math.abs((side > 0 ? o.rect.z0 : o.rect.z1) - faceZ) < 0.6);
@@ -73,13 +83,13 @@ export function planChopShop(layout: CityLayout): ChopShopSpot {
             heading,
             side,
             doorZ: faceZ,
-            bays: [1, 2].map((k) => ({ x: x - dir * k * 7.5, z: laneZ, heading })),
+            bays: Array.from({ length: bayCount }, (_, i) => ({ x: x - dir * (i + 1) * 7.5, z: laneZ, heading })),
           },
         };
       }
     }
   }
-  if (!best) throw new Error('Chop Shop: no place for it in Midtown');
+  if (!best) throw new Error(`No kerb spot for a shop in ${district}`);
   const s = best.spot;
   layout.parking = layout.parking.filter((p) => Math.hypot(p.x - s.x, p.z - s.z) > CHOP_SHOP.clearRadius);
   return s;

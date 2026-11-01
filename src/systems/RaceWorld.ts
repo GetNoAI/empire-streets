@@ -7,10 +7,13 @@ import type { RoadGraph, Dir, Point } from '../traffic/RoadGraph';
 import { DIR_HEADING } from '../traffic/RoadGraph';
 import type { TrafficSystem } from '../traffic/TrafficSystem';
 import type { Car } from '../vehicles/Car';
-import { getSpec } from '../vehicles/specs';
+import { VEHICLES, getSpec, type VehicleSpec } from '../vehicles/specs';
+import { classAllowed, classOf, classRank, performanceIndex, type CarClass } from '../vehicles/Performance';
 import type { VehicleManager } from '../vehicles/VehicleManager';
 import type { CoursePoint, GridSlot, PropDef, PropHandle, RaceConfig, RaceState, RaceTrack, RacerDriver } from './streetRaceManager.js';
 import { withSurface } from '../render/Surfaces';
+import { RivalBrain, rivalUpgrades, type RivalLoadout, type RivalSlot } from './rivalLoadout';
+import type { RiderSpec } from '../vehicles/StreetmonRiders';
 
 /**
  * The engine side of street races (streetRaceManager.js runs the rules): track props with real
@@ -31,6 +34,12 @@ export interface RaceWorldDeps {
   inSmoke(x: number, y: number, z: number): boolean;
   /** Is a point on screen (racers only teleport out of trouble when you can't see it). */
   visible(x: number, z: number): boolean;
+  /** Rival racers' Streetmon: their loadouts, firing an ability, and showing who rides along. */
+  rivals?: {
+    loadouts(track: RaceTrack, drivers: RacerDriver[]): RivalLoadout[];
+    fire(car: Car, slot: RivalSlot, driver: string): void;
+    riders(car: Car, riders: RiderSpec[]): void;
+  };
 }
 
 /** Loose props: members of the PED group so car chassis hit them but wheel rays ignore them. */
@@ -71,6 +80,11 @@ interface Racer {
   blindFor: number;
   progress: number;
   wobble: number;
+  /** Streetmon aboard and the brain that uses them (none: a plain racer). */
+  loadout: RivalLoadout | null;
+  brain: RivalBrain | null;
+  /** Seconds left on a Nitrous Smokescreen's speed boost. */
+  boostLeft: number;
 }
 
 const mats = {
@@ -125,6 +139,26 @@ function checkerTexture(): THREE.CanvasTexture {
   t.repeat.set(6, 1);
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
+}
+
+/**
+ * Which car a rival drives: its own (races.json) when the race allows it; otherwise, or from the
+ * Pro tier up, one of the best cars the race's class limit allows (so a class C race is full of
+ * hatchbacks and cabs, and an unlimited Elite race has supercars in it).
+ */
+export function rivalSpec(preferred: string, maxClass: string | null, tier: number, rng: () => number): VehicleSpec {
+  const own = VEHICLES.find((v) => v.id === preferred) ?? getSpec('sports');
+  const cls = (v: VehicleSpec): CarClass => classOf(performanceIndex(v));
+  const ok = (v: VehicleSpec): boolean => classAllowed(cls(v), (maxClass as CarClass | null) ?? null);
+  const pool = VEHICLES.filter((v) => v.price > 0 && v.id !== 'bus' && v.id !== 'limo' && v.id !== 'ambulance' && v.id !== 'beater' && ok(v));
+  if (!pool.length) return own;
+  if (tier < 3 && ok(own)) return own;
+  // The top class allowed (three times in four), else the one below, for a little variety.
+  const best = Math.max(...pool.map((v) => classRank(cls(v))));
+  const top = pool.filter((v) => classRank(cls(v)) === best);
+  const below = pool.filter((v) => classRank(cls(v)) === best - 1);
+  const from = tier >= 4 || rng() < 0.75 || !below.length ? top : below;
+  return from[Math.floor(rng() * from.length)] ?? own;
 }
 
 export class RaceWorld {
@@ -407,23 +441,41 @@ export class RaceWorld {
       chain.push(...r.slice(1));
     }
     const arrive = this.dirFromHeading(track.start.heading);
+    const loadouts = this.d.rivals?.loadouts(track, drivers) ?? [];
     return slots.map((slot, i) => {
       const drv = drivers[i];
-      let spec;
-      try {
-        spec = getSpec(drv.vehicle);
-      } catch {
-        spec = getSpec('sports');
-      }
+      const spec = rivalSpec(drv.vehicle, track.maxClass ?? null, loadouts[i]?.tier ?? 1, Math.random);
       const car = this.d.vehicles.spawn(spec, slot.x, slot.z, slot.heading, drv.color);
       car.driver = 'ai';
       // Race-prepped: roll cage and reinforced panels, so one bad crash doesn't end their race.
-      car.mods.armor = 4;
-      this.d.vehicles.owned.add(car);
+      // Their Streetmon: the slots' stat changes (scaled by the race tier) and riders on the car.
+      const lo = loadouts[i] ?? null;
+      const m = lo?.slots.length ? lo.multipliers : {};
+      car.setLayer('race', { armor: 4, speed: m.topSpeed ?? 1, accel: m.acceleration ?? 1, grip: m.grip ?? 1, steer: m.steering ?? 1 });
+      if (lo?.slots.length) this.d.rivals?.riders(car, lo.slots.map((s) => ({ slot: s.slot, speciesId: s.speciesId, shiny: false })));
+      // Race-prepped to the player's level: rivals get the same bolt-on parts as the race tier.
+      car.setUpgrades(rivalUpgrades(lo?.tier ?? 1, Math.random));
       const lane = i % 2;
       const top = car.topSpeed;
       const path = G.routeWaypoints(chain, arrive, lane, top, 13 + 5 * drv.skill);
-      const r: Racer = { id: `racer-${i}-${Math.floor(Math.random() * 1e6).toString(36)}`, car, driver: drv, path, wp: 0, lane, stuckFor: 0, stuckCount: 0, reverseFor: 0, reverseSteer: 0, blindFor: 0, progress: 0, wobble: Math.random() * 10 };
+      const r: Racer = {
+        id: `racer-${i}-${Math.floor(Math.random() * 1e6).toString(36)}`,
+        car,
+        driver: drv,
+        path,
+        wp: 0,
+        lane,
+        stuckFor: 0,
+        stuckCount: 0,
+        reverseFor: 0,
+        reverseSteer: 0,
+        blindFor: 0,
+        progress: 0,
+        wobble: Math.random() * 10,
+        loadout: lo,
+        brain: lo?.slots.length ? new RivalBrain(lo, Math.random) : null,
+        boostLeft: 0,
+      };
       this.racers.push(r);
       return r.id;
     });
@@ -487,13 +539,35 @@ export class RaceWorld {
     return this.racers.filter((r) => !r.car.disposed).map((r) => r.car);
   }
 
+  /** One racer knocked out: it pulls over and leaves as traffic. */
+  removeRacer(id: string): void {
+    const i = this.racers.findIndex((r) => r.id === id);
+    if (i < 0) return;
+    const r = this.racers[i];
+    this.racers.splice(i, 1);
+    const car = r.car;
+    this.d.vehicles.owned.delete(car);
+    this.boosting.delete(car);
+    car.setLayer('race', null);
+    car.setUpgrades(null);
+    if (r.loadout?.slots.length) this.d.rivals?.riders(car, []);
+    if (car.disposed || car.driver === 'player') return;
+    car.driver = null;
+    car.input.throttle = 0;
+    car.input.brake = 0;
+    car.input.steer = 0;
+    this.d.traffic.adopt(car, randomLook(), false);
+  }
+
   /** Race over: racers you can see drive off as traffic, the rest vanish. */
   removeRacers(): void {
     for (const r of this.racers) {
       const car = r.car;
       this.d.vehicles.owned.delete(car);
       this.boosting.delete(car);
-      car.mods.armor = 1;
+      car.setLayer('race', null);
+      car.setUpgrades(null);
+      if (r.loadout?.slots.length) this.d.rivals?.riders(car, []);
       if (car.disposed || car.driver === 'player') continue;
       if (car.destroyed || !this.d.visible(car.position.x, car.position.z)) {
         this.d.vehicles.remove(car);
@@ -533,8 +607,57 @@ export class RaceWorld {
       // Rubber band: a little faster when far behind you, a touch slower when far ahead.
       const gap = r.progress - playerProg;
       const band = gap < -(cu.behindGap ?? 2) ? cu.behindBoost ?? 1.06 : gap > (cu.aheadGap ?? 2) ? cu.aheadSlow ?? 0.95 : 1;
+      this.useStreetmon(r, dt);
       this.drive(r, dt, r.driver.skill * band);
     }
+  }
+
+  /** A racer's Streetmon: the brain watches for openings against you and fires their abilities. */
+  private useStreetmon(r: Racer, dt: number): void {
+    const car = r.car;
+    const lo = r.loadout;
+    if (r.boostLeft > 0) {
+      r.boostLeft -= dt;
+      if (r.boostLeft <= 0 && lo) car.setLayer('race', { ...car.layer('race'), speed: lo.multipliers.topSpeed ?? 1, accel: lo.multipliers.acceleration ?? 1 });
+    }
+    if (!r.brain || !lo) return;
+    const me = this.d.playerCar();
+    const pos = car.position;
+    let dist = 1e9;
+    let behind = false;
+    let lateral = 0;
+    if (me && !me.disposed) {
+      this.invQ.copy(car.quaternion).invert();
+      const local = this.tmp.set(me.position.x - pos.x, 0, me.position.z - pos.z).applyQuaternion(this.invQ);
+      dist = Math.hypot(local.x, local.z);
+      behind = local.x < 0;
+      lateral = local.z;
+    }
+    // Straight ahead: the route ~60 m on is within ~11 degrees of where it's pointing.
+    let straight = false;
+    const f = car.forward(this.fwd);
+    for (let i = r.wp; i < r.path.length; i++) {
+      const w = r.path[i];
+      const dx = w.x - pos.x;
+      const dz = w.z - pos.z;
+      const d = Math.hypot(dx, dz);
+      if (d < 60) continue;
+      straight = (dx * f.x + dz * f.z) / d > 0.98;
+      break;
+    }
+    for (const s of r.brain.update(dt, { speed: Math.abs(car.speed), playerDist: dist, playerBehind: behind, playerLateral: lateral, straight })) {
+      this.d.rivals?.fire(car, s, r.driver.name);
+      if (s.ability === 'nitrousSmokescreen') {
+        // The smokescreen's burst of speed (as yours: +15% top speed, +35% pull).
+        r.boostLeft = 5;
+        car.setLayer('race', { ...car.layer('race'), speed: (lo.multipliers.topSpeed ?? 1) * 1.15, accel: (lo.multipliers.acceleration ?? 1) * 1.35 });
+      }
+    }
+  }
+
+  /** Racers' Streetmon loadouts (for the HUD). */
+  loadouts(): Array<{ car: Car; driver: string; loadout: RivalLoadout | null }> {
+    return this.racers.map((r) => ({ car: r.car, driver: r.driver.name, loadout: r.loadout }));
   }
 
   private drive(r: Racer, dt: number, pace: number): void {
@@ -687,7 +810,15 @@ export class RaceWorld {
       const near = this.nearestAhead(r, car.position.x, car.position.z);
       r.wp = near.i;
       const w = r.path[r.wp];
-      const lost = near.d > 60 || r.stuckCount >= 3;
+      // Lost means off the racing line, not just a long way from the next waypoint on a straight:
+      // measure to the leg between the last waypoint and the next.
+      const prev = r.path[Math.max(0, r.wp - 1)];
+      const dx = w.x - prev.x;
+      const dz = w.z - prev.z;
+      const L2 = dx * dx + dz * dz || 1;
+      const t = Math.max(0, Math.min(1, ((car.position.x - prev.x) * dx + (car.position.z - prev.z) * dz) / L2));
+      const offLine = Math.hypot(prev.x + dx * t - car.position.x, prev.z + dz * t - car.position.z);
+      const lost = offLine > 40 || r.stuckCount >= 3;
       if (!lost || this.d.visible(car.position.x, car.position.z) || this.d.visible(w.x, w.z)) continue;
       const nxt = r.path[Math.min(r.wp + 1, r.path.length - 1)];
       const h = Math.atan2(-(nxt.z - w.z), nxt.x - w.x);

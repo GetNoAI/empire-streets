@@ -7,12 +7,35 @@ import type { CryParams } from './Cries';
 
 type WebkitWindow = Window & { webkitAudioContext?: typeof AudioContext };
 
+export interface Vec3 {
+  x: number;
+  y: number;
+  z: number;
+}
+
+/**
+ * Where a sound comes from: a world position (played through a 3D voice, src/audio/Spatial.ts,
+ * so it pans and falls off with distance from the camera), or a plain distance in metres (the
+ * old flat fade, still used for sounds that are "on you": your own gun, the race beeps).
+ */
+export type Where = number | Vec3;
+
+/** What the 3D layer gives the synth: the listener's position, and a voice (an input node on a panner) at a point. */
+export interface SpatialBackend {
+  ears(): Vec3;
+  voice(at: Vec3, range: number, seconds: number): AudioNode | null;
+}
+
 class AudioEngine {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
   private noise: AudioBuffer | null = null;
+  /** The 3D voice the sound being built goes to (null: straight to the master bus). */
+  private spot: AudioNode | null = null;
+  private spatial: SpatialBackend | null = null;
   private enabled = true;
-  private readonly volume = 0.6;
+  private volume = 0.6;
+  private readonly baseVolume = 0.6;
   private loops: {
     engA: OscillatorNode;
     engB: OscillatorNode;
@@ -58,8 +81,60 @@ class AudioEngine {
     if (this.ctx && this.master) this.master.gain.setTargetAtTime(on ? this.volume : 0, this.ctx.currentTime, 0.05);
   }
 
+  /** Effects volume from the options (0..1 of the default level). */
+  setVolume(v: number): void {
+    this.volume = this.baseVolume * Math.max(0, Math.min(1, v));
+    if (this.ctx && this.master) this.master.gain.setTargetAtTime(this.enabled ? this.volume : 0, this.ctx.currentTime, 0.05);
+  }
+
+  /** The context and master bus, for the 3D layer (null until the first user gesture). */
+  get context(): AudioContext | null {
+    return this.ctx;
+  }
+
+  get output(): GainNode | null {
+    return this.master;
+  }
+
+  get noiseBuffer(): AudioBuffer | null {
+    return this.noise;
+  }
+
+  setSpatial(b: SpatialBackend | null): void {
+    this.spatial = b;
+  }
+
   private ready(): boolean {
+    this.spot = null;
     return !!this.ctx && this.ctx.state === 'running';
+  }
+
+  /**
+   * Loudness for a sound heard out to `range` metres. A world position gets a 3D voice (the
+   * panner does the falloff, so this returns 1, or 0 past the range); a distance gets the flat
+   * linear fade.
+   */
+  private att(where: Where, range: number, seconds = 1.5): number {
+    if (typeof where === 'number') return Number.isFinite(where) ? Math.max(0, 1 - Math.max(0, where) / range) : 0;
+    if (!where || !Number.isFinite(where.x) || !Number.isFinite(where.z)) return 0;
+    if (!this.spatial) return 1;
+    const l = this.spatial.ears();
+    const d = Math.hypot(where.x - l.x, (where.y ?? l.y) - l.y, where.z - l.z);
+    if (d > range) return 0;
+    this.spot = this.spatial.voice(where, range, seconds);
+    return this.spot ? 1 : Math.max(0, 1 - d / range);
+  }
+
+  private dest(): AudioNode {
+    return this.spot ?? this.master!;
+  }
+
+  /** Metres from the listener (0 without the 3D layer or for a distance given as a number's own value). */
+  distanceTo(where: Where): number {
+    if (typeof where === 'number') return where;
+    if (!this.spatial) return 0;
+    const l = this.spatial.ears();
+    return Math.hypot(where.x - l.x, where.y - l.y, where.z - l.z);
   }
 
   private noiseSource(loop: boolean): AudioBufferSourceNode {
@@ -181,9 +256,9 @@ class AudioEngine {
   }
 
   /** A short horn blast from another car, attenuated by distance in metres. */
-  honk(distance: number): void {
+  honk(where: Where): void {
     if (!this.ready()) return;
-    const k = Math.max(0, 1 - distance / 90);
+    const k = this.att(where, 90, 0.8);
     if (k < 0.03) return;
     const ctx = this.ctx!;
     const t = ctx.currentTime;
@@ -205,7 +280,7 @@ class AudioEngine {
     const flt = ctx.createBiquadFilter();
     flt.type = 'lowpass';
     flt.frequency.value = 1800;
-    g.connect(flt).connect(this.master!);
+    g.connect(flt).connect(this.dest());
   }
 
   /** Wail siren for nearby police; distance 0..1 (1 = far). */
@@ -236,7 +311,7 @@ class AudioEngine {
     g.gain.setValueAtTime(0.0001, t);
     g.gain.exponentialRampToValueAtTime(Math.max(0.0002, gain), t + 0.005);
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    s.connect(flt).connect(g).connect(this.master!);
+    s.connect(flt).connect(g).connect(this.dest());
     s.start(t, Math.random());
     s.stop(t + dur + 0.05);
   }
@@ -251,15 +326,15 @@ class AudioEngine {
     const g = ctx.createGain();
     g.gain.setValueAtTime(Math.max(0.0002, gain), t);
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(g).connect(this.master!);
+    o.connect(g).connect(this.dest());
     o.start(t);
     o.stop(t + dur + 0.05);
   }
 
   /** intensity 0..1, distance in metres from the listener. */
-  crash(intensity: number, distance = 0): void {
+  crash(intensity: number, where: Where = 0): void {
     if (!this.ready()) return;
-    const k = Math.min(1, intensity) * Math.max(0, 1 - distance / 120);
+    const k = Math.min(1, intensity) * this.att(where, 120, 0.8);
     if (k < 0.02) return;
     this.burst('lowpass', 2500, 120, 0.9 * k, 0.35 + 0.3 * k);
     this.tone('sine', 90, 35, 0.6 * k, 0.3);
@@ -267,9 +342,9 @@ class AudioEngine {
   }
 
   /** Tuning ability sounds by id (from vehicle_streetmon_tuning.json), attenuated with distance. */
-  sfx(id: string, distance = 0): void {
+  sfx(id: string, where: Where = 0): void {
     if (!this.ready()) return;
-    const k = Math.max(0, 1 - distance / 300);
+    const k = this.att(where, 300, 1.6);
     if (k < 0.02) return;
     switch (id) {
       case 'sfx_nitrous_hiss':
@@ -353,6 +428,39 @@ class AudioEngine {
         this.tone('sine', 320, 140, 0.2 * k, 0.15);
         this.burst('highpass', 2200, 1600, 0.25 * k, 0.4, 0.08);
         break;
+      // The pond: a splash (something going in), a big one (a car, a dive), swim strokes, wading, climbing out.
+      case 'sfx_splash':
+        this.burst('lowpass', 2400, 400, 0.45 * k, 0.45);
+        this.burst('highpass', 1800, 3200, 0.2 * k, 0.6, 0.05);
+        this.tone('sine', 380, 150, 0.08 * k, 0.12);
+        break;
+      case 'sfx_splash_big':
+        this.burst('lowpass', 1800, 120, 0.9 * k, 1.1);
+        this.burst('highpass', 1500, 3500, 0.35 * k, 1.3, 0.08);
+        this.tone('sine', 120, 45, 0.45 * k, 0.5);
+        for (let i = 0; i < 4; i++) this.burst('bandpass', 1200 + i * 300, 600, 0.12 * k, 0.25, 0.45 + i * 0.18);
+        break;
+      case 'sfx_swim':
+        this.burst('bandpass', 900, 1600, 0.12 * k, 0.28);
+        this.burst('highpass', 2200, 3000, 0.06 * k, 0.25, 0.12);
+        break;
+      case 'sfx_roll':
+        // Cloth and a shoulder on the pavement.
+        this.burst('bandpass', 700, 300, 0.22 * k, 0.32);
+        this.tone('sine', 110, 55, 0.12 * k, 0.12, 0.18);
+        break;
+      case 'sfx_dive':
+        this.burst('highpass', 1800, 900, 0.18 * k, 0.35);
+        this.burst('lowpass', 600, 180, 0.3 * k, 0.3, 0.55);
+        this.tone('sine', 95, 45, 0.18 * k, 0.15, 0.6);
+        break;
+      case 'sfx_wade':
+        this.burst('lowpass', 900, 300, 0.1 * k, 0.3);
+        break;
+      case 'sfx_climb':
+        this.burst('lowpass', 1400, 300, 0.25 * k, 0.4);
+        this.tone('sine', 140, 60, 0.15 * k, 0.15, 0.1);
+        break;
       case 'sfx_geyser':
         this.burst('highpass', 900, 1400, 0.22 * k, 1.3);
         this.burst('bandpass', 500, 700, 0.15 * k, 1.2);
@@ -369,9 +477,10 @@ class AudioEngine {
    * (heavier for critical and super-effective hits, duller when resisted), and the legendary
    * roars, stomps and quakes. `size` scales loudness and pitch a little (1 = normal).
    */
-  moveSfx(id: string, distance = 0, size = 1): void {
-    if (!this.ready() || !Number.isFinite(distance)) return;
-    const k = Math.max(0, 1 - distance / 220) * Math.min(1.4, 0.75 + size * 0.25);
+  moveSfx(id: string, where: Where = 0, size = 1): void {
+    if (!this.ready()) return;
+    const distance = where;
+    const k = this.att(where, 220, 2.6) * Math.min(1.4, 0.75 + size * 0.25);
     if (k < 0.02) return;
     const lo = 1 / Math.max(0.6, Math.min(1.8, size)); // bigger moves sound lower
     switch (id) {
@@ -541,7 +650,7 @@ class AudioEngine {
           o.start(t);
           o.stop(t + 1.9);
         }
-        flt.connect(g).connect(this.master!);
+        flt.connect(g).connect(this.dest());
         this.burst('bandpass', 700, 300, 0.3 * k, 1.4);
         this.tone('sine', 45, 28, 0.7 * k, 1.6);
         break;
@@ -559,18 +668,18 @@ class AudioEngine {
     }
   }
 
-  explosion(distance = 0): void {
+  explosion(where: Where = 0): void {
     if (!this.ready()) return;
-    const k = Math.max(0, 1 - distance / 400);
+    const k = this.att(where, 400, 2.4);
     if (k < 0.02) return;
     this.burst('lowpass', 1600, 60, 1.2 * k, 2.2);
     this.tone('sine', 65, 20, 1.0 * k, 1.4);
   }
 
   /** Gunshot by weapon id, attenuated with distance (metres). */
-  gunshot(id: string, distance = 0): void {
-    if (!this.ready() || !Number.isFinite(distance)) return;
-    const k = Math.max(0, 1 - distance / 260);
+  gunshot(id: string, where: Where = 0): void {
+    if (!this.ready()) return;
+    const k = this.att(where, 260, 1);
     if (k < 0.02) return;
     switch (id) {
       case 'pistol':
@@ -629,19 +738,64 @@ class AudioEngine {
   }
 
   /** Bottle breaking and fuel catching. */
-  molotov(distance = 0): void {
+  molotov(where: Where = 0): void {
     if (!this.ready()) return;
-    const k = Math.max(0, 1 - distance / 120);
+    const k = this.att(where, 120, 1);
+    if (k < 0.02) return;
     this.burst('highpass', 5000, 2500, 0.4 * k, 0.25);
     this.burst('lowpass', 500, 1500, 0.5 * k, 0.9, 0.05);
   }
 
-  bulletHit(metal: boolean, distance = 0): void {
+  bulletHit(metal: boolean, where: Where = 0): void {
     if (!this.ready()) return;
-    const k = Math.max(0, 1 - distance / 60);
+    const k = this.att(where, 60, 0.2);
     if (k < 0.05) return;
     if (metal) this.tone('square', 1500 + Math.random() * 700, 500, 0.06 * k, 0.06);
     else this.burst('highpass', 2500, 1200, 0.1 * k, 0.04);
+  }
+
+  /**
+   * Capture pods (Hoodballs and the rest): the throw's whoosh, the flash as it opens and pulls
+   * the Streetmon in, the clack when it lands, each wobble's click, the lock-shut click and
+   * chime, or the pop when it bursts open. Heard from where the pod is.
+   */
+  pod(kind: 'throw' | 'open' | 'land' | 'shake' | 'click' | 'burst', where: Where = 0): void {
+    if (!this.ready()) return;
+    const k = this.att(where, 70, 1.2);
+    if (k < 0.03) return;
+    switch (kind) {
+      case 'throw':
+        this.burst('bandpass', 500, 2200, 0.16 * k, 0.28);
+        this.tone('sine', 300, 520, 0.05 * k, 0.25);
+        break;
+      case 'open':
+        this.tone('sine', 520, 1560, 0.14 * k, 0.32);
+        this.burst('highpass', 2400, 6000, 0.16 * k, 0.4);
+        this.tone('triangle', 1040, 2080, 0.06 * k, 0.3, 0.06);
+        break;
+      case 'land':
+        this.tone('square', 900, 420, 0.07 * k, 0.05);
+        this.burst('bandpass', 1800, 900, 0.14 * k, 0.06);
+        this.tone('square', 760, 380, 0.04 * k, 0.04, 0.11);
+        break;
+      case 'shake':
+        this.burst('bandpass', 2600, 1800, 0.14 * k, 0.04);
+        this.tone('square', 1400, 1100, 0.04 * k, 0.03, 0.05);
+        this.burst('bandpass', 2200, 1600, 0.1 * k, 0.04, 0.16);
+        break;
+      case 'click':
+        this.tone('square', 2200, 2000, 0.1 * k, 0.03);
+        this.burst('highpass', 3200, 2600, 0.2 * k, 0.04);
+        this.tone('triangle', 1320, 1320, 0.07 * k, 0.12, 0.12);
+        this.tone('triangle', 1760, 1760, 0.07 * k, 0.16, 0.2);
+        this.tone('triangle', 2640, 2640, 0.05 * k, 0.3, 0.28);
+        break;
+      case 'burst':
+        this.burst('bandpass', 1300, 300, 0.4 * k, 0.16);
+        this.tone('sine', 420, 120, 0.2 * k, 0.2);
+        this.burst('highpass', 2600, 1400, 0.16 * k, 0.35, 0.04);
+        break;
+    }
   }
 
   cash(): void {
@@ -752,9 +906,9 @@ class AudioEngine {
    * A Streetmon's cry (src/audio/Cries.ts makes the parameters). `pitch` and `speed` bend it
    * (fainting: lower and slower); `distance` in metres fades it.
    */
-  cry(p: CryParams, distance = 0, o: { pitch?: number; speed?: number; gain?: number } = {}): void {
-    if (!this.ready() || !Number.isFinite(distance)) return;
-    const k = Math.max(0, 1 - distance / 160) * (o.gain ?? 1);
+  cry(p: CryParams, where: Where = 0, o: { pitch?: number; speed?: number; gain?: number } = {}): void {
+    if (!this.ready()) return;
+    const k = this.att(where, 160, 3.5) * (o.gain ?? 1);
     if (k < 0.03) return;
     const ctx = this.ctx!;
     const t = ctx.currentTime + 0.01;
@@ -763,7 +917,7 @@ class AudioEngine {
     const end = t + p.length * sp + 0.1;
     const out = ctx.createGain();
     out.gain.value = 0.22 * k;
-    out.connect(this.master!);
+    out.connect(this.dest());
     if (p.echo > 0) {
       const dl = ctx.createDelay(1);
       dl.delayTime.value = p.echoDelay;
@@ -773,7 +927,7 @@ class AudioEngine {
       lp.type = 'lowpass';
       lp.frequency.value = 1800;
       out.connect(dl).connect(lp).connect(fb).connect(dl);
-      lp.connect(this.master!);
+      lp.connect(this.dest());
     }
     const env = ctx.createGain();
     env.gain.setValueAtTime(0.0001, t);

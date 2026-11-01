@@ -9,3 +9,19 @@ dist
 .apply.py
 .bc.mjs
 build/
+android/app/src/main/assets/www/*
+!android/app/src/main/assets/www/.gitkeep
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+
+# Credentials: never commit
+getnoai_git
+getnoai_git.pub
+gitpass
+# Temporary staging folders
+.stage/
+stagetmp/
+_to_delete_stagetmp/

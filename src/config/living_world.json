@@ -236,6 +236,22 @@
         [
           "Sneak up slow, they don't spot you.",
           "Sprint and they bolt."
+        ],
+        [
+          "Hold still and the ones in the sky come down.",
+          "Took me an hour once. Worth it, it was a {species}."
+        ],
+        [
+          "Sleep at a safehouse before a big job.",
+          "If it goes wrong you wake up there, not in the gutter."
+        ],
+        [
+          "Don't throw a pod when it's flying high.",
+          "Yeah, I lost three cages that way."
+        ],
+        [
+          "Lose the cops behind a building.",
+          "They only see what's in front of them. Mostly."
         ]
       ],
       "league": [
@@ -259,6 +275,15 @@
         [
           "Midnight sprints are back on.",
           "Cops set up roadblocks every time."
+        ],
+        [
+          "Dockside Dutch is taking challengers again.",
+          "Nobody's beaten Dutch in a year.",
+          "Somebody will."
+        ],
+        [
+          "You heard what Mama Rust charges for a race build?",
+          "Worth every cent. My {species} rides in the trunk now."
         ]
       ],
       "brag": [
@@ -291,6 +316,76 @@
         [
           "Stay off the sidewalk, these drivers are nuts.",
           "Tell me about it."
+        ],
+        [
+          "Somebody drove a car into the pond again.",
+          "Third one this month. They should fence it."
+        ],
+        [
+          "The deli on the corner sold out of nets.",
+          "Everyone's after Quackpacks since the pond got lively."
+        ],
+        [
+          "Cops closed {street} for an hour last night.",
+          "Chase came right through. Lights everywhere."
+        ]
+      ],
+      "life": [
+        [
+          "Rent in {district} went up again.",
+          "I'm moving under the bridge. Cheaper, and nicer neighbours."
+        ],
+        [
+          "You eating tonight?",
+          "Night Owl Diner. Marge saves me the corner booth."
+        ],
+        [
+          "My boss wants the reports by Monday.",
+          "It's Friday night. Your boss can wait."
+        ],
+        [
+          "I miss the old {district}.",
+          "Before the Streetmon?",
+          "Before the parking meters."
+        ],
+        [
+          "Laundromat ate my quarters again.",
+          "Kick the third machine from the left, works every time."
+        ],
+        [
+          "My {species} sleeps on my feet every night.",
+          "Mine sleeps on my face."
+        ],
+        [
+          "Taking the long way home?",
+          "Through the park. The pond's pretty at this hour."
+        ]
+      ],
+      "rumor": [
+        [
+          "They say there's levels under the sewers.",
+          "Drains under the drains. Lockboxes nobody's opened in decades."
+        ],
+        [
+          "Something gold swims in the pond at night.",
+          "Big as a rowboat. Eats the coins people throw in."
+        ],
+        [
+          "Crates on the rooftops, full of gear.",
+          "Who leaves them there?",
+          "Nobody knows. Nobody asks."
+        ],
+        [
+          "Goldie at the pawn shop bought a city lockbox.",
+          "From the deep drains? Then someone's been down there."
+        ],
+        [
+          "Gulls at the docks steal straight out of your hands.",
+          "Those aren't gulls, they're Gullgrifters. Watch your wallet."
+        ],
+        [
+          "A {species} was spotted on {street}.",
+          "In {district}? Must have wandered far."
         ]
       ]
     }

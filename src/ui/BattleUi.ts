@@ -2,6 +2,7 @@ import type { Battle, Combatant } from '../creatures/BattleEngine';
 import { magazine, maxHp, type Creature, displayName } from '../creatures/Creature';
 import { move, species, typeInfo, type MoveSpec, type TypeId } from '../creatures/Data';
 import type { CreatureIcons } from './CreatureIcons';
+import { platform } from '../mobile/Platform';
 
 /**
  * Battle screen (DOM over the 3D scene): foe and player cards with type badges, HP bars, ammo
@@ -62,7 +63,17 @@ export class BattleUi {
       if (!btn || btn.disabled) return;
       this.click(btn.dataset['act'] ?? '', btn.dataset['arg'] ?? '');
     });
+    // Real-time: tapping a move queues it (the same as its number key).
+    this.rtBar.addEventListener('click', (e) => {
+      const mv = (e.target as HTMLElement).closest('.b-rt-move') as HTMLElement | null;
+      if (!mv || mv.classList.contains('off')) return;
+      const i = [...this.rtBar.querySelectorAll('.b-rt-move')].indexOf(mv);
+      if (i >= 0) this.onPickMove?.(i);
+    });
   }
+
+  /** Real-time: a move tapped on the bar (index 0-3); the game presses its number key. */
+  onPickMove: ((i: number) => void) | null = null;
 
   get visible(): boolean {
     return this.root.style.display !== 'none';
@@ -312,8 +323,12 @@ export class BattleUi {
 
   // ------------------------------------------------------------------ real-time bar
 
-  /** Real-time: move hotkeys with cooldown fill (`ready` 0..1) and the queued move highlighted. */
-  renderRealtime(c: Combatant | null, ready: number, queued: string | null, commandKeys = true): void {
+  /**
+   * Real-time: move hotkeys with cooldown fill (`ready` 0..1) and the queued move highlighted.
+   * `catchOdds` (0..1) is the chance of the quick capture item against the foe right now; it's shown
+   * next to "C catch", and the hint lights up once the foe is weak enough to be worth a throw.
+   */
+  renderRealtime(c: Combatant | null, ready: number, queued: string | null, commandKeys = true, catchOdds: number | null = null): void {
     if (!c || !this.battle) {
       this.rtBar.innerHTML = '';
       return;
@@ -329,7 +344,9 @@ export class BattleUi {
         )
         .join('') +
       `<div class="b-rt-keys ${commandKeys ? 'cmd' : 'wpn'}" title="T switches the number keys"><kbd>T</kbd><b>${commandKeys ? 'Commands' : 'Weapons'}</b></div>` +
-      `<div class="b-rt-hint">${commandKeys ? '5 swap' : 'T for commands'}${this.battle.opts.wild ? ' · C catch' : ''}${this.battle.opts.canRun ? ' · X flee' : ''} · LMB shoot</div>`;
+      (platform.touch
+        ? `<div class="b-rt-hint ${catchOdds !== null && catchOdds >= 0.3 ? 'catchable' : ''}">${commandKeys ? 'SWAP' : 'T for moves'}${this.battle.opts.wild ? ` · CUFF${catchOdds !== null ? ` <b>${Math.round(catchOdds * 100)}%</b>` : ''}` : ''}${this.battle.opts.canRun ? ' · FLEE' : ''} · SHOOT</div>`
+        : `<div class="b-rt-hint ${catchOdds !== null && catchOdds >= 0.3 ? 'catchable' : ''}">${commandKeys ? '5 swap' : 'T for commands'}${this.battle.opts.wild ? ` · C catch${catchOdds !== null ? ` <b>${Math.round(catchOdds * 100)}%</b>` : ''}` : ''}${this.battle.opts.canRun ? ' · X flee' : ''} · LMB shoot</div>`);
   }
 
   static creatureLabel(cr: Creature): string {

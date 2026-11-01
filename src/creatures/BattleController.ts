@@ -24,6 +24,7 @@ import type { MoveFx } from '../fx/MoveFx';
 import type { MoveFxPlan } from '../fx/moveFxPlan.js';
 import type { DamageNumbers } from '../fx/DamageNumbers';
 import { typeInfo } from './Data';
+import { attackStyleFor } from './models/Motion';
 
 /**
  * Runs a Streetmon battle in the street: places the player's creature opposite the foe, frames
@@ -58,6 +59,12 @@ export interface BattleDeps {
    * prop (the arena is laid out so every mark, the line between and the camera are clear).
    */
   clear?(x: number, z: number): boolean;
+  /**
+   * A fight on water (the pond, a sewer pool, off the docks): how high each creature rides above
+   * the surface the ground function returns (swimmers low in it, flyers hovering, everyone else
+   * on a life raft), and whether it gets a raft.
+   */
+  water?: { active(): boolean; lift(c: Creature, t: number): number; raft(c: Creature): boolean };
   /** A loud move went off (Gun shots): the world hears it. */
   onNoise(x: number, z: number, radius: number, side: 0 | 1, user: Creature): void;
   onEnd(r: BattleResult): void;
@@ -70,6 +77,8 @@ export interface BattleDeps {
   throwOrigin(): THREE.Vector3;
   /** Real-time: the capture item thrown with C. */
   quickCapture(): string | null;
+  /** The chance (0..1) that item has against a foe right now, for the hint; null without one. */
+  quickCaptureOdds?(c: Combatant): number | null;
   /** A person you fought was knocked down. */
   onPersonDown?(ped: Ped): void;
   /** XP, level-ups and new moves after a win or a catch. */
@@ -93,6 +102,9 @@ interface View {
   removeAt: number;
   /** A melee lunge in progress: out towards the target and back. */
   lunge?: { t: number; dur: number; dist: number; dx: number; dz: number; spin: boolean } | null;
+  /** Water fights: the creature it shows, and its life raft (if it can't swim or fly). */
+  creature?: Creature;
+  raft?: THREE.Object3D | null;
 }
 
 const DUR = { text: 1.05, move: 0.45, damage: 0.4, faint: 1.1, switch: 0.7 };
@@ -221,6 +233,12 @@ export class BattleController {
     this.layout(playerPos, new THREE.Vector3(wild.x, wild.y, wild.z));
     // Bring the wild creature to its mark facing us.
     const foe = this.battle.sides[1].active[0];
+    if (!foe) {
+      // Nothing able to fight (a creature at 0 HP): no battle.
+      this.battle = null;
+      this.wild = null;
+      return;
+    }
     const fp = this.spot(1, 0);
     wild.x = fp.x;
     wild.z = fp.z;
@@ -351,6 +369,7 @@ export class BattleController {
     const b = this.battle!;
     const outcome = this.outcome();
     for (const [, v] of this.views) if (!v.wild) v.inst?.dispose();
+    this.dropRafts();
     this.views.clear();
     this.d.ui.hide();
     const r: BattleResult = { outcome, battle: b, wild: this.wild, trainer: this.trainer, ped: this.ped, kind: this.kind, evolutions: this.evolutions };
@@ -418,10 +437,26 @@ export class BattleController {
 
   // ------------------------------------------------------------------ per frame
 
+  /** Things to do a moment from now (a move's effects at its attack clip's release frame). */
+  private readonly timers: Array<{ at: number; fn: () => void }> = [];
+
+  private later(delay: number, fn: () => void): void {
+    if (delay <= 0) fn();
+    else this.timers.push({ at: this.time + delay, fn });
+  }
+
   update(dt: number, playerPos: THREE.Vector3): void {
     const b = this.battle;
-    if (!b) return;
+    if (!b) {
+      this.timers.length = 0;
+      return;
+    }
     this.time += dt;
+    for (let i = this.timers.length - 1; i >= 0; i--) {
+      if (this.time < this.timers[i].at) continue;
+      const tm = this.timers.splice(i, 1)[0];
+      tm.fn();
+    }
     this.animateViews(dt);
     if (this.catching) return;
     if (this.mode === 'realtime') this.updateRealtime(dt, playerPos);
@@ -647,7 +682,9 @@ export class BattleController {
       this.queue.push(...b.endRound());
     }
     const total = me ? this.cooldownFor(me) : 1;
-    this.d.ui.renderRealtime(me, me ? 1 - Math.max(0, this.cd.get(me) ?? 0) / total : 0, this.queued, this.commandKeys);
+    const foe = b.opts.wild ? b.sides[1].active[0] : undefined;
+    const odds = foe && foe.creature.hp > 0 ? (this.d.quickCaptureOdds?.(foe) ?? null) : null;
+    this.d.ui.renderRealtime(me, me ? 1 - Math.max(0, this.cd.get(me) ?? 0) / total : 0, this.queued, this.commandKeys, odds);
   }
 
   // ------------------------------------------------------------------ playback
@@ -673,28 +710,34 @@ export class BattleController {
       }
       case 'move': {
         const v = this.views.get(e.user);
+        const fx = this.d.moveFx;
+        const plan = fx ? fx.plan(e.move) : null;
+        // The attack clip for the move's style (a swipe, a slam, a shot, a throw, a blast, a
+        // power-up, a taunt); the move leaves the Streetmon at the clip's release frame.
+        let release = 0;
         if (v?.inst) {
-          v.inst.play('attack', 0.05);
-          v.idleAt = this.time + 0.65;
+          const a = v.inst.attack(attackStyleFor(plan?.style ?? (e.move.power > 0 ? (e.move.projectile ? 'shot' : 'dash') : 'buff'), plan?.melee ?? false), 1 / k);
+          release = a.release;
+          v.idleAt = this.time + a.duration;
         }
         const foes = this.battle!.foes(e.user);
         const from = v ? this.chest(v, e.user, 0.6) : null;
         const targetsOf = (list: Combatant[]): THREE.Vector3[] => list.map((t) => this.views.get(t)).filter((tv): tv is View => !!tv).map((tv) => this.chest(tv, null, 0.5));
-        const fx = this.d.moveFx;
-        if (fx && from) {
-          const plan = fx.plan(e.move);
+        if (fx && plan && from) {
           this.playing = { user: e.user, plan };
           const targets = plan.self ? [from] : targetsOf(plan.aoe ? foes : foes.slice(0, 1));
-          fx.cast(plan, from, targets.length ? targets : [from]);
-          // Melee: the creature lunges at its target and springs back (along the clear line between them).
           const tv = foes[0] ? this.views.get(foes[0]) : null;
-          if (plan.melee && v && tv) {
-            const dx = tv.x - v.x;
-            const dz = tv.z - v.z;
-            const dd = Math.hypot(dx, dz) || 1;
-            v.lunge = { t: 0, dur: Math.max(0.35, plan.travel * 2.2), dist: Math.min(plan.lunge, Math.max(0, dd - 1.4)), dx: dx / dd, dz: dz / dd, spin: plan.spin };
-          }
-          return Math.max(DUR.move, plan.travel + 0.12) * k;
+          this.later(release, () => {
+            fx.cast(plan, from, targets.length ? targets : [from]);
+            // Melee: the creature lunges at its target and springs back (along the clear line between them).
+            if (plan.melee && v && tv) {
+              const dx = tv.x - v.x;
+              const dz = tv.z - v.z;
+              const dd = Math.hypot(dx, dz) || 1;
+              v.lunge = { t: 0, dur: Math.max(0.35, plan.travel * 2.2), dist: Math.min(plan.lunge, Math.max(0, dd - 1.4)), dx: dx / dd, dz: dz / dd, spin: plan.spin };
+            }
+          });
+          return Math.max(DUR.move * k, release + (plan.travel + 0.12) * k);
         }
         // (No effects module: the old plain look.)
         const target = foes[0] ?? null;
@@ -808,7 +851,7 @@ export class BattleController {
     const slot = this.battle!.sides[c.side].active.indexOf(c);
     const p = this.spot(c.side, Math.max(0, slot));
     const heading = c.side === 0 ? Math.atan2(this.dir.x, this.dir.z) : Math.atan2(-this.dir.x, -this.dir.z);
-    const view: View = { inst: null, x: p.x, z: p.z, heading, wild: null, ped: null, idleAt: 0, removeAt: 0 };
+    const view: View = { inst: null, x: p.x, z: p.z, heading, wild: null, ped: null, idleAt: 0, removeAt: 0, creature: c.creature };
     this.views.set(c, view);
     this.d.effects.sparks(p.x, this.d.groundY(p.x, p.z) + 0.4, p.z, 10);
     void this.d.models.instance(c.creature.speciesId, c.creature.shiny).then((inst) => {
@@ -828,6 +871,7 @@ export class BattleController {
     if (v.wild || v.ped) return;
     if (delay <= 0) {
       v.inst?.dispose();
+      v.raft?.removeFromParent();
       this.views.delete(c);
     } else v.removeAt = this.time + delay;
   }
@@ -852,8 +896,38 @@ export class BattleController {
   private placeView(v: View): void {
     if (!v.inst) return;
     const o = this.lungeOffset(v);
-    v.inst.root.position.set(v.x + o.x, this.d.groundY(v.x + o.x, v.z + o.z), v.z + o.z);
+    v.inst.root.position.set(v.x + o.x, this.d.groundY(v.x + o.x, v.z + o.z) + this.waterLift(v), v.z + o.z);
     v.inst.root.rotation.y = v.heading + (v.lunge?.spin ? (v.lunge.t / v.lunge.dur) * Math.PI * 4 : 0);
+  }
+
+  /** Water fights: how high this creature rides, and its raft kept underneath it. */
+  private waterLift(v: View): number {
+    const w = this.d.water;
+    if (!w || !v.creature || !w.active()) {
+      if (v.raft) {
+        v.raft.removeFromParent();
+        v.raft = null;
+      }
+      return 0;
+    }
+    const lift = w.lift(v.creature, this.time);
+    if (w.raft(v.creature) && v.inst) {
+      if (!v.raft) {
+        v.raft = makeRaft(species(v.creature.speciesId).model.height);
+        this.d.scene.add(v.raft);
+      }
+      const r = v.inst.root.position;
+      v.raft.position.set(r.x, this.d.groundY(r.x, r.z) + lift - 0.08, r.z);
+      v.raft.rotation.set(Math.sin(this.time * 1.3 + r.x) * 0.05, v.heading, Math.cos(this.time * 1.1 + r.z) * 0.05);
+    }
+    return lift;
+  }
+
+  private dropRafts(): void {
+    for (const [, v] of this.views) {
+      v.raft?.removeFromParent();
+      v.raft = null;
+    }
   }
 
   private animateViews(dt: number): void {
@@ -889,6 +963,7 @@ export class BattleController {
       }
       if (v.removeAt > 0 && this.time >= v.removeAt) {
         v.inst?.dispose();
+        v.raft?.removeFromParent();
         this.views.delete(c);
       }
     }
@@ -897,4 +972,20 @@ export class BattleController {
 
 function moveSpecName(id: string): string {
   return moveSpec(id).name;
+}
+
+/** An orange inflatable life raft sized to a Streetmon (a ring tube, a floor, a grab line). */
+function makeRaft(height: number): THREE.Group {
+  const g = new THREE.Group();
+  const r = Math.max(0.55, Math.min(1.4, height * 0.55 + 0.35));
+  const orange = new THREE.MeshStandardMaterial({ color: 0xff6a1a, roughness: 0.55 });
+  const tube = new THREE.Mesh(new THREE.TorusGeometry(r, r * 0.22, 10, 24).rotateX(Math.PI / 2), orange);
+  tube.position.y = r * 0.18;
+  const floor = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.95, r * 0.95, 0.06, 20), new THREE.MeshStandardMaterial({ color: 0x2a2f36, roughness: 0.8 }));
+  floor.position.y = 0.04;
+  const line = new THREE.Mesh(new THREE.TorusGeometry(r * 1.02, 0.018, 4, 24).rotateX(Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0xf2f2f2 }));
+  line.position.y = r * 0.3;
+  g.add(tube, floor, line);
+  for (const m of [tube, floor]) m.castShadow = true;
+  return g;
 }
