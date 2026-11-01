@@ -52,7 +52,8 @@ import { Weather, weatherEffects } from '../world/Weather';
 import { Precipitation } from '../fx/Precipitation';
 import { FLORA_WIND } from '../world/ParkFlora';
 import { NeighbourhoodTracker, localLook, neighbourhoodAt, type Neighbourhood } from '../world/Districts';
-import { chatterGap, roomChatter, sewerChatter, streetChatter } from '../npc/Chatter';
+import { chatterGap, roomConversation, sewerConversation, streetConversation, streetShout } from '../npc/Chatter';
+import { bubbleSeconds } from '../ui/Bubbles';
 import { EnvHazards, type HazardSpot } from '../systems/Hazards';
 import { CAR_WEATHER } from '../vehicles/Car';
 import { VISION } from '../police/Vision';
@@ -130,6 +131,8 @@ import { TANK_SPEC } from '../vehicles/specs';
 import type { CreatureInstance } from '../creatures/CreatureModels';
 import type { Biome } from '../creatures/Data';
 import { IMPACT, carCircleContact, defaultWeightKg, resolveImpact, weightClassOf } from '../vehicles/CreatureImpacts';
+import { CreatureLabels } from '../ui/CreatureLabels';
+import { HEIST_INTERIOR } from '../systems/HeistInterior';
 import { CreatureTooltip, type Inspectable } from '../ui/CreatureTooltip';
 import { pickSpecies, spawnTable } from '../creatures/SpawnRules';
 import type { CreatureTarget } from '../weapons/WeaponSystem';
@@ -162,6 +165,8 @@ import { SURFACE_DETAIL, withSurface } from '../render/Surfaces';
 type State = 'loading' | 'title' | 'playing' | 'paused' | 'shop' | 'starter' | 'menu' | 'cinematic';
 
 const EXIT_RAY_GROUPS = groups(0xffff, GROUP.WORLD | GROUP.CAR);
+/** Line of sight for the Streetmon labels: walls and buildings block it. */
+const SIGHT_RAY_GROUPS = groups(0xffff, GROUP.WORLD);
 /** The Act 1 opener: Mama Rust hands over cuffs and the starter pick. */
 const STARTER_QUEST = 'a1-welcome';
 /** Weapon damage to a legendary Streetmon (on top of the usual 40%): they're built like tanks. */
@@ -482,6 +487,7 @@ export class Game {
   /** Chase music keeps going from 2 stars until the heat is gone. */
   private chaseMusic = false;
   private tooltip!: CreatureTooltip;
+  private labels!: CreatureLabels;
   private dmgNums!: DamageNumbers;
   /** NPC hunters and chatter, wild territory fights and packs, the AI radius (see setupLivingWorld). */
   living!: LivingWorld;
@@ -955,6 +961,7 @@ export class Game {
     this.catcher = new CatchVisuals(this.scene, this.effects);
     this.follower = new Follower(this.scene, this.creatureModels, (x, z) => this.groundAt(x, z), (x, z) => this.blockedAt(x, z));
     this.tooltip = new CreatureTooltip(this.container);
+    this.labels = new CreatureLabels(this.container);
     this.dmgNums = new DamageNumbers(this.container);
     this.moveFx = new MoveFx({
       scene: this.scene,
@@ -982,6 +989,7 @@ export class Game {
       listener: () => this.camera.position,
     });
     this.dialogue = new DialogueBox(this.container);
+    this.dialogue.anchor = () => this.speakerAnchor();
     this.objectiveEl = document.createElement('div');
     this.objectiveEl.className = 'objective';
     this.container.appendChild(this.objectiveEl);
@@ -1561,6 +1569,7 @@ export class Game {
     }
     this.precip?.update(this.state === 'playing' ? dt : 0, this.camera.position, this.weather.params().rain, this.weather.params().snow, this.weather.params().wind, this.layers.current === 'sewer' || !!this.interior);
     this.bubbles.update(this.state === 'playing' ? dt : 0, this.camera, this.container.clientWidth || window.innerWidth, this.container.clientHeight || window.innerHeight);
+    this.dialogue.update(this.camera, this.container.clientWidth || window.innerWidth, this.container.clientHeight || window.innerHeight);
     this.signalView.update(dt);
     this.shops?.update(dt);
     const seated = [...this.traffic.seated(), ...this.police.seated(), ...(this.eventWorld?.seated() ?? [])];
@@ -1868,8 +1877,11 @@ export class Game {
     this.partyBar.update(this.party, !this.battles.locksPlayer);
     const mouse = this.input.pointerLocked ? null : this.input.mouseX >= 0 ? { x: this.input.mouseX, y: this.input.mouseY } : null;
     this.dmgNums.update(dt, this.camera);
-    if (this.battles.locksPlayer && !mouse) this.tooltip.hide();
-    else this.tooltip.update(this.camera, mouse, this.inspectables());
+    void mouse;
+    this.tooltip.hide();
+    // Name, level and health over every Streetmon in sight (battles have their own bars).
+    this.labels.visible = this.state === 'playing' && !this.battles.active && !this.evolution.active;
+    this.labels.update(dt, this.camera, this.labels.visible ? this.inspectables().filter((i) => !this.battleViewOwner(i)) : [], (a, b) => this.lineOfSight(a, b));
     // Anything you can spot (minimap range) counts as seen in the dex.
     this.seenTimer -= dt;
     if (this.seenTimer <= 0) {
@@ -2479,7 +2491,7 @@ export class Game {
       cinematics: [...this.cineSeen],
       look: { ...this.playerLook },
       world: { civic: this.civic, gangs: structuredClone(this.gangs.state), weather: this.weather.serialize() },
-      map: { waypoint: this.cityMap.waypoint ? { ...this.cityMap.waypoint } : null, hidden: [...this.cityMap.hidden] },
+      map: { waypoint: this.cityMap.waypoint ? { ...this.cityMap.waypoint } : null, hidden: [...this.cityMap.hidden], manual: this.waypointManual },
     };
   }
 
@@ -2532,7 +2544,12 @@ export class Game {
     if (this.tut) this.loadTutorials(d);
     if (this.cityMap) {
       this.cityMap.setHidden(d.map.hidden);
-      this.cityMap.setWaypoint(d.map.waypoint);
+      // A waypoint the story set stays the story's (so its guidance carries on after a load);
+      // only one you placed yourself holds the guidance back.
+      if (d.map.waypoint && !d.map.manual) this.setNamedWaypoint(d.map.waypoint.x, d.map.waypoint.z, this.waypointName || 'Objective');
+      else this.cityMap.setWaypoint(d.map.waypoint);
+      this.waypointManual = !!d.map.waypoint && !!d.map.manual;
+      this.waypointAuto = !!d.map.waypoint && !d.map.manual;
     }
     for (const st of this.roofPlan.stashes) this.roofView.setStashOpen(st.id, this.progress.stashesOpened.includes(st.id));
     for (const m of [...this.mazes, ...this.deepMazes]) for (const c of m.caches) this.sewerView?.setCacheOpen(c.id, this.progress.stashesOpened.includes(c.id));
@@ -2851,7 +2868,10 @@ export class Game {
           heist: !!this.heists?.active && this.heists.state !== 'SETUP',
           race: !!this.races?.active,
           sewer: this.layers?.current === 'sewer',
-          indoors: this.interior ? (this.interior.spot.kind === 'casino' ? 'casino' : 'room') : null,
+          deep: this.layers?.current === 'sewer' && this.player.position.y < -30,
+          hideout: !!this.gangs?.inHideout,
+          indoors: this.interior ? (this.interior.spot.kind === 'casino' ? 'casino' : this.interior.spot.kind === 'arcade' ? 'arcade' : 'room') : null,
+          zone: this.layers?.current === 'roof' ? 'roof' : this.layers?.current === 'street' ? this.hoodNow?.id ?? null : null,
           raid: this.raidWorld?.loud,
           cinematic: this.state === 'cinematic' ? this.cine.music : null,
         }),
@@ -2878,6 +2898,23 @@ export class Game {
   }
 
   /** Every Streetmon you could hover over: wild ones, yours, gang trainers' and the battlefield. */
+  /** True for the battle's own creatures (their bars are in the battle UI). */
+  private battleViewOwner(i: Inspectable): boolean {
+    return this.battles.active && this.battles.allViews().some((v) => v.c.creature === i.creature);
+  }
+
+  /** Nothing solid (walls, buildings, the sewer's brick) between two points. */
+  private lineOfSight(a: THREE.Vector3, b: THREE.Vector3): boolean {
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const dz = b.z - a.z;
+    const len = Math.hypot(dx, dy, dz);
+    if (len < 0.5) return true;
+    const ray = new RAPIER.Ray({ x: a.x, y: a.y, z: a.z }, { x: dx / len, y: dy / len, z: dz / len });
+    const hit = this.world.castRay(ray, len - 0.4, true, undefined, SIGHT_RAY_GROUPS);
+    return !hit;
+  }
+
   private inspectables(): Inspectable[] {
     const out: Inspectable[] = [];
     for (const w of this.spawns.wild) {
@@ -4455,7 +4492,7 @@ export class Game {
 
     // Into the river: car or player.
     const fy = car ? car.position.y : p.position.y;
-    const floor = this.interior ? INTERIOR.floorY - 10 : this.gangs?.inHideout || this.gangs?.entering ? -115 : this.layers.current === 'sewer' && !car ? SEWER.levels[SEWER.levels.length - 1].floor - 15 : WORLD.fallDeathY;
+    const floor = this.interior ? INTERIOR.floorY - 10 : this.heistWorld?.inside ? HEIST_INTERIOR.floorY - 10 : this.gangs?.inHideout || this.gangs?.entering ? -115 : this.layers.current === 'sewer' && !car ? SEWER.levels[SEWER.levels.length - 1].floor - 15 : WORLD.fallDeathY;
     if (!p.dead && !this.trans && fy < floor) {
       if (car) car.markDestroyed();
       this.kill('You fell into the river');
@@ -4608,6 +4645,18 @@ export class Game {
     if (!p.onFoot || p.dead || this.trans) return null;
     const pos = p.position;
     const room = this.interior;
+    // A heist's building: in through the front once the job's on, out by the same door.
+    const hw = this.heistWorld;
+    if (hw?.inside) {
+      const plan = hw.interiorPlan(hw.inside);
+      if (plan && Math.hypot(plan.exit.x - pos.x, plan.exit.z - pos.z) < 1.8) return { label: 'Leave the building', act: () => this.leaveHeistInterior() };
+      return null;
+    }
+    const job = this.heists?.job;
+    if (!room && job && ['SETUP', 'INFILTRATION', 'BREACH', 'LOOT'].includes(this.heists.state) && this.layers.current === 'street') {
+      const plan = hw.interiorPlan(job.target.id);
+      if (plan && Math.hypot(plan.street.x - pos.x, plan.street.z - pos.z) < 2.6) return { label: `Go into ${job.target.name}`, act: () => this.enterHeistInterior(job.target.id) };
+    }
     if (!room) {
       if (this.layers.current !== 'street' || pos.y > 3) return null;
       for (const r of this.rooms) {
@@ -4661,6 +4710,43 @@ export class Game {
     for (const x of this.rooms) x.root.visible = x === r;
     this.spawns.enabled = false;
     this.aiming = false;
+  }
+
+  /** Into a heist's building (the job's on): the room under it, its lasers and cameras. */
+  private enterHeistInterior(id: string): void {
+    const plan = this.heistWorld.interiorPlan(id);
+    if (!plan) return;
+    const ok = this.transition('sewer', { x: plan.spawn.x, y: plan.floorY + 0.05, z: plan.spawn.z }, {
+      seconds: 0.8,
+      done: () => {
+        this.sewerView.under.visible = false;
+        this.flashlight.intensity = 0;
+        this.lantern.intensity = 0;
+      },
+    });
+    if (!ok) return;
+    audio.door();
+    this.heistWorld.showInterior(id);
+    this.spawns.enabled = false;
+    this.player.facing = plan.spawn.facing;
+    this.hud.toast('Inside. Stay behind cover, time the lasers, and watch the cameras.', 3200);
+  }
+
+  private leaveHeistInterior(): void {
+    const id = this.heistWorld.inside;
+    const plan = id ? this.heistWorld.interiorPlan(id) : null;
+    if (!plan) return;
+    const ok = this.transition('street', { x: plan.street.x, y: this.peds.groundY(plan.street.x, plan.street.z) + 0.1, z: plan.street.z }, {
+      seconds: 0.8,
+      done: () => {
+        this.heistWorld.showInterior(null);
+        this.spawns.enabled = true;
+      },
+    });
+    if (ok) {
+      audio.door();
+      this.player.facing = Math.atan2(-(plan.street.z - plan.exit.z), plan.street.x - plan.exit.x);
+    }
   }
 
   private leaveRoom(): void {
@@ -5652,7 +5738,7 @@ export class Game {
   private raiseWantedTo(stars: number): void {
     const s = Math.max(1, Math.min(5, stars));
     // No stars gained in the sewers (the police can't see down there).
-    if (this.wanted.stars >= s || this.layers.current === 'sewer') return;
+    if (this.wanted.stars >= s || (this.layers.current === 'sewer' && !this.heistWorld?.inside)) return;
     this.wanted.heat = Math.max(this.wanted.heat, STAR_HEAT[s - 1] + 0.5);
     this.wanted.stars = s;
     this.wanted.rose = true;
@@ -5700,6 +5786,7 @@ export class Game {
         },
         enabled: () => this.state === 'playing' && !this.player.dead && !this.battles.locksPlayer && !this.races.active && !this.heists.active,
         follower: this.follower,
+        contextTalk: () => this.streetTalk(),
         onSkirmish: (outcome, w, ours, why) => this.onSkirmish(outcome, w, ours, why),
         now: () => this.gameTime,
         time: () => phaseAt(this.hour),
@@ -5806,45 +5893,117 @@ export class Game {
     if (!first || this.gameTime > 3) this.hud.showDistrict(n.name, n.tagline);
   }
 
-  /** People say things as you pass (speech bubbles), now and then. */
-  private updateChatter(dt: number): void {
-    this.chatterIn -= dt;
-    if (this.chatterIn > 0 || this.battles.locksPlayer) return;
-    const seed = Math.floor(Math.random() * 1e6);
-    const pos = this.player.position;
-    const head = (x: () => number, y: () => number, z: () => number) => () => ({ x: x(), y: y(), z: z() });
-    if (this.interior) {
-      const ppl = this.roomPeople.filter((pp) => pp.room === this.interior && Math.hypot(pp.model.root.position.x - pos.x, pp.model.root.position.z - pos.z) < 18);
-      this.chatterIn = chatterGap(this.interior.spot.kind === 'casino' ? 'casino' : 'room', seed);
-      const pp = ppl[seed % Math.max(1, ppl.length)];
-      const line = pp ? roomChatter(pp.role, seed) : '';
-      if (pp && line) this.bubbles.say(`room-${pp.role}-${pp.seed}`, head(() => pp.model.root.position.x, () => pp.model.root.position.y + 2.05, () => pp.model.root.position.z), line, pp.role === 'gambler' && /!/.test(line) ? 'shout' : 'say');
-      // The casino floor rings.
-      if (this.interior.spot.kind === 'casino' && seed % 4 === 0) audio.ui();
-      return;
-    }
-    if (this.layers.current === 'sewer') {
-      this.chatterIn = chatterGap('sewer', seed);
-      const n = this.people.find((q) => q.model && Math.hypot(q.x - pos.x, q.z - pos.z) < 16);
-      if (n) this.bubbles.say(`sewer-${n.spec.id}`, () => ({ x: n.x, y: n.y + 2.05, z: n.z }), sewerChatter(seed), 'say');
-      return;
-    }
-    this.chatterIn = chatterGap('street', seed);
-    const near = this.peds.peds.filter((q) => q.role === 'civ' && (q.state === 'walk' || q.state === 'wait') && Math.hypot(q.x - pos.x, q.z - pos.z) < 22);
-    if (!near.length) return;
-    const q = near[seed % near.length];
-    const d = Math.hypot(q.x - pos.x, q.z - pos.z);
-    const line = streetChatter(seed, {
+  /** A conversation being played out between two people inside (rooms, the sewers). */
+  private duo: { lines: string[]; at: Array<() => { x: number; y: number; z: number } | null>; keys: string[]; turn: (i: number) => void; i: number; next: number } | null = null;
+
+  /** What two people near you say to each other (speech bubbles), now and then. */
+  private chatterContext(seed: number, near: boolean): Parameters<typeof streetConversation>[1] {
+    return {
       hour: this.hour,
       weather: this.weather.dominant,
       mood: civicTier(this.civic).mood,
       wanted: this.wanted.stars,
       district: this.hoodNow?.name ?? '',
       districtLine: this.hoodNow ? this.hoodNow.lines[seed % this.hoodNow.lines.length] : undefined,
-      near: d < 5,
+      near,
       gangFight: !!this.gangs?.fighting,
-    });
-    if (line) this.bubbles.say(`ped-${this.peds.peds.indexOf(q)}`, () => (q.state === 'dead' ? null : { x: q.x, y: q.y + 2.05, z: q.z }), line, this.gangs?.fighting ? 'shout' : 'say');
+    };
+  }
+
+  /**
+   * Inside (rooms) and down in the sewers: two people near each other have a short exchange,
+   * taking turns, facing each other. On the street the living world does the same with
+   * passers-by (they stop to talk); the only one-liners left are shouts when a gang fight starts.
+   */
+  private updateChatter(dt: number): void {
+    // A conversation in progress: the next line when the last has been up long enough.
+    const d = this.duo;
+    if (d) {
+      d.next -= dt;
+      if (d.next <= 0) {
+        if (d.i >= d.lines.length || d.at.some((f) => !f())) this.duo = null;
+        else {
+          const who = d.i % 2;
+          const text = d.lines[d.i];
+          const secs = bubbleSeconds(text);
+          this.bubbles.say(d.keys[who], d.at[who], text, 'say', secs);
+          d.turn(who);
+          d.i++;
+          d.next = Math.min(secs, 1.2 + text.length * 0.045);
+        }
+      }
+      return;
+    }
+    this.chatterIn -= dt;
+    if (this.chatterIn > 0 || this.battles.locksPlayer) return;
+    const seed = Math.floor(Math.random() * 1e6);
+    const pos = this.player.position;
+    if (this.interior) {
+      this.chatterIn = chatterGap(this.interior.spot.kind === 'casino' ? 'casino' : 'room', seed);
+      const ppl = this.roomPeople.filter((pp) => pp.room === this.interior && Math.hypot(pp.model.root.position.x - pos.x, pp.model.root.position.z - pos.z) < 18);
+      // Two people near each other whose roles have something to say.
+      for (let k = 0; k < ppl.length * ppl.length; k++) {
+        const a = ppl[(seed + k) % ppl.length];
+        const b = ppl[(seed * 7 + k * 3 + 1) % ppl.length];
+        if (!a || !b || a === b) continue;
+        if (a.model.root.position.distanceTo(b.model.root.position) > 7) continue;
+        const talk = roomConversation(a.role, b.role, seed + k);
+        if (!talk) continue;
+        const [p, q] = talk.first === 'a' ? [a, b] : [b, a];
+        const head = (m: Humanoid) => () => ({ x: m.root.position.x, y: m.root.position.y + 2.05, z: m.root.position.z });
+        const face = (m: Humanoid, t: Humanoid): void => void (m.root.rotation.y = Math.atan2(-(t.root.position.z - m.root.position.z), t.root.position.x - m.root.position.x));
+        this.duo = { lines: talk.lines, at: [head(p.model), head(q.model)], keys: [`room-${p.role}-${p.seed}`, `room-${q.role}-${q.seed}`], turn: (w) => (w === 0 ? face(p.model, q.model) : face(q.model, p.model)), i: 0, next: 0 };
+        break;
+      }
+      return;
+    }
+    if (this.layers.current === 'sewer') {
+      this.chatterIn = chatterGap('sewer', seed);
+      const near = this.people.filter((q) => q.model && Math.hypot(q.x - pos.x, q.z - pos.z) < 18);
+      for (const a of near)
+        for (const b of near) {
+          if (a === b || this.duo || Math.hypot(a.x - b.x, a.z - b.z) > 8) continue;
+          this.duo = { lines: sewerConversation(seed), at: [() => ({ x: a.x, y: a.y + 2.05, z: a.z }), () => ({ x: b.x, y: b.y + 2.05, z: b.z })], keys: [`sewer-${a.spec.id}`, `sewer-${b.spec.id}`], turn: () => undefined, i: 0, next: 0 };
+        }
+      return;
+    }
+    this.chatterIn = chatterGap('street', seed);
+    // A gang fight down the block: people shout and scatter.
+    if (this.gangs?.fighting) {
+      const near = this.peds.peds.filter((q) => q.role === 'civ' && q.state !== 'dead' && Math.hypot(q.x - pos.x, q.z - pos.z) < 25);
+      const q = near[seed % Math.max(1, near.length)];
+      if (q) this.bubbles.say(`ped-${this.peds.peds.indexOf(q)}`, () => (q.state === 'dead' ? null : { x: q.x, y: q.y + 2.05, z: q.z }), streetShout(seed), 'shout');
+    }
+  }
+
+  /**
+   * The head of whoever you're talking to (the nearest person within a few metres: a story
+   * character or boss, someone in a shop, a sewer local, a passer-by), for the dialogue bubble.
+   */
+  private speakerAnchor(): (() => { x: number; y: number; z: number } | null) | null {
+    const p = this.player.position;
+    let best: { d: number; at: () => { x: number; y: number; z: number } | null } | null = null;
+    const consider = (x: number, y: number, z: number, at: () => { x: number; y: number; z: number } | null): void => {
+      const d = Math.hypot(x - p.x, z - p.z);
+      if (d < 4.5 && Math.abs(y - p.y) < 4 && (!best || d < best.d)) best = { d, at };
+    };
+    for (const m of this.campaignWorld?.speakers?.() ?? []) consider(m.position.x, m.position.y, m.position.z, () => ({ x: m.position.x, y: m.position.y + 1.95, z: m.position.z }));
+    for (const pp of this.roomPeople) {
+      if (pp.room !== this.interior) continue;
+      const m = pp.model.root;
+      consider(m.position.x, m.position.y, m.position.z, () => ({ x: m.position.x, y: m.position.y + 1.95, z: m.position.z }));
+    }
+    for (const q of this.people) if (q.model) consider(q.x, q.y, q.z, () => ({ x: q.x, y: q.y + 1.95, z: q.z }));
+    for (const q of this.peds.peds) if (q.state !== 'dead') consider(q.x, q.y, q.z, () => (q.state === 'dead' ? null : { x: q.x, y: q.y + 1.95, z: q.z }));
+    return (best as { at: () => { x: number; y: number; z: number } | null } | null)?.at ?? null;
+  }
+
+  /** A street conversation for the living world's passers-by (who stop and talk). */
+  private streetTalk(): string[] {
+    const seed = Math.floor(Math.random() * 1e6);
+    const pos = this.player.position;
+    const near = this.peds.peds.some((q) => q.role === 'civ' && Math.hypot(q.x - pos.x, q.z - pos.z) < 6);
+    return streetConversation(seed, this.chatterContext(seed, near));
   }
 
   /** Fuel drums and transformer boxes: where they stand, and what they do when they go. */
@@ -6284,6 +6443,8 @@ export class Game {
     });
     Q.on('actCompleted', (e) => window.setTimeout(() => this.hud.showBig(`ACT ${roman[e.act.number] ?? e.act.number} COMPLETE`, '#4be37a', 4000), 600));
     Q.on('completed', (e) => {
+      // On to the next thing: the guidance picks the next objective up (even over a waypoint you placed).
+      this.waypointManual = false;
       this.queueCinematic({ questCompleted: e.quest.id });
       this.saveDirty = true;
       this.hud.showBig('JOB DONE', '#4be37a', 2600);
@@ -6295,6 +6456,7 @@ export class Game {
     });
     Q.on('objective', (e) => {
       this.saveDirty = true;
+      this.waypointManual = false;
       if ((e.index ?? 0) > 0) this.hud.toast(e.objective.text, 3000);
     });
     // New work: say who has it (once per batch, so a finished job unlocking two doesn't spam).
@@ -6666,6 +6828,18 @@ export class Game {
    */
   private autoGuide(): void {
     if (this.waypointManual || this.layers.current !== 'street') return;
+    // A getaway: the nearest open lock-up, until the job's done (then back to the story).
+    if (this.heists?.state === 'ESCAPE') {
+      const f = this.focus();
+      const drops = this.heistWorld.activeDropOffs.map((id) => this.heists.dropOff(id)).filter((d): d is NonNullable<typeof d> => !!d);
+      const d = drops.sort((a, b) => Math.hypot(a.x - f.x, a.z - f.z) - Math.hypot(b.x - f.x, b.z - f.z))[0];
+      const cur = this.cityMap.waypoint;
+      if (d && (!cur || Math.hypot(cur.x - d.x, cur.z - d.z) > 3)) {
+        this.setNamedWaypoint(d.x, d.z, d.name);
+        this.waypointAuto = true;
+      }
+      return;
+    }
     const ms = this.quests.markers((ref) => this.campaignWhere(ref));
     const tracked = this.quests.tracked;
     const pick =
@@ -7025,7 +7199,8 @@ export class Game {
         z: pos.z,
         inVehicle: !!car,
         stars: this.wanted.stars,
-        seenBy: this.layers.current === 'street' ? W.seenBy(pos.x, pos.y, pos.z, !!car) : 0,
+        seenBy: this.layers.current === 'street' ? W.seenBy(pos.x, pos.y, pos.z, !!car) : W.inside ? W.seenBy(pos.x, p.feet.y, pos.z, false) : 0,
+        laserTripped: !car && !p.dead && W.laserTripped(pos.x, p.feet.y, pos.z),
         nearBreach: car ? -1 : W.nearBreach(pos.x, pos.z),
         nearLoot: car ? -1 : W.nearLoot(pos.x, pos.z),
         atDropOff: W.atDropOff(pos.x, pos.z, car ? Math.abs(car.speed) : Math.hypot(p.velocity.x, p.velocity.z)),
@@ -7052,13 +7227,18 @@ export class Game {
       state: H.state,
       player: car ? car.position : p.position,
       facing: car ? car.heading : p.facing,
-      hide: !!car || this.battles.active || p.dead || this.layers.current !== 'street',
+      hide: !!car || this.battles.active || p.dead || (this.layers.current !== 'street' && !W.inside),
       playerBags: H.job ? H.job.bags.filter((b) => b.carrier === 'player').length : 0,
       haulerBags: H.job ? H.job.bags.filter((b) => b.carrier === 'hauler').length : 0,
       playerModel: p.model.root,
       cooldowns: H.cooldowns,
     });
     void carried;
+    // Back on the street some other way (busted, a respawn): the building's room goes away.
+    if (W.inside && !this.trans && p.position.y > -100) {
+      W.showInterior(null);
+      this.spawns.enabled = true;
+    }
     this.renderHeistHud(hud);
   }
 

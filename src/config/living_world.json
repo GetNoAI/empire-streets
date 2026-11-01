@@ -55,15 +55,15 @@
     "maxCatchesRemembered": 6
   },
   "chatter": {
-    "radius": 3,
+    "radius": 3.5,
     "maxDistanceFromCamera": 45,
-    "chancePerPair": 0.35,
+    "chancePerPair": 0.6,
     "checkEverySeconds": 0.5,
-    "cooldownSeconds": 75,
-    "maxConversations": 3,
+    "cooldownSeconds": 50,
+    "maxConversations": 4,
     "lineSeconds": [
-      2.4,
-      3.4
+      2.6,
+      3.6
     ]
   },
   "bubbles": {

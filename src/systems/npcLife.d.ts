@@ -119,6 +119,8 @@ export interface NpcLifeAdapter {
   say(personId: number, text: string, seconds: number): void;
   /** Values for chatter placeholders (species, strong, weak, track, racer, crew, district, street...). */
   chatVars(topic: Topic): Record<string, string | number | undefined>;
+  /** A ready-made conversation that fits the moment (weather, night, the neighbourhood): used most of the time. */
+  contextConversation?(): string[] | null;
   hunterEnded?(personId: number, why: string): void;
 }
 

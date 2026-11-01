@@ -499,7 +499,7 @@ export class HeistManager {
     j.alarmIn = j.target.security.alarmDelay;
     this.adapter.soundAlarm?.(j.target);
     this.adapter.showBig?.('ALARM!', '#ff3b3b', 1800);
-    this.adapter.notify?.(why === 'seen' ? "You've been spotted: the police are on their way." : 'Too loud: the alarm is going off.', 3000);
+    this.adapter.notify?.(why === 'seen' ? "You've been spotted: the police are on their way." : why === 'laser' ? 'Laser tripped: the alarm is going off.' : 'Too loud: the alarm is going off.', 3000);
     this.emit('alarm', { why });
   }
 
@@ -625,6 +625,10 @@ export class HeistManager {
       if (seen > 0) j.suspicion += seen * t.security.suspicionRate * (0.7 + 0.15 * j.security) * dt;
       else j.suspicion = Math.max(0, j.suspicion - P.suspicionDecay * dt);
       if (j.suspicion >= 1) this.raiseAlarm('seen');
+      // A live laser beam (inside the building) sets it off at once.
+      if (ctx.laserTripped && !j.alarm) {
+        this.raiseAlarm('laser');
+      }
       // Noise fades, except while a breach is going (that's one long racket).
       if (j.breaching < 0) j.noise = Math.max(0, j.noise - P.noiseDecay * dt);
     }

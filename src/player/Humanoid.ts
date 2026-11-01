@@ -669,7 +669,8 @@ export class Humanoid implements CharacterModel {
     const moving = Math.min(1, speed / 1.2);
     this.swimLean += (moving - this.swimLean) * Math.min(1, dt * 3);
     const L = this.swimLean;
-    this.phase += dt * (1.2 + speed * 0.9) * Math.PI;
+    // A steady crawl: about two-thirds of a stroke a second at full speed (it was three times that).
+    this.phase += dt * (0.55 + speed * 0.28) * Math.PI;
     const p = this.phase;
     this.root.rotation.z = -1.3 * L;
     this.blend = 0;

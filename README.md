@@ -2101,6 +2101,68 @@ column of menu items on the left, and a panel on the right for what's picked.
 
 The class prefix is `mm-` (the garage menu already uses `gm-`).
 
+## Heists inside the building
+
+The check-casher, Diamond Row and the First Empire bank are robbed from the inside now
+(`src/systems/HeistInterior.ts`; the armored truck stays on the street). Once the job's on, walk
+to the front door and press E to go in; leave the same way.
+
+- **The room** is built under the building (like the shops, at y -150), sized per kind and laid
+  out from the frontage: a lobby with pillars and a teller counter (or the jeweller's display
+  cases), desks in the back, and at the bank partition walls round a corridor to the vault. The
+  vault is a steel door in the back wall with a strong room behind it (its collider goes when
+  it swings open); the bags are inside.
+- **Cover** is solid: guards and cameras check their line of sight against it, aimed at your
+  middle, so hugging a counter or a pillar hides you.
+- **Laser gates** (three red beams between two posts) cross the way in. Each switches on and
+  off on a 3.4 s cycle, staggered gate to gate: time your run. Touching a live beam sets the
+  alarm off at once. A Hacker's jam turns them off along with the cameras.
+- **Cameras** sit in the corners looking into the room; guards walk patrol routes inside.
+- `planHeistInterior` (pure, tested) works out every position; `HeistWorld` rewrites the job's
+  breach points, bags, guards and cameras to the room's at start-up, so the rules
+  (`heistManager.js`) didn't change apart from the laser (`ctx.laserTripped`).
+
+Tracking: a waypoint you place stays yours, but the story's guidance takes over again as soon as
+an objective moves on or a job completes; loading a save keeps the story's waypoint as the
+story's (it used to come back as a manual one, which switched the guidance off for good); and
+during a getaway the waypoint points at the nearest open lock-up.
+
+## Zone music
+
+Every part of the city has its own free-roam track (`public/music/zone-*.mp3`, from the zone
+music brief), crossfading as you cross into a neighbourhood: Harlow Heights, Sutton Row, Hell's
+Galley, the Glass District, Canal Yards, Old Battery, the Central Green and the Waterfront, plus
+the rooftops, the deep drains (sewer levels 2-3), the Gutter Kings hideout, the shops and diners
+and the Pixel Palace arcade. Battles, chases, races, heists, bosses and cutscenes still play their
+own. `pickTrack` (Music.ts) takes `zone` (the neighbourhood id, or 'roof'), `deep`, `hideout` and
+`indoors`.
+
+The tracks are synthesised in code by `scripts/make-zone-tracks.py` (numpy/scipy, a style per
+zone: drums, bass, chords, lead, ambience), seamless loops of 2-2.5 minutes normalised to about
+-14 LUFS. They're placeholders: drop better files over them with the same names.
+
+## Smaller changes (1 November 2026)
+
+- **Streetmon labels**: name, level and an HP bar over every Streetmon you can see, all the time
+  (within 26 m, fading at the edge, only with a clear line of sight: walls and buildings hide
+  them), instead of on mouse-over (`src/ui/CreatureLabels.ts`). Battles keep their own bars.
+- **Stamina**: sprinting drains it (12.5 a second, about 8 s from full); running dry leaves you
+  winded. Rolls go 6 m (dives 7 m).
+- **Conversations**: nobody talks to themselves any more. Passers-by stop in pairs and have a
+  proper exchange (3-6 lines, taking turns, facing each other) about the weather, the night,
+  their neighbourhood, the league, a Streetmon they saw, you, or the police; shop staff talk with
+  customers, the sewer locals with each other (`src/npc/Chatter.ts`). Only gang-fight shouts are
+  single lines.
+- **Dialogue in speech bubbles**: conversations with people (story characters, shopkeepers,
+  bosses) appear as a bubble over the speaker's head with the numbered answers inside it
+  (DialogueBox.ts); with nobody to hang it on, it sits low in the middle of the screen.
+- **No cash in the streets**: nothing lies about, and nobody drops money.
+- **Flying Streetmon** fly: wings beat (a glide high up), legs tuck back, the body leans into the
+  way it's going and bobs; things without wings drift and sway (`flightPose`, SpawnSystem.ts).
+- **Sewers**: the sludge is a dark, murky green, and about one floor block in seven has a slime
+  puddle.
+- **Swimming**: a slower, steadier crawl (about two-thirds of a stroke a second).
+
 ## Saving
 
 Saving goes through `src/core/SaveManager.ts`: the save is LZ-compressed (about a third of the

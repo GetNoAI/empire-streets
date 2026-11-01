@@ -51,8 +51,8 @@ export interface HeistTarget {
     plan: Pt;
     breachPoints: Pt[];
     loot: Pt[];
-    guards: Array<Pt & { patrolTo?: Pt }>;
-    cameras: Array<Pt & { y: number }>;
+    guards: Array<Pt & { patrolTo?: Pt; heading?: number }>;
+    cameras: Array<Pt & { y: number; yaw?: number }>;
     sign?: string;
   };
 }
@@ -175,6 +175,8 @@ export interface HeistContext {
   atDropOff?: string | null;
   guardsAwake?: number;
   dead?: boolean;
+  /** Touching a live laser beam inside the building. */
+  laserTripped?: boolean;
 }
 
 type Res = { ok: boolean; reason: string };

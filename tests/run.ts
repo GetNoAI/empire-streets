@@ -7,7 +7,8 @@ import { STAR_HEAT, Wanted, searchTime, starsFor } from '../src/police/Wanted';
 import { Inventory } from '../src/weapons/Inventory';
 import { WEAPONS, parseWeapons, weapon } from '../src/weapons/WeaponTypes';
 import * as fs from 'node:fs';
-import { INTENSITY, MUSIC, MusicDirector, fadeFor, pickTrack, type TrackId } from '../src/audio/Music';
+import { INTENSITY, MUSIC, MusicDirector, ZONES, fadeFor, pickTrack, type TrackId } from '../src/audio/Music';
+import { HEIST_INTERIOR, laserOn, laserTouches, planHeistInterior } from '../src/systems/HeistInterior';
 import { LAYERS, WorldLayers, layerLabel } from '../src/world/WorldLayers';
 import { ROOFS, ballistic, flightAt, planGarages, planRooftops, roofEscapeReport } from '../src/world/Rooftops';
 import { SEWER, bfsDistances, blockAt, carveMaze, key as sewerKey, planSewers, propAt, reachableCount, ventActive, wallRuns } from '../src/world/Sewers';
@@ -119,7 +120,7 @@ import { applyRep, civicTier, streetTier } from '../src/systems/Reputation';
 import { planStreetCaches } from '../src/world/StreetCaches';
 import { Weather, weatherEffects } from '../src/world/Weather';
 import { NEIGHBOURHOODS, NeighbourhoodTracker, localLook, neighbourhoodAt } from '../src/world/Districts';
-import { roomChatter, streetChatter, type ChatterContext } from '../src/npc/Chatter';
+import { allStreetTalks, roomConversation, sewerConversation, streetConversation, streetShout, type ChatterContext } from '../src/npc/Chatter';
 import { bubbleSeconds } from '../src/ui/Bubbles';
 import { blastFalloff, chainFrom, shockRadius } from '../src/systems/Hazards';
 import { WEAPONS as WEAPON_LIST } from '../src/weapons/WeaponTypes';
@@ -4813,9 +4814,13 @@ console.log('\n# s171: weather, neighbourhoods, chatter, the environment as a we
   const look = localLook(at(0.3, 0.9), { skin: '#fff', hair: '#000', top: '#123456', legs: '#654321', shoes: '#000', scale: 1 }, () => 0.9);
   ok(at(0.3, 0.9).tops.includes(look.top), 'locals dress for their neighbourhood');
   const ctx: ChatterContext = { hour: 14, weather: 'rain', mood: 'neutral', wanted: 0, district: 'x', near: false, gangFight: false };
-  const lines = new Set(Array.from({ length: 80 }, (_, i) => streetChatter(i * 7919, ctx)));
-  ok(lines.size > 12 && [...lines].every((l) => l.length > 3), `passers-by say all sorts (${lines.size} different lines)`);
-  ok(/gunfire|Kings|inside|911/i.test(streetChatter(5, { ...ctx, gangFight: true })) && roomChatter('croupier', 1).length > 0 && roomChatter('nobody', 1) === '', 'chatter fits the moment and the role');
+  const convs = Array.from({ length: 80 }, (_, i) => streetConversation(i * 7919, ctx));
+  ok(convs.every((c) => c.length >= 2 && c.length <= 6 && c.every((l) => l.length > 2)) && new Set(convs.map((c) => c[0])).size > 10, `passers-by have real two-way conversations (${new Set(convs.map((c) => c[0])).size} different ones), 2-6 lines each`);
+  ok(allStreetTalks().every((t) => t.length >= 2), 'every street conversation has at least two speakers');
+  ok(convs.some((c) => /rain|umbrella|awning|Sludge/i.test(c.join(' '))), 'in the rain, some of it is about the rain');
+  const rc = roomConversation('customer', 'clerk', 3);
+  ok(!!rc && rc.first === 'b' && rc.lines.length >= 3 && roomConversation('nobody', 'clerk', 1) === null && sewerConversation(2).length >= 3, 'inside, a clerk talks with a customer (the clerk first); strangers with nothing to say stay quiet');
+  ok(/gunfire|Kings|inside|911|down/i.test(streetShout(5)), 'a gang fight gets shouts, not chat');
   ok(bubbleSeconds('Hi.') >= 2 && bubbleSeconds('x'.repeat(300)) <= 6.5, 'bubbles stay up long enough to read, not forever');
   ok(shockRadius(1) > shockRadius(0) && blastFalloff(0, 6, 100) === 100 && blastFalloff(6, 6, 100) === 0 && blastFalloff(3, 6, 100) > 0, 'shocks reach further on wet ground; blasts fall off with distance');
   const drums = [{ x: 0, z: 0 }, { x: 3, z: 0 }, { x: 10, z: 0 }, { x: 2, z: 1, spent: true }];
@@ -4866,7 +4871,7 @@ console.log('\n# s179: rolls, dives and i-frames');
   dv.start('dive', 0, 1);
   dv.update(0.2);
   ok(dv.timeScale(true) < 1 && dv.timeScale(false) === 1, 'a dive with a gun up slows time a little');
-  dv.update(0.7);
+  dv.update(0.75);
   ok(dv.recovering && !dv.invulnerable && dv.timeScale(true) === 1, 'then you land and get up, open to anything');
   const r = new Dodge();
   r.stamina = 5;
@@ -5100,6 +5105,36 @@ console.log('\n# s187: campaign playthrough and balance');
   off.update(0.6, ctx());
   S.update(0.6, ctx({ follower: { ...F, ready: false } }));
   ok(!off.fight && !S.fight, 'switched off in the options, or put away: no fights');
+}
+
+
+// ---- Zone music, sprint stamina, heist interiors.
+{
+  ok(pickTrack({ battle: null, stars: 0, chasing: false, zone: 'glass' }) === 'zone:glass-district' && pickTrack({ battle: null, stars: 0, chasing: false, zone: 'roof' }) === 'zone:rooftops', 'each neighbourhood and the rooftops have their own free-roam track');
+  ok(pickTrack({ battle: null, stars: 0, chasing: false, sewer: true, deep: true }) === 'zone:sewer-deep' && pickTrack({ battle: null, stars: 0, chasing: false, sewer: true }) === 'sewer' && pickTrack({ battle: null, stars: 0, chasing: false, hideout: true, sewer: true }) === 'zone:gutter-kings-hideout', 'the deep drains and the Gutter Kings hideout too');
+  ok(pickTrack({ battle: null, stars: 0, chasing: false, indoors: 'arcade' }) === 'zone:arcade' && pickTrack({ battle: null, stars: 0, chasing: false, indoors: 'room' }) === 'zone:shops' && pickTrack({ battle: 'wild', stars: 0, chasing: false, zone: 'glass' }) === 'wildBattle' && pickTrack({ battle: null, stars: 3, chasing: true, zone: 'canal' }) === 'chase', 'shops and the arcade have theirs; battles and chases still win');
+  ok(ZONES.every((z) => fs.existsSync(`public/music/zone-${z}.mp3`) && fs.statSync(`public/music/zone-${z}.mp3`).size > 500000), `all ${ZONES.length} zone tracks are there`);
+  const dd = new Dodge();
+  let t = 0;
+  while (dd.sprint(true, 1 / 60) && t < 20) t += 1 / 60;
+  ok(t > 6 && t < 10 && dd.winded > 0, `sprinting runs the stamina dry in ${t.toFixed(1)} s and leaves you winded`);
+  ok(!dd.sprint(true, 1 / 60) && !dd.canStart('roll'), 'winded: no sprint, no roll');
+  ok(ROLL.roll.dist >= 6, 'a roll covers 6 m now');
+  const tq = JSON.parse(JSON.stringify((heistsJson as unknown as { targets: Array<Record<string, unknown>> }).targets.find((x) => x.id === 'first-empire-vault')));
+  const pl = planHeistInterior(tq)!;
+  ok(!!pl && pl.lasers.length >= 3 && pl.cover.length >= 4 && pl.cameras.length === tq.location.cameras.length && pl.guards.length === tq.location.guards.length && pl.loot.length === tq.loot.bags, 'the bank has a room: cover, laser gates, its cameras, guards and bags');
+  const inRoom = (p: { x: number; z: number }) => Math.abs(p.x - pl.centre.x) < pl.W / 2 + 0.1 + (pl.vaultDoor ? 6 : 0) && Math.abs(p.z - pl.centre.z) < pl.D / 2 + 7;
+  ok([...pl.loot, ...pl.breachPoints, ...pl.guards, pl.spawn, pl.exit].every(inRoom) && pl.floorY === HEIST_INTERIOR.floorY, 'everything is inside the building, under it');
+  const L = pl.lasers[0];
+  const mid = { x: (L.ax + L.bx) / 2, z: (L.az + L.bz) / 2 };
+  const len = Math.hypot(L.bx - L.ax, L.bz - L.az);
+  const px = -(L.bz - L.az) / len;
+  const pz = (L.bx - L.ax) / len;
+  ok(laserTouches(L, mid.x, mid.z, pl.floorY, pl.floorY) && !laserTouches(L, mid.x + px * 1.5, mid.z + pz * 1.5, pl.floorY, pl.floorY), 'standing in a beam touches it; a step away does not');
+  const on = Array.from({ length: 100 }, (_, i) => laserOn(L, i * 0.05));
+  ok(on.some((x) => x) && on.some((x) => !x), 'the gates switch on and off (time your run)');
+  const truck = (heistsJson as unknown as { targets: Array<Record<string, unknown>> }).targets.find((x) => x.id === 'armored-transport');
+  ok(planHeistInterior(truck as never) === null, 'the armored truck job stays in the street');
 }
 
 console.log(fails ? `\n${fails} FAILED` : '\nALL PASSED');

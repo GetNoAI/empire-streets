@@ -108,6 +108,7 @@ export function buildSewers(mazes: Maze[], world: RAPIER.World, groundY: (x: num
   const ceilParts: THREE.BufferGeometry[] = [];
   const waterParts: THREE.BufferGeometry[] = [];
   const sludgeParts: THREE.BufferGeometry[] = [];
+  const slimePuddles: THREE.BufferGeometry[] = [];
   const grateParts: THREE.BufferGeometry[] = [];
   const channelParts: THREE.BufferGeometry[] = [];
   const ladderParts: THREE.BufferGeometry[] = [];
@@ -272,6 +273,20 @@ export function buildSewers(mazes: Maze[], world: RAPIER.World, groundY: (x: num
           channelParts.push(box(B * 0.95, 0.04, B * 0.95, c.x, F + 0.02, c.z));
         } else {
           waterParts.push(box(B * 0.28, 0.02, B, c.x + B * 0.33, F + 0.01, c.z));
+          // Here and there a puddle of slime on the floor (one block in seven or so): a blob of
+          // a few overlapping discs. Just the look; the hazard pools are the sludge blocks.
+          const hsh = Math.abs(Math.sin(c.x * 12.9898 + c.z * 78.233 + (m.level ?? 1) * 3.1) * 43758.5453) % 1;
+          if (hsh < 0.15) {
+            const n = 2 + Math.floor(hsh * 20) % 3;
+            for (let k = 0; k < n; k++) {
+              const a = hsh * 40 + k * 2.1;
+              const r = B * (0.14 + 0.1 * ((hsh * 7 + k * 0.37) % 1));
+              const g = new THREE.CircleGeometry(r, 14);
+              g.rotateX(-Math.PI / 2);
+              g.translate(c.x - B * 0.12 + Math.cos(a) * B * 0.13, F + 0.012 + k * 0.002, c.z + Math.sin(a) * B * 0.18);
+              slimePuddles.push(g);
+            }
+          }
         }
       }
     sewerDetail(m, F, H, { haunchParts, pipeParts, bracketParts, streakParts, mossParts, lampParts, lampGlowParts, curbParts, dripPoints });
@@ -347,7 +362,7 @@ export function buildSewers(mazes: Maze[], world: RAPIER.World, groundY: (x: num
   add(mesh(shaftHoles, new THREE.MeshBasicMaterial({ color: 0x000000, polygonOffset: true, polygonOffsetFactor: -2 }), false));
   add(mesh(poolBed, withSurface(new THREE.MeshStandardMaterial({ color: 0x23251f, roughness: 0.9 }), 'concrete')));
   const poolWaterMat = new THREE.MeshStandardMaterial({ color: 0x16313a, emissive: 0x0a2a33, emissiveIntensity: 0.6, roughness: 0.05, metalness: 0.4, transparent: true, opacity: 0.78 });
-  const poolSludgeMat = new THREE.MeshStandardMaterial({ color: 0x6f9a2a, emissive: 0x4a7a10, emissiveIntensity: 0.9, roughness: 0.3, transparent: true, opacity: 0.92 });
+  const poolSludgeMat = new THREE.MeshStandardMaterial({ color: 0x2b4410, emissive: 0x16300a, emissiveIntensity: 0.5, roughness: 0.2, metalness: 0.1, transparent: true, opacity: 0.94 });
   add(mesh(poolWater, poolWaterMat));
   add(mesh(poolSludge, poolSludgeMat));
   add(mesh(wallParts, withSurface(new THREE.MeshStandardMaterial({ color: 0x4b4136, roughness: 0.95 }), 'brick')));
@@ -373,7 +388,9 @@ export function buildSewers(mazes: Maze[], world: RAPIER.World, groundY: (x: num
   add(mesh(floorParts, withSurface(new THREE.MeshStandardMaterial({ color: 0x2c2f2a, roughness: 0.6, metalness: 0.1 }), 'concrete')));
   add(mesh(ceilParts, withSurface(new THREE.MeshStandardMaterial({ color: 0x252420, roughness: 1, side: THREE.DoubleSide }), 'concrete')));
   add(mesh(waterParts, new THREE.MeshStandardMaterial({ color: 0x1d3a35, roughness: 0.1, metalness: 0.3 })));
-  add(mesh(sludgeParts, new THREE.MeshStandardMaterial({ color: 0x6f9a2a, emissive: 0x4a7a10, emissiveIntensity: 0.9, roughness: 0.3 })));
+  // Sludge: a deep, murky green (it used to glow lime).
+  add(mesh(sludgeParts, new THREE.MeshStandardMaterial({ color: 0x2b4410, emissive: 0x16300a, emissiveIntensity: 0.5, roughness: 0.22, metalness: 0.1 })));
+  add(mesh(slimePuddles, new THREE.MeshStandardMaterial({ color: 0x24390e, emissive: 0x112606, emissiveIntensity: 0.35, roughness: 0.15, metalness: 0.1, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }), false));
   add(mesh(grateParts, withSurface(new THREE.MeshStandardMaterial({ color: 0x5a5d60, metalness: 0.7, roughness: 0.5 }), 'rust')));
   const chanMat = new THREE.MeshStandardMaterial({ color: 0x2a6f7a, emissive: 0x0f3f48, emissiveIntensity: 0.8, roughness: 0.05, metalness: 0.4 });
   add(mesh(channelParts, chanMat));
@@ -419,7 +436,7 @@ export function buildSewers(mazes: Maze[], world: RAPIER.World, groundY: (x: num
       if (!under.visible) return;
       chanMat.emissiveIntensity = 0.6 + 0.3 * Math.sin(t * 5);
       poolWaterMat.emissiveIntensity = 0.5 + 0.15 * Math.sin(t * 1.7);
-      poolSludgeMat.emissiveIntensity = 0.8 + 0.25 * Math.sin(t * 2.3);
+      poolSludgeMat.emissiveIntensity = 0.42 + 0.12 * Math.sin(t * 2.3);
       fireMat.emissiveIntensity = 2 + 0.5 * Math.sin(t * 13) + 0.3 * Math.sin(t * 7.3);
       lampMat.emissiveIntensity = 1.5 + (Math.sin(t * 37) > 0.97 ? -0.9 : 0) + 0.1 * Math.sin(t * 3);
       lampGlowMat.opacity = 0.1 + 0.02 * Math.sin(t * 2.1);

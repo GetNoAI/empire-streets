@@ -595,10 +595,7 @@ export class WeaponSystem {
         this.addPickup('weapon', w.id, isRanged(w) ? w.startReserve ?? 0 : 0, 0, x, 0.15, z, true);
       }
     }
-    for (let i = 0; i < 14; i++) {
-      const b = layout.blocks[rng.int(0, layout.blocks.length - 1)];
-      this.addPickup('cash', 'cash', 0, rng.int(40, 160), b.x0 + 1.6, 0.15, rng.range(b.z0 + 4, b.z1 - 4), true);
-    }
+    // (No cash lying about in the streets any more: money comes from jobs, races, heists and fights.)
   }
 
   private addPickup(kind: 'weapon' | 'cash', id: string, rounds: number, amount: number, x: number, y: number, z: number, permanent: boolean): void {
@@ -624,7 +621,8 @@ export class WeaponSystem {
 
   /** Something dropped by a person (a cop's pistol, cash). */
   drop(kind: 'weapon' | 'cash', id: string, roundsOrAmount: number, x: number, y: number, z: number): void {
-    if (kind === 'cash') this.addPickup('cash', 'cash', 0, roundsOrAmount, x, y, z, false);
+    // Nobody drops cash in the street (people, police and gang members alike).
+    if (kind === 'cash') return;
     else this.addPickup('weapon', id, roundsOrAmount, 0, x, y, z, false);
   }
 

@@ -57,7 +57,7 @@ export interface SaveData {
   /** Heists: notoriety, which jobs are still on edge, and your record. */
   heists: { heat: number; cooldowns: Record<string, number>; stats: { done: number; failed: number; earned: number; best: number } };
   /** City map: your waypoint and which layers are shown. */
-  map: { waypoint: { x: number; z: number } | null; hidden: string[] };
+  map: { waypoint: { x: number; z: number } | null; hidden: string[]; /** You placed it (the story's guidance waits); otherwise the story's own. */ manual?: boolean };
   /** Street events: Street Cred earned per district, upgrade chips, time to the next event, record. */
   streetEvents: {
     regionalCred: Record<string, number>;
@@ -356,7 +356,8 @@ function parseMap(v: unknown): SaveData['map'] {
   const w = o['waypoint'] as { x?: unknown; z?: unknown } | null | undefined;
   const ok = w && typeof w === 'object' && typeof w.x === 'number' && typeof w.z === 'number' && Math.abs(w.x) < 5000 && Math.abs(w.z) < 5000;
   const hidden = Array.isArray(o['hidden']) ? (o['hidden'] as unknown[]).filter((x): x is string => typeof x === 'string' && /^[a-zA-Z]{1,24}$/.test(x)).slice(0, 32) : [];
-  return { waypoint: ok ? { x: w!.x as number, z: w!.z as number } : null, hidden };
+  // Old saves didn't say: treat their waypoint as the story's (so the guidance isn't stuck behind it).
+  return { waypoint: ok ? { x: w!.x as number, z: w!.z as number } : null, hidden, manual: o['manual'] === true };
 }
 
 /** Tuned rides: known car models only; each slotted Streetmon must be among the garage's. */

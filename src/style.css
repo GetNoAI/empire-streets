@@ -1577,3 +1577,58 @@ body.touch .mm-hint { display: none; }
   .mm-item.quit { margin-top: 4px; }
   .mm-panel { max-height: calc(100vh - 24px); padding: 14px 16px; }
 }
+
+/* ---------- Streetmon labels: name, level and HP over every one in sight (CreatureLabels.ts) */
+.clabels { position: fixed; inset: 0; pointer-events: none; z-index: 5; overflow: hidden; }
+.clabel {
+  position: absolute;
+  left: 0;
+  top: 0;
+  min-width: 74px;
+  padding: 2px 6px 4px;
+  border-radius: 6px;
+  background: rgba(10, 13, 18, 0.62);
+  color: #fff;
+  font: 700 11.5px var(--ui-font);
+  text-align: center;
+  white-space: nowrap;
+  transform-origin: 50% 100%;
+  transition: opacity 0.18s;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+.clabel .cl-name small { color: #c8d0da; font-weight: 600; font-size: 10.5px; }
+.clabel .cl-name em { font-style: normal; color: #7dff9a; font-size: 10px; margin-left: 3px; }
+.clabel .cl-name b { color: #ffd23f; }
+.clabel.mine { box-shadow: 0 0 0 1px rgba(125, 255, 154, 0.45); }
+.cl-hp { height: 4px; margin-top: 3px; border-radius: 2px; background: rgba(255, 255, 255, 0.16); overflow: hidden; }
+.cl-hp i { display: block; height: 100%; transition: width 0.2s; }
+
+/* ---------- Conversations as a speech bubble over the speaker (DialogueBox.ts) */
+.dialogue { --tail: 50%; }
+.dialogue .dlg-choices button {
+  display: flex; align-items: baseline; gap: 8px; width: 100%; padding: 6px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 8px; background: rgba(255, 255, 255, 0.05);
+  color: inherit; font: 600 14px/1.3 var(--ui-font); text-align: left; cursor: pointer;
+}
+.dialogue .dlg-choices button:hover, .dialogue .dlg-choices button:focus-visible { border-color: #ffd23f; outline: none; }
+.dialogue .dlg-choices kbd { flex: none; min-width: 20px; padding: 1px 0; border-radius: 4px; background: #ffd23f; color: #15171b; font: 800 12px/1.3 var(--ui-font); text-align: center; opacity: 1; margin: 0; }
+.dialogue.floating {
+  left: 0; top: 0; bottom: auto;
+  width: min(400px, calc(100vw - 24px));
+  padding: 12px 14px 12px;
+  border: 0; border-radius: 16px;
+  background: rgba(250, 248, 242, 0.97); color: #15171b;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  will-change: transform;
+}
+.dialogue.floating::after {
+  content: ''; position: absolute; left: var(--tail); bottom: -10px; margin-left: -10px;
+  border: 10px solid transparent; border-bottom: 0; border-top-color: rgba(250, 248, 242, 0.97);
+}
+.dialogue.floating .dlg-name { color: #8a5a00; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 4px; }
+.dialogue.floating .dlg-name span { color: #6b7280; }
+.dialogue.floating .dlg-text { font-size: 15px; line-height: 1.4; margin-bottom: 9px; }
+.dialogue.floating .dlg-choices button { border-color: rgba(21, 23, 27, 0.14); background: rgba(21, 23, 27, 0.04); }
+.dialogue.floating .dlg-choices button:hover { border-color: #c98a00; background: rgba(255, 210, 63, 0.18); }
+.dialogue.next .dlg-text { animation: dlg-next 0.18s ease-out; }
+@keyframes dlg-next { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }

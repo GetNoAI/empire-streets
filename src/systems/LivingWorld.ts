@@ -77,6 +77,8 @@ export interface LivingWorldDeps {
   time(): TimeOfDay;
   /** Chatter extras: race tracks, racers, crews. */
   lore: { tracks: string[]; racers: string[]; crews: string[] };
+  /** A street conversation fitting the moment (weather, night, the neighbourhood, you): lines A, B, A... */
+  contextTalk?(): string[] | null;
   /** Your Streetmon out walking with you (it fights nearby wild ones on its own). */
   follower?: Follower;
   /** A fight of yours ended: `ours` is your Streetmon, `wild` the one it fought. */
@@ -363,7 +365,11 @@ export class LivingWorld {
     return Math.hypot(x - c.x, z - c.z) < this.cfg.lod.fxRadius;
   }
 
+  /** (Wild Streetmon and yours have their labels all the time now: CreatureLabels in the HUD.) */
+  showWildBars = false;
+
   private wildBar(w: WildCreature): void {
+    if (!this.showWildBars) return;
     this.bars.set(`w${w.id}`, this.wildTop(w.id), w.creature.hp, maxHp(w.creature), w.creature.level, typeInfo(w.spec.types[0]).color);
   }
 
@@ -386,7 +392,7 @@ export class LivingWorld {
   private followerBar(): void {
     const f = this.d.follower;
     const c = f?.creature;
-    if (!c) return;
+    if (!c || !this.showWildBars) return;
     this.bars.set('yours', this.followerTop(), c.hp, maxHp(c), c.level, '#7dff9a');
   }
 
@@ -678,6 +684,7 @@ export class LivingWorld {
         this.bubbles.say(`p${id}`, this.head(id), text, seconds, /!$/.test(text) && text.length < 26 ? 'shout' : 'talk');
       },
       chatVars: (topic) => this.chatVars(topic),
+      contextConversation: () => this.d.contextTalk?.() ?? null,
     };
   }
 

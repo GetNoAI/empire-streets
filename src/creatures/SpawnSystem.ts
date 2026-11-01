@@ -1142,14 +1142,18 @@ export class SpawnSystem {
     inst.root.position.set(w.x, w.y - sink + (w.alt ?? 0), w.z);
     inst.root.rotation.y = w.heading;
     const moving = w.speed > 0.25;
-    if (w.state !== 'engaged' && w.state !== 'fainted' && w.state !== 'knocked' && performance.now() > (w.animLock ?? 0)) inst.play(moving ? 'walk' : 'idle');
+    const airborne = !!FLIGHT[w.spec.id] && (w.alt ?? 0) > 0.3;
+    // In the air: no walking on nothing (the flap is laid over the idle below).
+    if (w.state !== 'engaged' && w.state !== 'fainted' && w.state !== 'knocked' && performance.now() > (w.animLock ?? 0)) inst.play(moving && !airborne ? 'walk' : 'idle');
     const action = inst.mixer.existingAction(inst.clips.get('walk')!);
     if (action) action.timeScale = moving ? Math.max(0.6, w.speed / Math.max(0.6, w.spec.model.height * 1.4)) : 1;
     // Animation rate by distance: every frame up close, 15 fps beyond 35 m (a few pixels tall,
     // the difference doesn't show), nothing past 90 m (saves time with a full cap).
     if (dt > 0 && dist < 90) {
-      if (dist < 35) inst.mixer.update(dt + (this.animAcc.get(w) ?? 0));
-      else {
+      if (dist < 35) {
+        inst.mixer.update(dt + (this.animAcc.get(w) ?? 0));
+        if (airborne) flightPose(inst, w, performance.now() / 1000);
+      } else {
         const acc = (this.animAcc.get(w) ?? 0) + dt;
         if (acc >= FAR_ANIM_STEP) {
           inst.mixer.update(acc);
@@ -1199,4 +1203,68 @@ function turnToward(from: number, to: number, maxStep: number): number {
   while (d > Math.PI) d -= TAU;
   while (d < -Math.PI) d += TAU;
   return from + Math.max(-maxStep, Math.min(maxStep, d));
+}
+
+// ---------------------------------------------------------------- flight
+
+interface FlightBone {
+  b: THREE.Object3D;
+  /** The bone's rest pose, for bones the idle clip doesn't drive (so the offsets don't pile up). */
+  rest: { rx: number; ry: number; rz: number; py: number } | null;
+}
+const flightRigs = new WeakMap<object, { wings: Array<FlightBone & { s: number; tip: boolean }>; legs: FlightBone[]; body: FlightBone | null }>();
+
+function base(fb: FlightBone): void {
+  if (!fb.rest) return;
+  fb.b.rotation.set(fb.rest.rx, fb.rest.ry, fb.rest.rz);
+  fb.b.position.y = fb.rest.py;
+}
+
+/**
+ * Laid over the idle clip while a flyer is in the air: wings beat (fast for birds, slow for
+ * moths, a glide high up), legs tuck back, the body leans into the way it's going and bobs with
+ * each beat. Things without wings (smoke, fog) just drift and sway.
+ */
+export function flightPose(inst: { root: THREE.Object3D; clips?: Map<string, THREE.AnimationClip> }, w: { spec: { id: string }; speed: number; alt?: number; id: number }, time: number): void {
+  let rig = flightRigs.get(inst);
+  if (!rig) {
+    const driven = new Set((inst.clips?.get('idle')?.tracks ?? []).map((t) => t.name.split('.')[0]));
+    const fb = (o: THREE.Object3D): FlightBone => ({ b: o, rest: driven.has(o.name) ? null : { rx: o.rotation.x, ry: o.rotation.y, rz: o.rotation.z, py: o.position.y } });
+    const r = { wings: [] as Array<FlightBone & { s: number; tip: boolean }>, legs: [] as FlightBone[], body: null as FlightBone | null };
+    inst.root.traverse((o) => {
+      const n = o.name;
+      if (/^wing_[LR]/.test(n)) r.wings.push({ ...fb(o), s: n.includes('_L') ? 1 : -1, tip: /_(lo|tip)$/.test(n) });
+      else if (/^leg_/.test(n) && !n.endsWith('_lo')) r.legs.push(fb(o));
+      else if (n === 'body') r.body = fb(o);
+    });
+    rig = r;
+    flightRigs.set(inst, rig);
+  }
+  const f = FLIGHT[w.spec.id];
+  const high = (w.alt ?? 0) > (f?.cruise ?? 2) * 2.5;
+  const big = (f?.high ?? 0) >= 14;
+  // Birds beat quickly, moths and drifters slowly; gliding high up, only now and then.
+  const hz = big ? 4.2 : 2.6;
+  const ph = time * hz * Math.PI * 2 + w.id;
+  const glide = high ? 0.25 + 0.75 * Math.max(0, Math.sin(time * 0.6 + w.id)) ** 6 : 1;
+  const beat = Math.sin(ph);
+  for (const wg of rig.wings) {
+    base(wg);
+    // Down-stroke fast, up-stroke slower; the tip lags the root.
+    const a = (wg.tip ? 0.5 * Math.sin(ph - 0.9) : 0.95 * beat + 0.15) * glide + (1 - glide) * 0.15;
+    wg.b.rotation.z += wg.s * a;
+    wg.b.rotation.x += 0.15 * Math.cos(ph) * glide;
+  }
+  for (const l of rig.legs) {
+    base(l);
+    l.b.rotation.x -= 0.7;
+  }
+  const b = rig.body;
+  if (b) {
+    base(b);
+    const lean = Math.min(0.35, w.speed * 0.08);
+    b.b.rotation.x += lean;
+    b.b.position.y += (rig.wings.length ? 0.05 : 0.08) * Math.sin(ph + (rig.wings.length ? Math.PI / 2 : 0)) * (rig.wings.length ? glide : 1);
+    if (!rig.wings.length) b.b.rotation.z += 0.08 * Math.sin(time * 1.3 + w.id);
+  }
 }

@@ -19,9 +19,27 @@
  * The Music class plays it all on HTMLAudioElements.
  */
 
-export type TrackId = 'overworld' | 'sewer' | 'casino' | 'wildBattle' | 'chase' | 'policeBattle' | 'npcBattle' | 'race' | 'heist' | 'boss' | 'legendary' | 'intro' | 'cinematic';
+/** Free-roam music per part of the city (the zone music brief; scripts/make-zone-tracks.py). */
+export const ZONES = ['harlow-heights', 'sutton-row', 'hells-galley', 'glass-district', 'canal-yards', 'old-battery', 'central-green', 'waterfront', 'rooftops', 'sewer-deep', 'gutter-kings-hideout', 'shops', 'arcade'] as const;
+export type ZoneId = (typeof ZONES)[number];
+export type ZoneTrack = `zone:${ZoneId}`;
+
+export type TrackId = 'overworld' | 'sewer' | 'casino' | 'wildBattle' | 'chase' | 'policeBattle' | 'npcBattle' | 'race' | 'heist' | 'boss' | 'legendary' | 'intro' | 'cinematic' | ZoneTrack;
+
+/** Neighbourhood ids (world/Districts.ts) to their zone tracks. */
+export const HOOD_ZONE: Record<string, ZoneId> = {
+  harlow: 'harlow-heights',
+  sutton: 'sutton-row',
+  galley: 'hells-galley',
+  glass: 'glass-district',
+  canal: 'canal-yards',
+  battery: 'old-battery',
+  green: 'central-green',
+  waterfront: 'waterfront',
+};
 
 const FILES: Record<TrackId, string> = {
+  ...(Object.fromEntries(ZONES.map((z) => [`zone:${z}`, `zone-${z}.mp3`])) as Record<ZoneTrack, string>),
   overworld: 'transit-after-midnight.mp3',
   sewer: 'dragging-through-concrete.mp3',
   // Inside the Empire Royale (generated for the game: scripts/make-casino-track.py).
@@ -41,10 +59,11 @@ const FILES: Record<TrackId, string> = {
 };
 
 /** Tracks that always pick up where they left off (the rest restart unless you were only away briefly). */
-const RESUMES: ReadonlySet<TrackId> = new Set(['overworld', 'sewer', 'casino']);
+const RESUMES: ReadonlySet<TrackId> = new Set<TrackId>(['overworld', 'sewer', 'casino', ...ZONES.map((z) => `zone:${z}` as ZoneTrack)]);
 
 /** How intense each track is: switching up is immediate, switching down waits a moment. */
 export const INTENSITY: Record<TrackId, number> = {
+  ...(Object.fromEntries(ZONES.map((z) => [`zone:${z}`, z === 'gutter-kings-hideout' ? 0.5 : 0])) as Record<ZoneTrack, number>),
   overworld: 0,
   sewer: 0,
   casino: 0.5,
@@ -90,8 +109,14 @@ export interface MusicSituation {
   race?: boolean;
   /** Underground. */
   sewer?: boolean;
-  /** Inside a building: the casino has its own music; other rooms keep the street's. */
-  indoors?: 'casino' | 'room' | null;
+  /** Inside a building: the casino and the arcade have their own music, other rooms the shop radio. */
+  indoors?: 'casino' | 'arcade' | 'room' | null;
+  /** Where you are, for the free-roam music: a neighbourhood id (Districts.ts), 'roof', or null. */
+  zone?: string | null;
+  /** Down in the deep drains (sewer levels 2-3). */
+  deep?: boolean;
+  /** In the Gutter Kings' hideout. */
+  hideout?: boolean;
   /** A cinematic with its own music is playing: the opening, or a high-octane one. */
   cinematic?: 'intro' | 'action' | null;
 }
@@ -114,9 +139,13 @@ export function pickTrack(s: MusicSituation): TrackId {
   if (s.race) return 'race';
   if (s.stars >= 2 || (s.chasing && s.stars > 0)) return 'chase';
   if (s.indoors === 'casino') return 'casino';
-  if (s.indoors === 'room') return 'overworld';
-  if (s.sewer) return 'sewer';
-  return 'overworld';
+  if (s.indoors === 'arcade') return 'zone:arcade';
+  if (s.indoors === 'room') return 'zone:shops';
+  if (s.hideout) return 'zone:gutter-kings-hideout';
+  if (s.sewer) return s.deep ? 'zone:sewer-deep' : 'sewer';
+  if (s.zone === 'roof') return 'zone:rooftops';
+  const z = s.zone ? HOOD_ZONE[s.zone] : undefined;
+  return z ? `zone:${z}` : 'overworld';
 }
 
 const isCine = (id: TrackId | null): boolean => id === 'intro' || id === 'cinematic';

@@ -476,6 +476,12 @@ export class NpcLifeManager {
    */
   writeConversation(want) {
     const L = this.cfg.lines.chatter;
+    // Most of the time a conversation about what's going on (the weather, the hour, the block);
+    // otherwise one of the Streetmon-world topics below.
+    if (!want && this.adapter.contextConversation && this.rng() < 0.6) {
+      const lines = this.adapter.contextConversation();
+      if (lines && lines.length >= 2) return { topic: 'life', lines };
+    }
     for (let tries = 0; tries < 8; tries++) {
       const topic = want ?? pick(this.catches.length ? TOPICS : TOPICS.filter((t) => t !== 'brag'), this.rng);
       const templates = L[topic];

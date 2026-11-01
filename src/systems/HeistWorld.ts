@@ -11,6 +11,7 @@ import type { VehicleManager } from '../vehicles/VehicleManager';
 import type { DropOff, HeistConfig, HeistRole, HeistState, HeistTarget, LootBag, Pt } from './heistManager.js';
 import type { TuningWorld } from './TuningWorld';
 import { withSurface } from '../render/Surfaces';
+import { buildHeistInterior, laserOn, laserTouches, planHeistInterior, type HeistInteriorPlan, type HeistInteriorView } from './HeistInterior';
 
 /**
  * The 3D side of heists (heistManager.js runs the rules): the storefronts, vault doors, display
@@ -149,8 +150,25 @@ export class HeistWorld {
   private time = 0;
   private escaping: string[] = [];
 
+  /** Jobs that happen inside: the room's plan and its 3D. */
+  private readonly interiors = new Map<string, { plan: HeistInteriorPlan; view: HeistInteriorView }>();
+  /** The job's interior you're standing in (shown), if any. */
+  inside: string | null = null;
+
   constructor(private readonly d: HeistWorldDeps) {
     d.scene.add(this.alarmLight);
+    // Jobs in buildings move inside: the breach points, bags, guards and cameras are the room's.
+    for (const t of d.config.targets) {
+      const plan = planHeistInterior(t);
+      if (!plan) continue;
+      t.location.breachPoints = plan.breachPoints;
+      t.location.loot = plan.loot;
+      t.location.guards = plan.guards;
+      t.location.cameras = plan.cameras;
+      const view = buildHeistInterior(plan, d.world);
+      d.scene.add(view.root);
+      this.interiors.set(t.id, { plan, view });
+    }
     for (const t of d.config.targets) this.buildSite(t);
     for (const dr of d.config.dropOffs) this.buildLockup(dr);
   }
@@ -170,7 +188,25 @@ export class HeistWorld {
     const bodies: RAPIER.RigidBody[] = [];
     const F = this.facadeFrame(t);
     const gy = (p: Pt): number => this.d.groundY(p.x, p.z);
-    if (F) {
+    const inner = this.interiors.get(t.id);
+    if (F && inner) {
+      // The way in: double doors in the frontage, and the sign over them.
+      if (t.location.sign) {
+        const colors: Record<string, string> = { bankVault: '#1d3557', jewelryStore: '#4a1030', checkCashing: '#c9a400' };
+        const sign = new THREE.Mesh(new THREE.PlaneGeometry(7, 1.3), new THREE.MeshBasicMaterial({ map: signTexture(t.location.sign, colors[t.kind] ?? '#333', t.kind === 'checkCashing' ? '#1a1a1a' : '#ffffff') }));
+        sign.position.set(F.x + F.nx * 0.08, 5.2, F.z + F.nz * 0.08);
+        sign.rotation.y = F.yaw;
+        root.add(sign);
+      }
+      const doors = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 2.6), mats.window);
+      doors.position.set(F.x + F.nx * 0.05, gy(F) + 1.3, F.z + F.nz * 0.05);
+      doors.rotation.y = F.yaw;
+      const frame = new THREE.Mesh(new THREE.BoxGeometry(2.7, 2.85, 0.12), mats.gold);
+      frame.position.set(F.x + F.nx * 0.02, gy(F) + 1.42, F.z + F.nz * 0.02);
+      frame.rotation.y = F.yaw;
+      root.add(frame, doors);
+      openers.push(...inner.view.openers);
+    } else if (F) {
       // Sign over the frontage.
       if (t.location.sign) {
         const colors: Record<string, string> = { bankVault: '#1d3557', jewelryStore: '#4a1030', checkCashing: '#c9a400' };
@@ -375,7 +411,8 @@ export class HeistWorld {
       this.d.scene.add(m.root, fan);
       // Face out to the street (facade normal) or across the truck. Humanoids use the car/player
       // convention: heading h faces (cos h, -sin h).
-      const heading = F ? Math.atan2(-F.nz, F.nx) : (t.location.truck?.heading ?? 0) + Math.PI / 2;
+      const planned = (gp as { heading?: number }).heading;
+      const heading = planned ?? (F ? Math.atan2(-F.nz, F.nx) : (t.location.truck?.heading ?? 0) + Math.PI / 2);
       this.guards.push({ model: m, cone: fan, home: { x: gp.x, z: gp.z }, to: gp.patrolTo ?? null, x: gp.x, z: gp.z, heading, leg: 0, pause: Math.random() * 2, out: 0, speed: 0 });
     }
     for (const cp of t.location.cameras) {
@@ -389,7 +426,7 @@ export class HeistWorld {
       const dot = new THREE.Mesh(new THREE.SphereGeometry(0.03, 6, 6), led);
       dot.position.set(0.08, 0.08, 0.4);
       pivot.add(body, lens, dot);
-      const yaw = F ? Math.atan2(F.nx, F.nz) : 0;
+      const yaw = (cp as { yaw?: number }).yaw ?? (F ? Math.atan2(F.nx, F.nz) : 0);
       pivot.position.set(cp.x, cp.y, cp.z);
       pivot.rotation.order = 'YXZ';
       pivot.rotation.y = yaw;
@@ -399,7 +436,7 @@ export class HeistWorld {
         new THREE.MeshBasicMaterial({ color: 0xff7a1a, transparent: true, opacity: 0.12, depthWrite: false }),
       );
       cone.rotation.x = -Math.PI / 2;
-      cone.position.set(cp.x, this.d.groundY(cp.x, cp.z) + 0.05, cp.z);
+      cone.position.set(cp.x, this.gy(t, cp) + 0.05, cp.z);
       this.d.scene.add(pivot, cone);
       this.cams.push({ pivot, cone, led, x: cp.x, y: cp.y, z: cp.z, base: yaw, yaw, phase: Math.random() * 6 });
     }
@@ -411,11 +448,42 @@ export class HeistWorld {
     ];
     let k = 0;
     for (const [role, c] of Object.entries(crew) as Array<[HeistRole, Creature]>) {
-      const f = new Follower(this.d.scene, this.d.models, (x, z) => this.d.groundY(x, z), (x, z) => this.d.blocked(x, z));
+      // Inside the building the crew stands on the room's floor (and the street's walls don't apply).
+      const f = new Follower(
+        this.d.scene,
+        this.d.models,
+        (x, z) => (this.inside ? (this.interiors.get(this.inside)?.plan.floorY ?? this.d.groundY(x, z)) : this.d.groundY(x, z)),
+        (x, z) => (this.inside ? false : this.d.blocked(x, z)),
+      );
       f.offset = spots[k++ % spots.length];
       this.crew.push({ role, f, creature: c });
     }
     this.site(t)?.marker && (this.site(t)!.marker.visible = false);
+  }
+
+  /** Floor height at a job's point: the interior's floor, or the street. */
+  private gy(t: HeistTarget | null, p: Pt): number {
+    const inner = t ? this.interiors.get(t.id) : undefined;
+    return inner ? inner.plan.floorY : this.d.groundY(p.x, p.z);
+  }
+
+  /** The interior plan of a job (null for the truck). */
+  interiorPlan(id: string): HeistInteriorPlan | null {
+    return this.interiors.get(id)?.plan ?? null;
+  }
+
+  /** Shows a job's interior (you've gone in) or hides them all (null). */
+  showInterior(id: string | null): void {
+    this.inside = id;
+    for (const [k, v] of this.interiors) v.view.root.visible = k === id;
+  }
+
+  /** A live laser beam where the player stands (inside, lasers on: not jammed, no alarm yet). */
+  laserTripped(px: number, feetY: number, pz: number): boolean {
+    const t = this.target;
+    const inner = t ? this.interiors.get(t.id) : undefined;
+    if (!inner || this.inside !== t!.id || !this.camerasOn || this.alarmOn) return false;
+    return inner.plan.lasers.some((l) => laserOn(l, this.time) && laserTouches(l, px, pz, feetY, inner.plan.floorY));
   }
 
   private site(t: HeistTarget | null): Site | null {
@@ -455,8 +523,9 @@ export class HeistWorld {
     this.alarmOn = true;
     const t = this.target;
     if (!t) return;
-    const c = t.location.facade ?? t.location.truck!;
-    this.alarmLight.position.set(c.x, 4.5, c.z);
+    const inner = this.interiors.get(t.id);
+    const c = inner ? inner.plan.centre : t.location.facade ?? t.location.truck!;
+    this.alarmLight.position.set(c.x, inner ? inner.plan.floorY + 3.6 : 4.5, c.z);
     this.alarmLit = true;
     for (const g of this.guards) g.cone.visible = false;
   }
@@ -469,7 +538,8 @@ export class HeistWorld {
       const p = t.location.breachPoints[i];
       const F = this.facadeFrame(t);
       // Stand just off the point, toward the street.
-      br.f.goal = F ? { x: p.x + F.nx * 0.4 + -F.nz * 0.8, z: p.z + F.nz * 0.4 + F.nx * 0.8 } : { x: p.x + 0.9, z: p.z };
+      const inner = this.interiors.get(t.id);
+      br.f.goal = inner ? { x: p.x + (inner.plan.centre.x - p.x) * 0.12 + 0.8, z: p.z + (inner.plan.centre.z - p.z) * 0.12 } : F ? { x: p.x + F.nx * 0.4 + -F.nz * 0.8, z: p.z + F.nz * 0.4 + F.nx * 0.8 } : { x: p.x + 0.9, z: p.z };
     }
   }
 
@@ -494,15 +564,22 @@ export class HeistWorld {
       if (this.bags.some((x) => x.bag.index === b.index)) continue;
       const p = at.loot[b.index] ?? at.loot[0];
       const mesh = bagMesh();
-      mesh.position.set(p.x, this.d.groundY(p.x, p.z), p.z);
+      mesh.position.set(p.x, this.gy(t, p), p.z);
       mesh.rotation.y = Math.random() * Math.PI;
       this.d.scene.add(mesh);
       this.bags.push({ bag: b, mesh, at: p, available: true, taken: false });
     }
+    // The vault door swings open: its collider goes (it comes back when the site resets).
+    const body = this.interiors.get(t.id)?.view.doorBody;
+    if (body && t.breach.mode !== 'smash') {
+      const at = body.translation();
+      body.userData = { x: at.x, y: at.y, z: at.z };
+      body.setTranslation({ x: at.x, y: at.y - 500, z: at.z }, true);
+    }
     audio.sfx(t.breach.mode === 'smash' ? 'sfx_glass' : 'sfx_vault_open', 0);
     if (t.breach.mode === 'smash') {
       const p = at.breachPoints[i];
-      this.d.effects.sparks(p.x, 1.2, p.z, 14);
+      this.d.effects.sparks(p.x, this.gy(t, p) + 1.2, p.z, 14);
     }
   }
 
@@ -561,6 +638,12 @@ export class HeistWorld {
       o.open = false;
       o.t = 0;
       this.applyOpener(o);
+    }
+    const body = this.interiors.get(id)?.view.doorBody;
+    const home = body?.userData as { x: number; y: number; z: number } | undefined;
+    if (body && home) {
+      body.setTranslation(home, true);
+      body.userData = undefined;
     }
   }
 
@@ -720,7 +803,7 @@ export class HeistWorld {
         g.speed = 0;
         g.heading += Math.sin(this.time * 0.5 + g.home.x) * dt * 0.4;
       }
-      const y = this.d.groundY(g.x, g.z);
+      const y = this.gy(this.target, g);
       g.model.root.position.set(g.x, y, g.z);
       g.model.root.rotation.y = g.heading;
       g.model.update(dt, g.speed, true);
@@ -737,6 +820,9 @@ export class HeistWorld {
       c.cone.visible = this.camerasOn && !this.alarmOn;
     }
     if (this.alarmLit) this.alarmLight.intensity = Math.sin(this.time * 9) > 0 ? 18 : 0;
+    // Laser gates blink on their cycle (off while jammed).
+    const inner = this.interiors.get(this.target.id);
+    if (inner) inner.plan.lasers.forEach((l, i) => (inner.view.beams[i].visible = this.camerasOn && laserOn(l, this.time)));
     // The crew follows; the breacher works.
     this.workT += dt;
     for (const c of this.crew) {
@@ -753,10 +839,12 @@ export class HeistWorld {
         this.sparkT = 0.15;
         const p = this.target.location.breachPoints[this.breaching];
         const F = this.facadeFrame(this.target);
-        const x = F ? p.x - F.nx * 1.2 : p.x;
-        const z = F ? p.z - F.nz * 1.2 : p.z;
-        this.d.effects.sparks(x, 1.2, z, 5);
-        if (Math.random() < 0.3) audio.sfx('sfx_drill', { x, y: 1, z });
+        const inn = this.interiors.get(this.target.id);
+        const x = inn ? p.x : F ? p.x - F.nx * 1.2 : p.x;
+        const z = inn ? p.z : F ? p.z - F.nz * 1.2 : p.z;
+        const y = (inn ? inn.plan.floorY : 0) + 1.2;
+        this.d.effects.sparks(x + (inn ? (inn.plan.centre.x - p.x) * -0.05 : 0), y, z + (inn ? (inn.plan.centre.z - p.z) * -0.05 : 0), 5);
+        if (Math.random() < 0.3) audio.sfx('sfx_drill', { x, y, z });
       }
     }
     // Bags on backs.

@@ -138,6 +138,13 @@ export class CampaignWorld {
     return null;
   }
 
+  /** Where every story character's model stands (the dialogue bubble hangs over the one you talk to). */
+  speakers(): THREE.Object3D[] {
+    const out: THREE.Object3D[] = [];
+    for (const f of this.figures.values()) out.push(f.model.root);
+    return out;
+  }
+
   /** The person or boss within talking range on foot, if any. */
   nearby(): { kind: 'npc' | 'boss'; id: string; name: string } | null {
     const p = this.d.player();

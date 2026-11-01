@@ -2,12 +2,15 @@
  * Dodge rolls and gun dives (engine-free, unit-tested), the Dark Souls way: a quick roll with a
  * short window of invulnerability in the middle of it, paid for with stamina.
  *
- *  - **Roll** (Z, or Y on a pad): 4 m in about 0.6 s, the direction you're pushing (or forward).
+ *  - **Roll** (Z, or Y on a pad): 6 m in about 0.7 s, the direction you're pushing (or forward).
  *    Invulnerable for the middle part (the i-frames, about 0.3 s); the start and the getting-up
  *    are not, so timing matters.
  *  - **Dive** (the same button while aiming a gun): a longer, lower dive with the gun up. You can
  *    keep shooting all the way down (time slows a little while you're in the air), but you land on
  *    your front and take a moment to get up, open to anything.
+ *
+ * Sprinting draws on the same stamina (12.5 a second, about 8 s from full): run it dry and
+ * you're winded, so a long sprint leaves nothing for a roll.
  *
  * What stops it being spammed:
  *  - **Stamina**: a roll costs 28, a dive 38, out of 100, refilling at 24/s after a short pause.
@@ -23,9 +26,11 @@
 export type DodgeKind = 'roll' | 'dive';
 
 export const ROLL = {
-  roll: { dur: 0.6, dist: 4.2, iframes: [0.07, 0.37] as [number, number], cost: 28, recover: 0.14 },
-  dive: { dur: 0.85, dist: 5.4, iframes: [0.08, 0.32] as [number, number], cost: 38, recover: 0.4 },
+  roll: { dur: 0.68, dist: 6.2, iframes: [0.07, 0.4] as [number, number], cost: 28, recover: 0.14 },
+  dive: { dur: 0.9, dist: 7.2, iframes: [0.08, 0.34] as [number, number], cost: 38, recover: 0.4 },
   stamina: { max: 100, regen: 24, delay: 0.9 },
+  /** Sprinting costs stamina per second (about 8 s from full); it stops when you run dry. */
+  sprint: { drain: 12.5, minToStart: 12 },
   /** Rolls within this many seconds of the last count as a chain. */
   chain: { window: 2.2, costStep: 0.5, iframeShrink: 0.32 },
   winded: { secs: 1.8, speed: 0.6 },
@@ -92,6 +97,26 @@ export class Dodge {
     const len = (b - a) * (1 - shrink);
     this.active = { kind, t: 0, dur: spec.dur, dirX, dirZ, iStart: a, iEnd: a + len, dist: spec.dist };
     this.lastStart = this.time;
+    return true;
+  }
+
+  private sprinting = false;
+
+  /**
+   * Wants to sprint this frame: true if it can (drains stamina while it does). A sprint needs a
+   * little stamina to start, and running dry ends it and leaves you winded.
+   */
+  sprint(want: boolean, dt: number): boolean {
+    const can = want && this.winded <= 0 && (this.sprinting ? this.stamina > 0 : this.stamina >= ROLL.sprint.minToStart);
+    this.sprinting = can;
+    if (!can) return false;
+    this.stamina -= ROLL.sprint.drain * dt;
+    this.sinceSpend = 0;
+    if (this.stamina <= 0) {
+      this.stamina = 0;
+      this.winded = ROLL.winded.secs;
+      this.sprinting = false;
+    }
     return true;
   }
 

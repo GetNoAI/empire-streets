@@ -177,7 +177,9 @@ export class Player {
     if (wasState === 'dry' && this.waterState !== 'dry' && this.velocity.y < -1.5) this.splash = -this.velocity.y;
     const swimming = this.waterState === 'swimming';
     const out = this.dead || this.knockedDown > 0;
-    const base = out ? 0 : swimming ? (sprint ? POND.swimSprint : POND.swimSpeed) : walk ? PLAYER.walkSpeed : sprint && this.canSprint ? PLAYER.sprintSpeed : PLAYER.jogSpeed;
+    // Sprinting (and fast swimming) burns stamina while you're actually moving.
+    const sprinting = !out && !walk && len > 0.1 && this.dodge.sprint(sprint && (swimming || this.canSprint) && !this.dodge.active, dt);
+    const base = out ? 0 : swimming ? (sprinting ? POND.swimSprint : POND.swimSpeed) : walk ? PLAYER.walkSpeed : sprinting ? PLAYER.sprintSpeed : PLAYER.jogSpeed;
     const speed = base * this.speedMult * (this.waterState === 'wading' ? wadeFactor(this.waterDepth) : 1) * (this.dodge.winded > 0 ? ROLL.winded.speed : 1);
     const tx = len > 0.01 ? (moveX / Math.max(1, len)) * speed : 0;
     const tz = len > 0.01 ? (moveZ / Math.max(1, len)) * speed : 0;
