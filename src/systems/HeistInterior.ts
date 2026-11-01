@@ -29,7 +29,9 @@ export const HEIST_INTERIOR = {
   floorY: -150,
   height: 4.4,
   /** Room size per kind: width along the frontage, depth into the building. */
-  size: { checkCashing: [14, 11], jewelryStore: [18, 13], bankVault: [24, 19] } as Record<string, [number, number]>,
+  size: { checkCashing: [20, 22], jewelryStore: [26, 24], bankVault: [34, 34] } as Record<string, [number, number]>,
+  /** Guards and cameras per kind (at least as many as the job lists). */
+  staff: { checkCashing: [2, 3], jewelryStore: [3, 4], bankVault: [5, 6] } as Record<string, [number, number]>,
   /** Laser gates: beam heights over the floor, and the on/off cycle (s). */
   laser: { heights: [0.35, 0.9, 1.5], period: 3.4, on: 2.1, reach: 0.28 },
   useRadius: 2.2,
@@ -77,6 +79,12 @@ export interface HeistInteriorPlan {
   /** The vault door (it opens on the breach), as a box in the back wall. */
   vaultDoor: Box | null;
 }
+
+/**
+ * hear: how far a guard hears footsteps (metres) at a jog; sprinting carries further, walking a
+ * little less, crouching is nearly silent. Walls muffle it (half the range through one).
+ */
+export const HEARING = { radius: 7, sprint: 1.6, walk: 0.8, crouch: 0.22, muffled: 0.5, listen: 2.6 };
 
 /** Does this job happen inside a building? (Not the armored truck.) */
 export function hasInterior(t: HeistTarget): boolean {
@@ -128,65 +136,71 @@ export function planHeistInterior(t: HeistTarget): HeistInteriorPlan | null {
     const b = P(u1, v);
     lasers.push({ ax: a.x, az: a.z, bx: b.x, bz: b.z, phase });
   };
-  // Pillars in the lobby.
-  for (const s of [-1, 1]) cover.push(B(s * W * 0.3, D * 0.2, 0.45, 0.45, H, 'pillar'));
+  // ---- the lobby: two rows of pillars, benches and planters by the door
+  const cols = big ? [-0.36, -0.12, 0.12, 0.36] : [-0.3, 0.3];
+  for (const v of [0.13, 0.27]) for (const c of cols) cover.push(B(c * W, D * v, 0.45, 0.45, H, 'pillar'));
+  for (const s of [-1, 1]) cover.push(B(s * (W / 2 - 1.3), D * 0.06 + 1.2, 0.5, 1.0, 1.2, 'planter'));
   let breachPoints: Pt[] = [];
   let loot: Pt[] = [];
   if (smash) {
-    // Display cases in two rows; a laser line guards the showroom.
+    // Display cases in rows through the showroom, laser lines between the rows.
     const n = Math.max(1, t.location.breachPoints.length);
-    const perRow = Math.ceil(n / 2);
+    const rows = n > 4 ? 3 : 2;
+    const perRow = Math.ceil(n / rows);
     for (let i = 0; i < n; i++) {
       const row = Math.floor(i / perRow);
       const k = i % perRow;
       const u = (k - (perRow - 1) / 2) * (W / (perRow + 0.6));
-      const v = D * (row === 0 ? 0.6 : 0.82);
-      cover.push(B(u, v, 0.7, 0.4, 1.0, 'case'));
-      breachPoints.push(P(u, v - 0.95));
-      loot.push(P(u + 0.5, v - 0.85));
+      const v = D * (0.52 + row * (0.36 / Math.max(1, rows - 1)));
+      cover.push(B(u, v, 0.8, 0.45, 1.0, 'case'));
+      breachPoints.push(P(u, v - 1.0));
+      loot.push(P(u + 0.55, v - 0.9));
     }
-    gate(D * 0.42, -W / 2, W / 2, 0);
-    // Planters by the door.
-    for (const s of [-1, 1]) cover.push(B(s * (W / 2 - 1.2), D * 0.36, 0.5, 0.9, 1.2, 'planter'));
+    gate(D * 0.4, -W / 2, W / 2, 0);
+    for (let r = 1; r < rows; r++) gate(D * (0.52 + (r - 0.5) * (0.36 / Math.max(1, rows - 1))) - 0.2, -W / 2, W / 2, r * 1.2);
+    // Tall cabinets along the side walls (cover in the showroom).
+    for (const s of [-1, 1]) for (const v of [0.55, 0.75]) cover.push(B(s * (W / 2 - 0.6), D * v, 0.4, 1.0, 2.0, 'pillar'));
   } else {
     // Teller counter across the lobby with a gap to slip through at one end.
-    const gapU = W / 2 - 1.4;
-    cover.push(B(-1.0 - 0.0, D * 0.42, (W - 2.8) / 2 - 0.5, 0.35, 1.25, 'counter'));
-    void gapU;
-    // Back area: desks, and at the bank partition walls round a corridor to the vault.
+    cover.push(B(-1.0, D * 0.4, (W - 2.8) / 2 - 0.5, 0.35, 1.25, 'counter'));
+    // Back area: offices either side of a corridor to the vault (doorways in the partitions).
+    const cw = big ? 2.2 : 1.8;
+    const v0 = D * 0.5;
+    const door = D * 0.72;
+    for (const s of [-1, 1]) {
+      const u = s * (cw + T / 2);
+      walls.push(B(u, (v0 + door - 0.8) / 2, T / 2, (door - 0.8 - v0) / 2, H, 'wall'), B(u, (door + 0.8 + D) / 2, T / 2, (D - door - 0.8) / 2, H, 'wall'));
+      // Desks in rows in the offices.
+      const mid = s * (cw + (W / 2 - cw) / 2);
+      for (const v of big ? [0.58, 0.68, 0.8, 0.92] : [0.6, 0.78, 0.92]) cover.push(B(mid + s * ((v * 10) % 2 > 1 ? 1.2 : -1.2), D * v, 1.1, 0.45, 1.15, 'desk'));
+      // Filing cabinets against the side walls.
+      cover.push(B(s * (W / 2 - 0.5), D * 0.65, 0.35, 0.9, 1.9, 'pillar'));
+    }
+    // Laser gates down the corridor (staggered), and across the office ends at the bank.
+    const gates = big ? [0.56, 0.66, 0.78, 0.9] : [0.6, 0.8];
+    gates.forEach((v, i) => gate(D * v, -cw, cw, i * 0.9));
     if (big) {
-      const cw = 2.0;
-      const v0 = D * 0.55;
-      walls.push(B(-cw - T / 2, (v0 + D) / 2, T / 2, (D - v0) / 2, H, 'wall'), B(cw + T / 2, (v0 + D) / 2, T / 2, (D - v0) / 2, H, 'wall'));
-      for (const s of [-1, 1]) {
-        cover.push(B(s * (cw + (W / 2 - cw) / 2), D * 0.7, 1.1, 0.45, 1.15, 'desk'));
-        cover.push(B(s * (cw + (W / 2 - cw) / 2), D * 0.88, 1.1, 0.45, 1.15, 'desk'));
-      }
-      gate(D * 0.64, -cw, cw, 0);
-      gate(D * 0.8, -cw, cw, 1.1);
-      // And a line across the gaps into the offices.
-      gate(D * 0.5, -W / 2, -cw, 2.0);
-      gate(D * 0.5, cw, W / 2, 2.0);
-    } else {
-      for (const s of [-1, 1]) cover.push(B(s * W * 0.27, D * 0.72, 1.0, 0.45, 1.15, 'desk'));
-      gate(D * 0.62, -W / 2, W / 2, 0);
+      gate(D * 0.5, -W / 2, -cw - T, 2.0);
+      gate(D * 0.5, cw + T, W / 2, 2.0);
     }
     breachPoints = [P(0, D - 0.9)];
     const n = Math.max(1, t.loot.bags);
     for (let i = 0; i < n; i++) {
-      const cols = big ? 4 : 3;
-      const row = Math.floor(i / cols);
-      const k = i % cols;
-      loot.push(P((k - (cols - 1) / 2) * (vaultHalf * 0.55), D + 1.2 + row * 1.6));
+      const c = big ? 4 : 3;
+      const row = Math.floor(i / c);
+      const k = i % c;
+      loot.push(P((k - (c - 1) / 2) * (vaultHalf * 0.55), D + 1.2 + row * 1.6));
     }
   }
-  // ---- guards (as many as the job has): one in the lobby, the rest further in.
-  const g = Math.max(1, t.location.guards.length);
+  // ---- guards: one walking the lobby, one by the door, the rest further in.
+  const [gWant, cWant] = HEIST_INTERIOR.staff[t.kind] ?? [2, 3];
+  const g = Math.max(gWant, t.location.guards.length);
   const routes: Array<[number, number, number, number]> = [
-    [-W * 0.35, D * 0.3, W * 0.35, D * 0.3],
-    big ? [0, D * 0.58, 0, D * 0.9] : [-W * 0.3, D * 0.86, W * 0.3, D * 0.86],
-    [W * 0.32, D * 0.62, W * 0.32, D * 0.92],
-    [-W * 0.32, D * 0.62, -W * 0.32, D * 0.92],
+    [-W * 0.38, D * 0.2, W * 0.38, D * 0.2],
+    smash ? [-W * 0.35, D * 0.62, W * 0.35, D * 0.62] : [0, D * 0.52, 0, D * 0.92],
+    smash ? [W * 0.38, D * 0.45, W * 0.38, D * 0.9] : [W * 0.3, D * 0.55, W * 0.3, D * 0.95],
+    smash ? [-W * 0.38, D * 0.9, -W * 0.38, D * 0.45] : [-W * 0.3, D * 0.95, -W * 0.3, D * 0.55],
+    [-W * 0.15, D * 0.34, -W * 0.15, D * 0.08],
   ];
   const guards: HeistInteriorPlan['guards'] = [];
   for (let i = 0; i < g; i++) {
@@ -195,20 +209,22 @@ export function planHeistInterior(t: HeistTarget): HeistInteriorPlan | null {
     const b = P(u1, v1);
     guards.push({ ...a, patrolTo: b, heading: Math.atan2(-(b.z - a.z), b.x - a.x) });
   }
-  // ---- cameras in the corners and over the vault, looking into the room.
+  // ---- cameras: the corners, halfway down the side walls, and one looking down the corridor.
   const centre = P(0, D / 2);
-  const camSpots: Array<[number, number]> = [
-    [-W / 2 + 0.4, 0.4],
-    [W / 2 - 0.4, D - 0.4],
-    [W / 2 - 0.4, 0.4],
-    [-W / 2 + 0.4, D - 0.4],
+  const camSpots: Array<[number, number, number, number]> = [
+    [-W / 2 + 0.4, 0.4, 0, D * 0.4],
+    [W / 2 - 0.4, D - 0.4, 0, D * 0.6],
+    [W / 2 - 0.4, 0.4, 0, D * 0.4],
+    [-W / 2 + 0.4, D - 0.4, 0, D * 0.6],
+    [0, D - 0.4, 0, D * 0.4],
+    [-W / 2 + 0.4, D * 0.5, W * 0.3, D * 0.5],
   ];
   const cameras: HeistInteriorPlan['cameras'] = [];
-  const nc = Math.max(1, t.location.cameras.length);
+  const nc = Math.max(cWant, t.location.cameras.length);
   for (let i = 0; i < nc; i++) {
-    const [u, v] = camSpots[i % camSpots.length];
+    const [u, v, lu, lv] = camSpots[i % camSpots.length];
     const p = P(u, v);
-    const look = P(u * 0.2, D * 0.5);
+    const look = P(lu, lv);
     cameras.push({ ...p, y: HEIST_INTERIOR.floorY + H - 0.6, yaw: Math.atan2(look.x - p.x, look.z - p.z) });
   }
   const spawn = P(0, 1.2);

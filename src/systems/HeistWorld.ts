@@ -11,7 +11,7 @@ import type { VehicleManager } from '../vehicles/VehicleManager';
 import type { DropOff, HeistConfig, HeistRole, HeistState, HeistTarget, LootBag, Pt } from './heistManager.js';
 import type { TuningWorld } from './TuningWorld';
 import { withSurface } from '../render/Surfaces';
-import { buildHeistInterior, laserOn, laserTouches, planHeistInterior, type HeistInteriorPlan, type HeistInteriorView } from './HeistInterior';
+import { HEARING, buildHeistInterior, laserOn, laserTouches, planHeistInterior, type HeistInteriorPlan, type HeistInteriorView } from './HeistInterior';
 
 /**
  * The 3D side of heists (heistManager.js runs the rules): the storefronts, vault doors, display
@@ -52,6 +52,9 @@ interface Guard {
   pause: number;
   out: number;
   speed: number;
+  /** Seconds left turned towards a noise (stops the patrol), and where it came from. */
+  alert: number;
+  heardAt: Pt | null;
 }
 
 interface Cam {
@@ -413,7 +416,7 @@ export class HeistWorld {
       // convention: heading h faces (cos h, -sin h).
       const planned = (gp as { heading?: number }).heading;
       const heading = planned ?? (F ? Math.atan2(-F.nz, F.nx) : (t.location.truck?.heading ?? 0) + Math.PI / 2);
-      this.guards.push({ model: m, cone: fan, home: { x: gp.x, z: gp.z }, to: gp.patrolTo ?? null, x: gp.x, z: gp.z, heading, leg: 0, pause: Math.random() * 2, out: 0, speed: 0 });
+      this.guards.push({ model: m, cone: fan, home: { x: gp.x, z: gp.z }, to: gp.patrolTo ?? null, x: gp.x, z: gp.z, heading, leg: 0, pause: Math.random() * 2, out: 0, speed: 0, alert: 0, heardAt: null });
     }
     for (const cp of t.location.cameras) {
       const pivot = new THREE.Group();
@@ -650,19 +653,23 @@ export class HeistWorld {
   // ------------------------------------------------------------------ queries
 
   /** How many watchers see the player right now (guards awake, cameras on), weighted by distance. */
-  seenBy(px: number, py: number, pz: number, inCar: boolean): number {
+  seenBy(px: number, py: number, pz: number, inCar: boolean, crouched = false): number {
     if (!this.target || this.alarmOn) return 0;
+    // Crouched you're a smaller, lower shape: harder to pick out at range, and hidden by
+    // anything waist-high (counters, desks, display cases).
+    const eye = crouched ? 0.6 : 1;
+    const reach = crouched ? 0.72 : 1;
     let n = 0;
     for (const g of this.guards) {
       if (g.out > 0) continue;
       const dx = px - g.x;
       const dz = pz - g.z;
       const d = Math.hypot(dx, dz);
-      if (d > GUARD.range) continue;
+      if (d > GUARD.range * reach) continue;
       const fx = Math.cos(g.heading);
       const fz = -Math.sin(g.heading);
       if ((dx * fx + dz * fz) / (d || 1) < GUARD.cosHalf && d > 1.5) continue;
-      if (this.d.tune.sightBlocked(g.x, 1.6, g.z, px, py + 1, pz)) continue;
+      if (this.d.tune.sightBlocked(g.x, py + 1.6, g.z, px, py + eye, pz)) continue;
       n += (d < GUARD.closeRange ? 1.5 : 1) * (inCar ? 0.6 : 1);
     }
     if (this.camerasOn)
@@ -670,13 +677,38 @@ export class HeistWorld {
         const dx = px - c.x;
         const dz = pz - c.z;
         const d = Math.hypot(dx, dz);
-        if (d > CAMERA.range || d < 0.5) continue;
+        if (d > CAMERA.range * reach || d < 0.5) continue;
         const fx = Math.sin(c.yaw);
         const fz = Math.cos(c.yaw);
         if ((dx * fx + dz * fz) / d < CAMERA.cosHalf) continue;
-        if (this.d.tune.sightBlocked(c.x, c.y, c.z, px, py + 1, pz)) continue;
+        if (this.d.tune.sightBlocked(c.x, c.y, c.z, px, py + eye, pz)) continue;
         n += 1;
       }
+    return n;
+  }
+
+  /**
+   * Inside the building: how much the guards hear you (0..). `loud` is the footstep level (0 still,
+   * HEARING.crouch crouched, walk/1/sprint). No line of sight needed; a wall in between halves the
+   * range. A guard who hears you stops and turns towards the sound for a moment.
+   */
+  heard(px: number, py: number, pz: number, loud: number): number {
+    if (!this.target || this.alarmOn || !this.inside || loud <= 0) return 0;
+    let n = 0;
+    for (const g of this.guards) {
+      if (g.out > 0) continue;
+      const d = Math.hypot(px - g.x, pz - g.z);
+      let r = HEARING.radius * loud;
+      if (d > r) continue;
+      if (this.d.tune.sightBlocked(g.x, py + 1.4, g.z, px, py + 1, pz)) r *= HEARING.muffled;
+      if (d > r) continue;
+      const k = 1 - d / r;
+      n += k;
+      if (k > 0.15) {
+        g.alert = HEARING.listen;
+        g.heardAt = { x: px, z: pz };
+      }
+    }
     return n;
   }
 
@@ -773,6 +805,11 @@ export class HeistWorld {
           g.model.standUp();
           g.cone.visible = !this.alarmOn;
         }
+      } else if (g.alert > 0 && g.heardAt && !this.alarmOn) {
+        // Heard something: stop and look that way.
+        g.alert -= dt;
+        g.speed = 0;
+        g.heading = turn(g.heading, Math.atan2(-(g.heardAt.z - g.z), g.heardAt.x - g.x), dt * 3);
       } else if (this.alarmOn) {
         // On the radio: back to the door, watching you.
         const want = Math.atan2(-(s.player.z - g.z), s.player.x - g.x);

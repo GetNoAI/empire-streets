@@ -21,6 +21,8 @@ export const PLAYER = {
   radius: 0.32,
   halfHeight: 0.55,
   walkSpeed: 2.4,
+  /** Crouched creeping (Alt): slow, quiet, low. */
+  crouchSpeed: 2.0,
   jogSpeed: 4.6,
   sprintSpeed: 7.2,
   jumpSpeed: 4.0,

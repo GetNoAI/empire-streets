@@ -535,8 +535,13 @@ export class Humanoid implements CharacterModel {
     this.root.scale.setScalar(look.scale);
   }
 
+  /** 0..1 how far to crouch (eased towards it each update). */
+  crouch = 0;
+  private crouchK = 0;
+
   /** Advances the gait and poses the rig. speed in m/s; grounded=false gives a mid-air pose. */
   update(dt: number, speed: number, grounded: boolean): void {
+    this.crouchK += ((grounded ? this.crouch : 0) - this.crouchK) * Math.min(1, dt * 10);
     const moving = Math.min(1, speed / 1.5);
     this.blend += (moving - this.blend) * Math.min(1, dt * 8);
     const freq = gaitFrequency(speed);
@@ -656,6 +661,21 @@ export class Humanoid implements CharacterModel {
     this.torso.rotation.set(0.03 * blend * c, -0.18 * blend * s, -0.12 * run * blend - 0.03 * blend + 0.015 * idle * Math.sin(phase));
     // Standing: looks around now and then (the gait phase creeps on slowly at rest).
     this.head.rotation.set(0, 0.08 * blend * s + 0.25 * idle * Math.sin(phase * 0.23) ** 3, 0.03 * blend * Math.sin(phase * 2 + 0.5) - 0.02 * idle * Math.sin(phase * 0.37));
+    const k = this.crouchK;
+    if (k > 0.01) {
+      // Crouched: knees well bent, hips dropped, body leaning in, short creeping steps; the
+      // head comes back up so they keep looking ahead.
+      const stp = s * swing * 0.55;
+      this.legL.upper.rotation.z = this.legL.upper.rotation.z * (1 - k) + (1.0 + stp) * k;
+      this.legR.upper.rotation.z = this.legR.upper.rotation.z * (1 - k) + (1.0 - stp) * k;
+      this.legL.lower.rotation.z = this.legL.lower.rotation.z * (1 - k) + (-1.65 + 0.25 * Math.max(0, s) * blend) * k;
+      this.legR.lower.rotation.z = this.legR.lower.rotation.z * (1 - k) + (-1.65 + 0.25 * Math.max(0, -s) * blend) * k;
+      this.hips.position.y -= 0.3 * k;
+      this.torso.rotation.z -= 0.55 * k;
+      this.head.rotation.z += 0.42 * k;
+      this.armL.lower.rotation.z += 0.4 * k;
+      this.armR.lower.rotation.z += 0.4 * k;
+    }
   }
 
   private swimLean = 0;

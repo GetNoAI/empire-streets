@@ -256,7 +256,7 @@ export class TouchControls {
           if (full && !this.autoSprint && !toggled) this.input.virtual.add('ShiftLeft');
           if (!full && this.autoSprint && !toggled) this.input.virtual.delete('ShiftLeft');
           this.autoSprint = full;
-          // A light push is a quiet walk (wild Streetmon notice you less), like holding Alt.
+          // A light push is a crouch (quiet and low: wild Streetmon and heist guards notice you less), like holding Alt.
           const m = Math.hypot(nx, ny);
           if (m > 0.15 && m < 0.5) this.input.virtual.add('AltLeft');
           else this.input.virtual.delete('AltLeft');

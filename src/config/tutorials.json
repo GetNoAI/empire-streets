@@ -193,7 +193,7 @@
           "touch": "Tap JUMP to jump"
         },
         {
-          "text": "Hold {Alt} to walk quietly: wild Streetmon notice you less",
+          "text": "Hold {Alt} to crouch: low and quiet, wild Streetmon and heist guards notice you less",
           "do": "walk",
           "touch": "Push the stick only a little to walk quietly: wild Streetmon notice you less"
         }
@@ -385,7 +385,7 @@
           "text": "Point at a Streetmon to see its health bar and level"
         },
         {
-          "text": "Sneak up walking ({Alt}): shy ones run if they hear you, aggressive ones attack",
+          "text": "Sneak up crouched ({Alt}): shy ones run if they hear you, aggressive ones attack",
           "touch": "Sneak up with a light push on the stick: shy ones run if they hear you, aggressive ones attack"
         }
       ]

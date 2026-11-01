@@ -19,7 +19,7 @@ export const KEYBOARD: Group[] = [
     name: 'On foot',
     rows: [
       ['W A S D', 'Move (camera-relative)'],
-      ['Shift / Alt', 'Sprint / walk'],
+      ['Shift / Alt', 'Sprint / crouch'],
       ['Space', 'Jump'],
       ['Z', 'Dodge roll; aiming a gun: a dive you can shoot through'],
       ['Mouse', 'Look around'],

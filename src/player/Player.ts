@@ -109,7 +109,22 @@ export class Player {
   /**
    * One physics step of walking. `moveX/moveZ` is the desired direction in world space (length <= 1).
    */
-  step(dt: number, moveX: number, moveZ: number, sprint: boolean, walk: boolean, jump: boolean): void {
+  /** Crouched this step (Alt held, on the ground, not swimming). */
+  crouching = false;
+  /** Running flat out this step. */
+  sprinting = false;
+
+  /**
+   * How loud your footsteps are right now: 0 standing still, a whisper crouched, 1 at a jog,
+   * more sprinting (what heist guards can hear).
+   */
+  get footsteps(): number {
+    if (!this.onFoot || this.dead || this.planarSpeed < 0.4) return 0;
+    if (this.crouching) return 0.22;
+    return this.sprinting ? 1.6 : 1;
+  }
+
+  step(dt: number, moveX: number, moveZ: number, sprint: boolean, crouch: boolean, jump: boolean, slowWalk = false): void {
     this.prevPos.copy(this.curPos);
     const len = Math.hypot(moveX, moveZ);
     // Mid-climb: follow the arc, nothing else.
@@ -178,8 +193,11 @@ export class Player {
     const swimming = this.waterState === 'swimming';
     const out = this.dead || this.knockedDown > 0;
     // Sprinting (and fast swimming) burns stamina while you're actually moving.
+    this.crouching = crouch && !out && !swimming && this.waterState !== 'wading' && !this.dodge.active && !this.mantle;
+    const walk = this.crouching || slowWalk;
     const sprinting = !out && !walk && len > 0.1 && this.dodge.sprint(sprint && (swimming || this.canSprint) && !this.dodge.active, dt);
-    const base = out ? 0 : swimming ? (sprinting ? POND.swimSprint : POND.swimSpeed) : walk ? PLAYER.walkSpeed : sprinting ? PLAYER.sprintSpeed : PLAYER.jogSpeed;
+    const base = out ? 0 : swimming ? (sprinting ? POND.swimSprint : POND.swimSpeed) : this.crouching ? PLAYER.crouchSpeed : walk ? PLAYER.walkSpeed : sprinting ? PLAYER.sprintSpeed : PLAYER.jogSpeed;
+    this.sprinting = sprinting;
     const speed = base * this.speedMult * (this.waterState === 'wading' ? wadeFactor(this.waterDepth) : 1) * (this.dodge.winded > 0 ? ROLL.winded.speed : 1);
     const tx = len > 0.01 ? (moveX / Math.max(1, len)) * speed : 0;
     const tz = len > 0.01 ? (moveZ / Math.max(1, len)) * speed : 0;
@@ -398,7 +416,11 @@ export class Player {
         m.position.x -= fx * 0.8 * lean;
         m.position.z -= fz * 0.8 * lean;
         m.position.y += 0.85 * lean;
-      } else this.model.update(dt, this.planarSpeed, this.dodge.active ? false : this.grounded || this.waterState === 'wading');
+      } else {
+        const hm = this.model as { crouch?: number };
+        if (hm.crouch !== undefined) hm.crouch = this.crouching ? 1 : 0;
+        this.model.update(dt, this.planarSpeed, this.dodge.active ? false : this.grounded || this.waterState === 'wading');
+      }
     }
     this.tumble(m);
   }

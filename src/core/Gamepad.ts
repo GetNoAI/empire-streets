@@ -25,6 +25,8 @@ export const PAD = {
   /** Stick dead zone and trigger threshold. */
   dead: 0.2,
   trigger: 0.08,
+  /** On foot, the left stick tilted less than this (after the dead zone) crouches. */
+  crouchTilt: 0.4,
   /** Right stick at full tilt turns the camera this many mouse pixels a second. */
   look: 820,
   /** Menus: hold a direction to repeat (first after `delay`, then every `repeat` seconds). */
@@ -175,7 +177,12 @@ export function padFrame(s: PadSnapshot, prev: boolean[], ctx: PadContext, o: { 
       out.move = ls.x ? { x: ls.x, y: 0 } : null;
       out.throttle = Math.max(0, (val(BTN.RT) - PAD.trigger) / (1 - PAD.trigger));
       out.brake = Math.max(0, (val(BTN.LT) - PAD.trigger) / (1 - PAD.trigger));
-    } else out.move = ls.x || ls.y ? { x: ls.x, y: -ls.y } : null;
+    } else {
+      out.move = ls.x || ls.y ? { x: ls.x, y: -ls.y } : null;
+      // On foot a light tilt of the stick is a crouch (like Alt, or a light push on a phone).
+      const m = Math.hypot(ls.x, ls.y);
+      if (ctx === 'foot' && m > 0 && m < PAD.crouchTilt) out.hold.add('AltLeft');
+    }
     // A gentle curve on the right stick: fine aim near the centre, quick turns at full tilt.
     out.look = { x: Math.sign(rs.x) * rs.x * rs.x, y: Math.sign(rs.y) * rs.y * rs.y };
   }

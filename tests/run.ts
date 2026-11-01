@@ -8,7 +8,8 @@ import { Inventory } from '../src/weapons/Inventory';
 import { WEAPONS, parseWeapons, weapon } from '../src/weapons/WeaponTypes';
 import * as fs from 'node:fs';
 import { INTENSITY, MUSIC, MusicDirector, ZONES, fadeFor, pickTrack, type TrackId } from '../src/audio/Music';
-import { HEIST_INTERIOR, laserOn, laserTouches, planHeistInterior } from '../src/systems/HeistInterior';
+import { HEARING, HEIST_INTERIOR, laserOn, laserTouches, planHeistInterior } from '../src/systems/HeistInterior';
+import { HeistRaid } from '../src/systems/HeistRaid';
 import { LAYERS, WorldLayers, layerLabel } from '../src/world/WorldLayers';
 import { ROOFS, ballistic, flightAt, planGarages, planRooftops, roofEscapeReport } from '../src/world/Rooftops';
 import { SEWER, bfsDistances, blockAt, carveMaze, key as sewerKey, planSewers, propAt, reachableCount, ventActive, wallRuns } from '../src/world/Sewers';
@@ -61,7 +62,7 @@ import { Party } from '../src/creatures/Party';
 import { CATCH, catchChance, catchValue, itemMultiplier, rollCatch } from '../src/creatures/Catching';
 import { PITY, newPity, pityMessage, recordThrow, softBonus, withPity } from '../src/creatures/Pity';
 import { completion, dexBiomes, dexState, evolutionLine, filterDex, stageOf, typeMatrix } from '../src/creatures/Dex';
-import { BATTLE, CAR_DURABILITY, carDamageTaken } from '../src/config';
+import { BATTLE, CAR_DURABILITY, PLAYER, carDamageTaken } from '../src/config';
 import { DEFAULT_LOOK, LOOK_OPTIONS, OUTFITS, randomPlayerLook, sanitizeLook } from '../src/player/playerLook';
 import { VehicleTuningManager, computeStats, modFor, validateConfig, type StreetmonInfo, type VehicleStats } from '../src/systems/vehicleTuning.js';
 import tuningJson from '../src/config/vehicle_streetmon_tuning.json';
@@ -132,7 +133,7 @@ import { DOCKS, planDocks } from '../src/world/Docks';
 import { planDeepSewers, poolAt, poolEdge } from '../src/world/Sewers';
 import { INTERIOR, planInteriors } from '../src/world/Interiors';
 import { interiorTalk, streetTalk, type TalkContext } from '../src/npc/Talk';
-import { gaitFrequency } from '../src/player/Humanoid';
+import { Humanoid, gaitFrequency } from '../src/player/Humanoid';
 import { POND, bankPoint, carLift, depthAt, depthUV, inLake as inPond, nearestEdge, nearestWater, newCarWater, shouldClimbOut, stepCarWater, submersion, wadeFactor, waterState, waveY } from '../src/world/Pond';
 
 let fails = 0;
@@ -2304,6 +2305,16 @@ console.log('\n— Heists');
     ok(H.state === 'LOOT' && H.job!.bags.filter((b) => b.available).length === 1, 'a smashed case gives its own bag');
     H.takeLoot(0);
     ok(H.notifyBusted() && H.result!.ok === false && w.earned === 0 && H.state === 'RESOLVED', 'busted: the loot is gone');
+    ok(!H.cooldowns[jw.id], 'a failed job leaves no cooldown: the marker comes back for another go');
+    // Wasted mid-job: it ends, the bags go, and you can plan it again straight away.
+    H.plan(jw.id);
+    H.assign('smoke', sm);
+    H.launch();
+    H.update(0.1, { ...at, inside: true } as never);
+    ok(H.state === 'INFILTRATION', 'going inside starts the job');
+    ok(H.notifyWasted() && H.result!.reason === 'wasted' && !H.cooldowns[jw.id] && w.cleaned, 'wasted: the job ends, the bags are cleaned up, no cooldown');
+    ok(H.plan(jw.id).ok, 'and it can be planned again at once');
+    H.cancel();
   }
   {
     // Noise: breaching unjammed eventually sets off the alarm; the truck leaves on time.
@@ -5122,7 +5133,36 @@ console.log('\n# s187: campaign playthrough and balance');
   ok(ROLL.roll.dist >= 6, 'a roll covers 6 m now');
   const tq = JSON.parse(JSON.stringify((heistsJson as unknown as { targets: Array<Record<string, unknown>> }).targets.find((x) => x.id === 'first-empire-vault')));
   const pl = planHeistInterior(tq)!;
-  ok(!!pl && pl.lasers.length >= 3 && pl.cover.length >= 4 && pl.cameras.length === tq.location.cameras.length && pl.guards.length === tq.location.guards.length && pl.loot.length === tq.loot.bags, 'the bank has a room: cover, laser gates, its cameras, guards and bags');
+  ok(!!pl && pl.lasers.length >= 6 && pl.cover.length >= 16 && pl.cameras.length >= Math.max(5, tq.location.cameras.length) && pl.guards.length >= Math.max(5, tq.location.guards.length) && pl.loot.length === tq.loot.bags, `the bank has a big room: ${pl.cover.length} pieces of cover, ${pl.lasers.length} laser gates, ${pl.cameras.length} cameras, ${pl.guards.length} guards`);
+  ok(pl.D >= 30 && pl.W >= 30, `the bank floor is ${pl.W} x ${pl.D} m`);
+  for (const id of ['quik-cash', 'diamond-row']) {
+    const t2 = JSON.parse(JSON.stringify((heistsJson as unknown as { targets: Array<Record<string, unknown>> }).targets.find((x) => x.id === id)));
+    const p2 = planHeistInterior(t2)!;
+    ok(p2.D >= 20 && p2.W >= 18 && p2.cover.length >= 8, `${id}: ${p2.W} x ${p2.D} m with ${p2.cover.length} pieces of cover`);
+  }
+  // Police in the building: they come in after a delay, path round the cover and grab you.
+  {
+    const raid = new HeistRaid(pl);
+    const open = Array.from(raid.grid.open).filter((x) => x).length;
+    ok(open > raid.grid.nx * raid.grid.nz * 0.4, `the floor grid has room to move (${open} open cells)`);
+    const target = pl.breachPoints[0];
+    const sight = () => false;
+    let st = raid.update(1, { stars: 0, px: target.x, pz: target.z, onFoot: true, dead: false, sight });
+    ok(st.spawn.length === 0, 'no stars: nobody comes in');
+    let spawned = 0;
+    for (let i = 0; i < 20 && !spawned; i++) {
+      st = raid.update(0.5, { stars: 2, px: target.x, pz: target.z, onFoot: true, dead: false, sight });
+      for (const sp of st.spawn) raid.add(sp.x, sp.z, sp.heading);
+      spawned = st.spawn.length;
+    }
+    ok(spawned >= 2 && raid.cops.every((c) => Math.hypot(c.x - pl.exit.x, c.z - pl.exit.z) < 4), `wanted inside: ${spawned} officers come in at the door`);
+    let grabbed = false;
+    let t = 0;
+    for (; t < 40 && !grabbed; t += 0.1) grabbed = raid.update(0.1, { stars: 2, px: target.x, pz: target.z, onFoot: true, dead: false, sight }).grabbing;
+    ok(grabbed, `they find their way round the counter and the offices to the vault door in ${t.toFixed(1)} s and grab you`);
+    ok(raid.cops.every((c) => raid.grid.walkable(c.x, c.z)), 'never through the cover or walls');
+  }
+
   const inRoom = (p: { x: number; z: number }) => Math.abs(p.x - pl.centre.x) < pl.W / 2 + 0.1 + (pl.vaultDoor ? 6 : 0) && Math.abs(p.z - pl.centre.z) < pl.D / 2 + 7;
   ok([...pl.loot, ...pl.breachPoints, ...pl.guards, pl.spawn, pl.exit].every(inRoom) && pl.floorY === HEIST_INTERIOR.floorY, 'everything is inside the building, under it');
   const L = pl.lasers[0];
@@ -5135,6 +5175,16 @@ console.log('\n# s187: campaign playthrough and balance');
   ok(on.some((x) => x) && on.some((x) => !x), 'the gates switch on and off (time your run)');
   const truck = (heistsJson as unknown as { targets: Array<Record<string, unknown>> }).targets.find((x) => x.id === 'armored-transport');
   ok(planHeistInterior(truck as never) === null, 'the armored truck job stays in the street');
+  // Crouching: slower than a jog, quiet footsteps, and the guards hear a jog close by.
+  ok(PLAYER.crouchSpeed < PLAYER.jogSpeed * 0.5 && HEARING.crouch < 0.3 && HEARING.radius * HEARING.crouch < 2, 'crouching creeps: under half a jog, and only audible within a couple of metres');
+  {
+    const hm = new Humanoid(copLook(() => 0.5));
+    hm.update(0.5, 0, true);
+    const stand = hm.hips.position.y;
+    hm.crouch = 1;
+    for (let i = 0; i < 30; i++) hm.update(1 / 30, 1.5, true);
+    ok(stand - hm.hips.position.y > 0.2, `crouched, the hips drop ${(stand - hm.hips.position.y).toFixed(2)} m`);
+  }
 }
 
 console.log(fails ? `\n${fails} FAILED` : '\nALL PASSED');

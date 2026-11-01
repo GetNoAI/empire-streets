@@ -133,6 +133,7 @@ import type { Biome } from '../creatures/Data';
 import { IMPACT, carCircleContact, defaultWeightKg, resolveImpact, weightClassOf } from '../vehicles/CreatureImpacts';
 import { CreatureLabels } from '../ui/CreatureLabels';
 import { HEIST_INTERIOR } from '../systems/HeistInterior';
+import { HeistRaid, type RaidCop } from '../systems/HeistRaid';
 import { CreatureTooltip, type Inspectable } from '../ui/CreatureTooltip';
 import { pickSpecies, spawnTable } from '../creatures/SpawnRules';
 import type { CreatureTarget } from '../weapons/WeaponSystem';
@@ -312,6 +313,9 @@ export class Game {
   /** Smoke from a heist crew: bystanders inside can't report crimes until it clears. */
   private smokeZone: { x: number; z: number; r: number; until: number } | null = null;
   private alarmBellT = 0;
+  /** Police coming into the heist building after you (null when you're not inside). */
+  private heistRaid: HeistRaid | null = null;
+  private raidPeds = new Map<RaidCop, Ped>();
   /** The full-screen city map (M). */
   private cityMap!: MapOverlay;
   private readonly raceMat = new THREE.Matrix4();
@@ -4473,7 +4477,7 @@ export class Game {
       }
       if (this.rollQueued && !frozen && !this.interiorBlocksRoll()) this.startDodge(mx, mz);
       this.rollQueued = false;
-      p.step(h, mx, mz, slow === 1 && inp.isDown('ShiftLeft', 'ShiftRight') && p.dodge.winded <= 0, inp.isDown('AltLeft', 'AltRight') || slow < 1, this.jumpQueued);
+      p.step(h, mx, mz, slow === 1 && inp.isDown('ShiftLeft', 'ShiftRight') && p.dodge.winded <= 0, inp.isDown('AltLeft', 'AltRight'), this.jumpQueued, slow < 1);
       this.jumpQueued = false;
     }
     this.pondCars(h);
@@ -6625,7 +6629,7 @@ export class Game {
         if (inp.isDown('KeyW', 'KeyA', 'KeyS', 'KeyD') && moving) T.action('move');
         if (Math.abs(inp.mouseDX) + Math.abs(inp.mouseDY) > 3) T.action('look');
         if (moving && inp.isDown('ShiftLeft', 'ShiftRight')) T.action('sprint');
-        if (moving && inp.isDown('AltLeft', 'AltRight')) T.action('walk');
+        if (moving && inp.isDown('AltLeft', 'AltRight')) T.action('walk'); // crouch-walk
         if (inp.wasPressed('Space')) T.action('jump');
         if (inp.mouseRight) T.action('aim');
         if (inp.mouseLeft && this.weapons.inventory.owned.length > 1) T.action('fire');
@@ -7199,7 +7203,10 @@ export class Game {
         z: pos.z,
         inVehicle: !!car,
         stars: this.wanted.stars,
-        seenBy: this.layers.current === 'street' ? W.seenBy(pos.x, pos.y, pos.z, !!car) : W.inside ? W.seenBy(pos.x, p.feet.y, pos.z, false) : 0,
+        seenBy: this.layers.current === 'street' ? W.seenBy(pos.x, pos.y, pos.z, !!car, !car && p.crouching) : W.inside ? W.seenBy(pos.x, p.feet.y, pos.z, false, p.crouching) : 0,
+        // Inside, guards hear footsteps close by even round a corner (crouch to creep past).
+        heard: W.inside && !car ? W.heard(pos.x, p.feet.y, pos.z, p.footsteps) : 0,
+        inside: !!W.inside,
         laserTripped: !car && !p.dead && W.laserTripped(pos.x, p.feet.y, pos.z),
         nearBreach: car ? -1 : W.nearBreach(pos.x, pos.z),
         nearLoot: car ? -1 : W.nearLoot(pos.x, pos.z),
@@ -7239,7 +7246,78 @@ export class Game {
       W.showInterior(null);
       this.spawns.enabled = true;
     }
+    if (!W.inside && this.heistRaid) this.endHeistRaid();
     this.renderHeistHud(hud);
+  }
+
+  /**
+   * Police in the heist building: officers come in through the front door once you're wanted,
+   * hunt you round the counters and desks, grab you (the arrest bar, as outside) and, from three
+   * stars, shoot when they can see you. The wanted level holds while they can see you.
+   */
+  private updateHeistRaid(dt: number, focus: THREE.Vector3): void {
+    const W = this.heistWorld;
+    const plan = W.inside ? W.interiorPlan(W.inside) : null;
+    const p = this.player;
+    if (!plan) return this.endHeistRaid();
+    if (!this.heistRaid || this.heistRaid.plan !== plan) {
+      this.endHeistRaid();
+      this.heistRaid = new HeistRaid(plan);
+    }
+    const R = this.heistRaid;
+    // Officers shot down (or otherwise gone) leave the raid.
+    for (const [c, ped] of [...this.raidPeds]) {
+      if (ped.state === 'dead' || ped.state === 'fly' || ped.state === 'down' || !this.peds.peds.includes(ped)) {
+        R.remove(c);
+        this.raidPeds.delete(c);
+      }
+    }
+    const eye = plan.floorY + 1.5;
+    const step = R.update(dt, {
+      stars: this.wanted.stars,
+      px: focus.x,
+      pz: focus.z,
+      onFoot: p.onFoot,
+      dead: p.dead,
+      sight: (ax, az, bx, bz) => !this.tuneWorld.sightBlocked(ax, eye, az, bx, eye - 0.3, bz),
+    });
+    for (const sp of step.spawn) {
+      const c = R.add(sp.x, sp.z, sp.heading);
+      const ped = this.peds.spawnScripted(sp.x, sp.z, copLook(), sp.heading, 'cop', 'raid', plan.floorY);
+      this.raidPeds.set(c, ped);
+    }
+    if (step.spawn.length && R.cops.length === step.spawn.length) {
+      audio.door();
+      this.hud.toast('Police! They\'re coming in after you.', 2600);
+    }
+    for (const [c, ped] of this.raidPeds) {
+      ped.x = c.x;
+      ped.z = c.z;
+      ped.y = plan.floorY;
+      ped.heading = c.heading;
+      ped.speed = c.speed;
+    }
+    for (const c of step.firing) {
+      const ped = this.raidPeds.get(c);
+      if (!ped) continue;
+      const d = Math.hypot(focus.x - c.x, focus.z - c.z);
+      this.onOfficerFire(ped, Math.max(0.08, Math.min(0.4, 0.42 - d * 0.015 - Math.hypot(p.velocity.x, p.velocity.z) * 0.03)));
+    }
+    if (p.dead) return;
+    // The cuffs: the same bar as on the street (quicker from three stars; a roll holds it).
+    const before = this.police.arrestRaw;
+    const rate = this.wanted.stars >= 3 ? 1 : 0.65;
+    let now = step.grabbing ? before + dt * rate * (p.dodge.winded > 0 ? ROLL.windedArrest : 1) : Math.max(0, before - dt * 2);
+    if (p.rolling && now < before) now = before;
+    this.police.arrestRaw = now;
+    this.wanted.update(dt, step.sees, focus.x, focus.z);
+  }
+
+  /** The raid's over (you're out of the building, busted or wasted): the officers go. */
+  private endHeistRaid(): void {
+    for (const ped of this.raidPeds.values()) this.peds.removePed(ped);
+    this.raidPeds.clear();
+    this.heistRaid = null;
   }
 
   private renderHeistHud(h: HeistHud): void {
@@ -8287,7 +8365,10 @@ export class Game {
       vx = p.velocity.x;
       vz = p.velocity.z;
     }
-    if (!p.dead && this.layers.current === 'sewer') {
+    if (this.heistWorld?.inside) {
+      // Inside a heist building: the police come in after you (and the heat doesn't cool).
+      this.updateHeistRaid(dt, focus);
+    } else if (!p.dead && this.layers.current === 'sewer') {
       // No police underground, and the trail goes cold twice as fast.
       this.wanted.update(dt * SEWER.searchMult, false, focus.x, focus.z);
     } else if (!p.dead && !(this.battles.active && this.battles.kind === 'police')) {
@@ -8519,7 +8600,7 @@ export class Game {
       vehicleHealth01: car ? car.health01 : 1,
       x: focus.x,
       z: focus.z,
-      layer: this.interior ? this.interior.spot.name : layerLabel(this.layers.current),
+      layer: this.interior ? this.interior.spot.name : this.heistWorld?.inside ? (this.heists.targets.find((t) => t.id === this.heistWorld.inside)?.name ?? 'Inside') : layerLabel(this.layers.current),
       viewHeading,
       heading: car ? car.heading : p.facing,
       prompt: this.input.device === 'pad' ? padPrompt(prompt, this.padIn.context, { heist: this.padIn.inHeist }) : prompt,

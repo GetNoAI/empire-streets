@@ -549,7 +549,10 @@ export class HeistManager {
   finish(r) {
     const j = this.job;
     const t = j.target;
-    this.cooldowns[t.id] = (t.cooldownMinutes ?? 10) * 60;
+    // Only a job that came off puts the place on cooldown: a failed or called-off one can be
+    // tried again straight away (the marker comes back).
+    if (r.ok) this.cooldowns[t.id] = (t.cooldownMinutes ?? 10) * 60;
+    else delete this.cooldowns[t.id];
     const heatGain = r.ok ? t.heat * (j.alarm ? 1.5 : 1) : t.heat * 0.5;
     this.heat = clamp(this.heat + heatGain, 0, this.config.heatRules.max);
     if (r.ok) {
@@ -606,7 +609,7 @@ export class HeistManager {
     const dist = Math.hypot(c.x - ctx.x, c.z - ctx.z);
 
     // Setup: the job starts properly when you're at the place.
-    if (this.state === 'SETUP' && dist < t.location.radius) this.setState('INFILTRATION');
+    if (this.state === 'SETUP' && (dist < t.location.radius || ctx.inside)) this.setState('INFILTRATION');
 
     // The truck leaves.
     if (t.timeLimitSeconds && this.state !== 'ESCAPE' && j.time > t.timeLimitSeconds && !j.breach.some((/** @type {any} */ b) => b.done)) {
@@ -621,7 +624,8 @@ export class HeistManager {
       // someone breaking in or carrying bags is a crime.
       const E = P.exposure;
       const exposure = j.breaching >= 0 || this.carried().bags > 0 ? E.breaching : (ctx.nearBreach ?? -1) >= 0 ? E.atTarget : E.passing;
-      const seen = (ctx.seenBy ?? 0) * exposure;
+      // Guards also hear you: footsteps close by (not crouched) are odd even out of sight.
+      const seen = (ctx.seenBy ?? 0) * exposure + (ctx.heard ?? 0) * E.atTarget;
       if (seen > 0) j.suspicion += seen * t.security.suspicionRate * (0.7 + 0.15 * j.security) * dt;
       else j.suspicion = Math.max(0, j.suspicion - P.suspicionDecay * dt);
       if (j.suspicion >= 1) this.raiseAlarm('seen');
@@ -661,9 +665,10 @@ export class HeistManager {
     }
 
     // The getaway starts when you leave with loot.
-    if (this.state === 'LOOT' && this.carried().bags > 0 && dist > t.location.radius + P.leaveRadiusExtra) this.startEscape('left');
+    // (Never while inside the building: its rooms run deeper than the street radius.)
+    if (!ctx.inside && this.state === 'LOOT' && this.carried().bags > 0 && dist > t.location.radius + P.leaveRadiusExtra) this.startEscape('left');
     // Leaving with nothing: the job's off.
-    if (['INFILTRATION', 'BREACH'].includes(this.state) && dist > t.location.radius * 4) {
+    if (!ctx.inside && ['INFILTRATION', 'BREACH'].includes(this.state) && dist > t.location.radius * 4) {
       this.adapter.notify?.('You walked away from the job.', 2500);
       this.fail('abandoned');
       return this.hud(ctx);

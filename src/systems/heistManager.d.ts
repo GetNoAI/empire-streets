@@ -177,6 +177,10 @@ export interface HeistContext {
   dead?: boolean;
   /** Touching a live laser beam inside the building. */
   laserTripped?: boolean;
+  /** Inside the building (the getaway / walk-away distance checks wait until you're out). */
+  inside?: boolean;
+  /** 0..1: how much the guards can hear you (footsteps nearby, out of sight counts too). */
+  heard?: number;
 }
 
 type Res = { ok: boolean; reason: string };

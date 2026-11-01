@@ -1493,7 +1493,7 @@ sight of you.
 | On foot | |
 | --- | --- |
 | W A S D | Move (relative to the camera) |
-| Shift / Alt | Sprint / walk |
+| Shift / Alt | Sprint / crouch |
 | Space | Jump |
 | Z (pad Y, phone ROLL) | Dodge roll; with a gun aimed, a dive you can shoot through (see *Rolls and dives*) |
 | Mouse | Look around (click the game to capture the mouse) |
@@ -1785,7 +1785,7 @@ Their models are procedural like the rest (`src/creatures/models/NewBuilders.ts`
     sprint at them); *flee* creatures run as soon as they notice you; *aggro* creatures come
     straight at you and square up (this will start a battle once battles are in).
   - **Loud** sets how close you can get before a creature notices you
-    (6 m + 0.16 m per point of Loud): walking slowly (Alt) or standing still nearly halves it,
+    (6 m + 0.16 m per point of Loud): crouching (Alt) or standing still nearly halves it,
     sprinting makes it 1.5x and driving 1.8x. Loud creatures also show up on your minimap from
     farther away (22 m + 0.55 m per point). Minimap dots are coloured by type; shinies are
     yellow.
@@ -2126,6 +2126,33 @@ Tracking: a waypoint you place stays yours, but the story's guidance takes over 
 an objective moves on or a job completes; loading a save keeps the story's waypoint as the
 story's (it used to come back as a manual one, which switched the guidance off for good); and
 during a getaway the waypoint points at the nearest open lock-up.
+
+## Heist overhaul: bigger rooms, crouching, guards that hear, police raids
+
+- **Bigger rooms.** Check-casher 20 x 22 m, Diamond Row 26 x 24 m, the First Empire 34 x 34 m
+  (plus the strong room). Two rows of lobby pillars, planters, a long teller counter with a gap,
+  offices either side of the vault corridor with rows of desks and filing cabinets, staggered
+  laser gates (four down the bank corridor, two across the office ends), and more staff:
+  `HEIST_INTERIOR.staff` gives each kind a minimum of guards and cameras (bank 5 / 6).
+- **Crouch replaces the slow walk** (hold Alt; a light push on the phone stick or a light tilt
+  of the pad stick). 2 m/s, hips dropped, knees bent, leaning in. Guards and cameras see a
+  crouched player at 72% of their range and aim at waist height, so counters, desks and display
+  cases hide you completely. Wild Streetmon still notice you less, as before.
+- **Guards hear you** inside (`HEARING` in `HeistInterior.ts`): footsteps carry 7 m at a jog,
+  11 m sprinting, 1.5 m crouched, halved through a wall, no line of sight needed. Being heard
+  builds suspicion (like loitering by the breach point) and the guard stops and turns to look,
+  which usually means he then sees you.
+- **Police come in.** Once you're wanted while inside, officers enter through the front door
+  after a few seconds (sooner and more of them at higher levels, one more every 9 s up to 6),
+  path round the cover on a floor grid (`src/systems/HeistRaid.ts`) and grab you (the normal
+  arrest bar); from three stars they shoot when they can see you. Inside, the wanted level no
+  longer cools off as if you were in the sewers; it holds while they can see you. They leave
+  when you do.
+- **Wasted or busted ends the job**: the bags are gone and the room resets. **A failed or
+  abandoned job leaves no cooldown**, so the heist marker comes straight back for another try
+  (only a successful score puts the place on cooldown). Walking deep into the room no longer
+  counts as leaving the job (the escape / walk-away distance checks wait until you're outside).
+- The location line shows the building's name while you're in it.
 
 ## Zone music
 
